@@ -62,6 +62,7 @@ set(SourceFiles
 	${PROJECT_SOURCE_DIR}/IO/ConfigLoader.cpp
 	${PROJECT_SOURCE_DIR}/IO/InputLayer.cpp
 	${PROJECT_SOURCE_DIR}/IO/Paths.cpp
+    ${PROJECT_SOURCE_DIR}/IO/Import/MeshImporter.cpp
 	${PROJECT_SOURCE_DIR}/Math/Math.cpp
 	${PROJECT_SOURCE_DIR}/Mesh/MeshBase.cpp
 	${PROJECT_SOURCE_DIR}/Mesh/MeshCube.cpp
@@ -99,6 +100,7 @@ set(HeaderFiles
 	${PROJECT_SOURCE_DIR}/IO/ConfigLoader.h
 	${PROJECT_SOURCE_DIR}/IO/InputLayer.h
 	${PROJECT_SOURCE_DIR}/IO/Paths.h
+    ${PROJECT_SOURCE_DIR}/IO/Import/MeshImporter.h
 	${PROJECT_SOURCE_DIR}/Math/Math.h
 	${PROJECT_SOURCE_DIR}/Mesh/MeshBase.h
 	${PROJECT_SOURCE_DIR}/Mesh/MeshCube.h

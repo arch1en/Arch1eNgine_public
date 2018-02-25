@@ -73,15 +73,20 @@ namespace an
 		void Initiate(std::string aPath, STextureData aTextureData);
 		const STextureData* GetData() const;
 
+		GLuint GetTextureID() const;
+		bool IsInitiated() const;
+
 	private:
 
-		GLuint			mTexture;
+		bool			mInitiated = false;
+
+		GLuint			mTextureID;
 		STextureData		mData;
 
 		int Width = 0;
 		int Height = 0;
 
-		void GenerateTexture(std::string aPath);
+		bool GenerateTexture(std::string aPath);
 		int LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData);
 
 	};

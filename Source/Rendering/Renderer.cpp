@@ -65,9 +65,18 @@ void Renderer::DrawMeshes(const GLsizei aVAOIndex, const glm::mat4& aViewMatrix)
 		ProjectionMatrix = glm::perspective(glm::radians(45.f), (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT, 0.1f, 100.0f);
 		glUniformMatrix4fv(mProjectionUniformLocation, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 
+		if (iter->GetMesh()->HasTexture())
+		{
+			glBindTexture(GL_TEXTURE_2D, iter->GetMesh()->GetTexture()->GetTextureID());
+		}
+
 		glDrawElements(DrawingMode, iter->GetMesh()->mPolygonData.Elements.size(), GL_UNSIGNED_INT, 0);// &iter->mPolygonData.Elements[0]);
 		// TODO [High] : Handle VAO Binding !
 
+		if (iter->GetMesh()->HasTexture())
+		{
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 	}
 	glBindVertexArray(0);
 

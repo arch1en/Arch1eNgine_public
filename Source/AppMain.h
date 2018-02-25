@@ -10,11 +10,15 @@
 #pragma once
 
 #include "stdafx.h"
-#include "Factories\FactoryMesh.h"
-#include "Factories\FactoryActor.h"
-#include "Rendering\Renderer.h"
+#include "Factories/FactoryMesh.h"
+#include "Factories/FactoryActor.h"
+#include "Rendering/Renderer.h"
 #include "Core/ModuleHandler.h"
-#include "Actors\ACamera.h"
+#include "Actors/ACamera.h"
+
+#include "Pools/TextureObjectPool.h"
+#include "Pools/MaterialObjectPool.h"
+
 
 class AppMain
 {
@@ -73,6 +77,10 @@ private:
 	ModuleHandler	mModuleHandler;
 	std::unique_ptr<ACamera> mMainCamera;
 
+	// ObjectPools
+
+	std::unique_ptr<TextureObjectPool>	mTextureObjectPool;
+	std::unique_ptr<MaterialObjectPool> mMaterialObjectPool;
 
 	std::vector<std::shared_ptr<AActor>> mActors;
 

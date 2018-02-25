@@ -8,3 +8,13 @@
 //
 ////////////////////////////////////////
 #include "MeshBase.h"
+
+bool MeshBase::HasTexture() const
+{
+	return mTexture->IsInitiated();
+}
+
+std::shared_ptr<an::CTexture> MeshBase::GetTexture() const
+{
+	return mTexture;
+}

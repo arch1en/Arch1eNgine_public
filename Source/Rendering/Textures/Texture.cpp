@@ -31,13 +31,13 @@ an::CTexture::CTexture(){}
 void an::CTexture::Initiate(std::string aPath, STextureData aTextureData)
 {
 	mData = aTextureData;
-	GenerateTexture(aPath);
+	mInitiated = GenerateTexture(aPath);
 }
 
-void an::CTexture::GenerateTexture(std::string aPath)
+bool an::CTexture::GenerateTexture(std::string aPath)
 {
-	glGenTextures(1, &mTexture);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
+	glGenTextures(1, &mTextureID);
+	glBindTexture(GL_TEXTURE_2D, mTextureID);
 
 	ILuint ImageID = 0;
 
@@ -74,11 +74,15 @@ void an::CTexture::GenerateTexture(std::string aPath)
 	else
 	{
 		Log(DebugType::EDT_Warning, "");
+		return false;
 	}
 
+	glBindTexture(GL_TEXTURE_2D, 0);
 	Data = nullptr;
 	ilBindImage(0);
 	ilDeleteImage(ImageID);
+
+	return true;
 }
 
 int an::CTexture::LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData)
@@ -114,4 +118,14 @@ int an::CTexture::LoadTextureImage(ILuint ImageID, std::string path, int& aOutWi
 const  an::STextureData*  an::CTexture::GetData() const
 {
 	return &mData;
+}
+
+bool an::CTexture::IsInitiated() const
+{
+	return mInitiated;
+}
+
+GLuint an::CTexture::GetTextureID() const
+{
+	return mTextureID;
 }

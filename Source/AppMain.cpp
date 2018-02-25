@@ -144,15 +144,6 @@ bool AppMain::InitGL()
 	///
 	////////////////////////////////////////////////////////////////
 
-	// TEST
-	std::map<std::string, std::string> test;
-	ConfigLoader Loader;
-
-	Loader.LoadConfigData("InputProperties", "Input.Scene", test);
-	// ~TEST
-
-	Actor = mFactoryActor.NewActor("cube");
-
 	ErrorHandle("VertexAttribPointer : ");
 
 	return true;
@@ -161,6 +152,15 @@ bool AppMain::InitGL()
 void AppMain::InitializeActors()
 {
 	mMainCamera = std::make_unique<ACamera>();
+
+	// TEST
+	std::map<std::string, std::string> test;
+	ConfigLoader Loader;
+
+	Loader.LoadConfigData("InputProperties", "Input.Scene", test);
+	// ~TEST
+
+	Actor = mFactoryActor.NewActor("cube");
 }
 
 bool AppMain::Loop() 

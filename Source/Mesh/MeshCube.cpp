@@ -9,32 +9,35 @@
 ////////////////////////////////////////
 #include "MeshCube.h"
 #include "IO/Paths.h"
+#include "Math/Math.h"
 
 MeshCube::MeshCube()
 {
-	mPolygonData.Indices = {	   
+	mPolygonData.Vertices = {	   
 		// front
-		-1.0, -1.0,  1.0,
-		1.0, -1.0,  1.0,
-		1.0,  1.0,  1.0,
-		-1.0,  1.0,  1.0,
+		Vector3<GLfloat>(-1.0f, -1.0f,  1.0f),
+		Vector3<GLfloat>(1.0f, -1.0f,  1.0f),
+		Vector3<GLfloat>(1.0f,  1.0f,  1.0f),
+		Vector3<GLfloat>(-1.0f,  1.0f,  1.0f),
 		// back
-		-1.0, -1.0, -1.0,
-		1.0, -1.0, -1.0,
-		1.0,  1.0, -1.0,
-		-1.0,  1.0, -1.0, };
+		Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
+		Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
+		Vector3<GLfloat>(1.0f,  1.0f, -1.0f),
+		Vector3<GLfloat>(-1.0f,  1.0f, -1.0f)
+	};
 
 	mPolygonData.Color = {	    
 		// front colors
-		1.0, 0.0, 0.0,
-		0.0, 1.0, 0.0,
-		0.0, 0.0, 1.0,
-		1.0, 1.0, 1.0,
+		Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
 		// back colors
-		1.0, 0.0, 0.0,
-		0.0, 1.0, 0.0,
-		0.0, 0.0, 1.0,
-		1.0, 1.0, 1.0, };
+		Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Vector3<GLfloat>(1.0f, 1.0f, 1.0f)
+	};
 
 	mPolygonData.Elements = {			
 		// front
@@ -61,10 +64,10 @@ MeshCube::MeshCube()
 	mPolygonData.TextureCoordinates = 
 	{
 		// front
-		0.f, 1.f,
-		0.f, 0.f,
-		1.f, 0.f,
-		1.f, 1.f,
+		Vector2<GLfloat>(1.f, 1.f),
+		Vector2<GLfloat>(1.f, 0.f),
+		Vector2<GLfloat>(0.f, 0.f),
+		Vector2<GLfloat>(0.f, 1.f),
 
 	};
 
@@ -74,8 +77,8 @@ MeshCube::MeshCube()
 		an::ETextureFilteringMode::Nearest,
 		an::ETextureFilteringMode::Linear);
 
-	mTexture = an::CTexture();
-	mTexture.Initiate(an::Paths::GetInstance().GetPathAssets() + "Textures\\cheshire.jpg", Data);
+	mTexture = std::make_shared<an::CTexture>();
+	mTexture->Initiate(an::Paths::GetInstance().GetPathAssets() + "Textures\\cheshire.jpg", Data);
 
 	MeshTag = "PrimitiveCube";
 
