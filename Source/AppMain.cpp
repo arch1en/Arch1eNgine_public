@@ -23,6 +23,7 @@
 
 #include "AppMain.h"
 #include "IO/Paths.h"
+#include "IL/il.h"
 // TEST
 #include "IO/ConfigLoader.h"
 // ~TEST
@@ -33,7 +34,7 @@ AppMain::AppMain()
 	, Running(false)
 	, Event()
 	, mRenderer(std::make_shared<Renderer>())
-	, mMainCamera()
+	, mMainCamera(nullptr)
 {
 }
 
@@ -84,9 +85,6 @@ bool AppMain::Init()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	SDL_GL_SwapWindow(Window);
 
-	// Set the area to view in frustum.
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
 	// Smooth the color
 	glShadeModel(GL_SMOOTH);
 
@@ -96,11 +94,20 @@ bool AppMain::Init()
 	// Reset viewport position to the origin.
 	glLoadIdentity();
 
-	gluPerspective(45.0, WINDOW_WIDTH/WINDOW_HEIGHT, 1.0, 500.0);
+	gluPerspective(90.0, WINDOW_WIDTH/WINDOW_HEIGHT, 1.0, 500.0);
 
-	// Disable depth checking (game will be 2D, so its not nescessary. In 3D it would)
+	// Z-Buffer options.
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+	glDepthRange(0.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_ALWAYS);
+
+	// Set the area to view in frustum.
+	glViewport(0, 0, (GLsizei)WINDOW_WIDTH, (GLsizei)WINDOW_HEIGHT);
+
+	InitializeActors();
 
 	Running = true;
 
@@ -151,8 +158,9 @@ bool AppMain::InitGL()
 	return true;
 }
 
-void AppMain::InitializeComponents()
+void AppMain::InitializeActors()
 {
+	mMainCamera = std::make_unique<ACamera>();
 }
 
 bool AppMain::Loop() 
@@ -214,7 +222,7 @@ void AppMain::Render()
 	glm::mat4 View{ glm::mat4() };
 
 	// Calculate model, view and projection matrices.
-	int ErrorCode = mMainCamera.GetCameraComponent()->GetViewMatrix(View);
+	int ErrorCode = mMainCamera->GetCameraComponent()->GetViewMatrix(View);
 
 	if (ErrorCode != 0)
 	{

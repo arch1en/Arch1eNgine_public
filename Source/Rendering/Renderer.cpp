@@ -9,6 +9,8 @@
 ////////////////////////////////////////
 #include "Renderer.h"
 #include "Mesh/MeshBase.h"
+#include "IO/Paths.h"
+
 Renderer::Renderer()
 {
 	DrawingMode = GL_TRIANGLES;
@@ -23,8 +25,8 @@ void Renderer::Initiate()
 {
 	mShaderProgram.Init();
 
-	mShaderProgram.LoadShader("Assets\\Shaders\\hello_glsl.vert", GL_VERTEX_SHADER);
-	mShaderProgram.LoadShader("Assets\\Shaders\\hello_glsl.frag", GL_FRAGMENT_SHADER);
+	mShaderProgram.LoadShader((an::Paths::GetInstance().GetPathAssets() + "\\Shaders\\hello_glsl.vert").c_str(), GL_VERTEX_SHADER);
+	mShaderProgram.LoadShader((an::Paths::GetInstance().GetPathAssets() + "\\Shaders\\hello_glsl.frag").c_str(), GL_FRAGMENT_SHADER);
 
 	mShaderProgram.LinkProgram();
 	mShaderProgram.CheckProgramStatus();

@@ -10,5 +10,5 @@
 
 void ModuleHandler::InitializeModules()
 {
-	InputModule::GetSingleton().InitializeLayers();
+	InputModule::GetInstance().InitializeLayers();
 }

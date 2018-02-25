@@ -11,6 +11,8 @@
 
 #include "stdafx.h"
 
+#include "IL/il.h"
+
 namespace an
 {
 	enum ETextureWrappingMode
@@ -76,8 +78,11 @@ namespace an
 		GLuint			mTexture;
 		STextureData		mData;
 
+		int Width = 0;
+		int Height = 0;
+
 		void GenerateTexture(std::string aPath);
-		int LoadTextureImage(std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData);
+		int LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData);
 
 	};
 }

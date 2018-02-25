@@ -43,7 +43,7 @@ public:
 
 	bool Init();
 	bool InitGL();
-	void InitializeComponents();
+	void InitializeActors();
 
 	/**
 	*   Responsible for loading core modules that all other systems are dependent on.
@@ -71,7 +71,7 @@ private:
 	SDL_Event		Event;
 	FactoryActor	mFactoryActor;
 	ModuleHandler	mModuleHandler;
-	ACamera			mMainCamera;
+	std::unique_ptr<ACamera> mMainCamera;
 
 
 	std::vector<std::shared_ptr<AActor>> mActors;

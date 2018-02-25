@@ -27,7 +27,8 @@ class InputComponent : public BaseComponent
 public:
 	InputComponent() 
 		: BaseComponent()
-	{  }
+	{ 
+	}
 
 	~InputComponent();
 

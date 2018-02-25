@@ -14,13 +14,13 @@ InputComponent::~InputComponent()
 {
 	for (const std::string& Layer : mLayersBoundTo)
 	{
-		InputModule::GetSingleton().UnregisterFromLayer(this, Layer);
+		InputModule::GetInstance().UnregisterFromLayer(this, Layer);
 	}
 }
 
 void InputComponent::RegisterToLayer(const std::string& aLayerName)
 {
-	bool RegisterResult = InputModule::GetSingleton().RegisterToLayer(this, aLayerName);
+	bool RegisterResult = InputModule::GetInstance().RegisterToLayer(this, aLayerName);
 
 
 	if (RegisterResult == true)

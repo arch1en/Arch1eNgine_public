@@ -31,7 +31,7 @@ public:
 	InputModule operator= (const InputModule& RHS) = delete;
 	~InputModule();
 
-	static InputModule& GetSingleton()
+	static InputModule& GetInstance()
 	{
 		static InputModule Module;
 		return Module;

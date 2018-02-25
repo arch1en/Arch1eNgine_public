@@ -77,7 +77,11 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 
 	glGenBuffers(1, &NewVBO);
 	glGenBuffers(1, &NewEBO);
-	glGenBuffers(1, &NewTBO);
+
+	if (TextureBufferSize > 0)
+	{
+		glGenBuffers(1, &NewTBO);
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, NewVBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewEBO);

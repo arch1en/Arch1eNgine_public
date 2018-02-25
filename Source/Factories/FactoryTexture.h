@@ -2,11 +2,11 @@
 
 #include "stdafx.h"
 
-class Texture;
 
 namespace an
 {
-	class TextureData;
+	class CTexture;
+	class STextureData;
 };
 
 class FactoryTexture
@@ -17,10 +17,10 @@ public:
 	~FactoryTexture() {}
 
 	const unsigned char* LoadImageFromFile(const char* aFilePath);
-	void CreateTexture(an::TextureData aData);
+	void CreateTexture(an::STextureData aData);
 
 private:
 
-	std::vector<std::unique_ptr<Texture>> mTextures;
+	std::vector<std::unique_ptr<an::CTexture>> mTextures;
 
 };

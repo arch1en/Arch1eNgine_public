@@ -13,15 +13,18 @@ an::Paths::Paths()
 {
 	std::string Path = SDL_GetBasePath();
 	
-	std::size_t Found = Path.rfind("\\", Path.length() - 2);
-	if (Found != std::string::npos)
+	for (int i = 0; i < 2; i++)
 	{
-		Path.erase(Found + 1, Path.length());
-		Path.append("SDL_OpenGL\\");
-	}
-	else
-	{
-		Log(DebugType::EDT_Error, "Failed to trim the basic path string. Investigate !");
+		std::size_t Found = Path.rfind("\\", Path.length() - 2);
+		if (Found != std::string::npos)
+		{
+			Path.erase(Found + 1, Path.length());
+		}
+		else
+		{
+			Log(DebugType::EDT_Error, "Failed to trim the basic path string. Investigate !");
+			return;
+		}
 	}
 
 	PathAssets = Path + "Assets\\";

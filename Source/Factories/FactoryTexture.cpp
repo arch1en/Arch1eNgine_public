@@ -72,12 +72,12 @@ const unsigned char* FactoryTexture::LoadImageFromFile(const char* aFilePath)
 	// Unload resources after loading images.
 	IMG_Quit();
 
-	
+	return nullptr;
 }
 
-void FactoryTexture::CreateTexture(an::TextureData aData)
+void FactoryTexture::CreateTexture(an::STextureData aData)
 {
-	std::unique_ptr<Texture> NewTexture = std::make_unique<Texture>();
+	std::unique_ptr<an::CTexture> NewTexture = std::make_unique<an::CTexture>();
 
 	GLuint NewTextureID;
 

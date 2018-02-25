@@ -39,6 +39,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 set(SourceFiles 
 	${PROJECT_SOURCE_DIR}/Main.cpp
 	${PROJECT_SOURCE_DIR}/AppMain.cpp
+	${PROJECT_SOURCE_DIR}/Helpers.cpp
 	${PROJECT_SOURCE_DIR}/Actors/PrimitiveActors/ACube.cpp
 	${PROJECT_SOURCE_DIR}/Actors/PrimitiveActors/ATriangle.cpp
 	${PROJECT_SOURCE_DIR}/Actors/AActor.cpp
@@ -116,6 +117,7 @@ include_directories(${DEPENDENCIES_SOURCE_DIR}/GLEW/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL2_image/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL2_mixer/include)
+include_directories(${DEPENDENCIES_SOURCE_DIR}/DevIL/WIN/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/STB_image)
 
 # Include Dependencies Library Paths
@@ -124,14 +126,16 @@ if(${CMAKE_SIZEOF_VOID_P} EQUAL 8) # Is machine 64 bit ?
 	set(ASSIMP_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/assimp/lib/Release)		# Notice that this lib has the same path in both variants, Change that later.
 	set(GLEW_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/GLEW/lib/Release/x64)
 	set(SDL_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL/lib/x64)
-	set(SDL_IMAGE_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL_image/lib/x64)
-	set(SDL_MIXER_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL_mixer/lib/x64)
+	set(SDL_IMAGE_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL2_image/lib/x64)
+	set(SDL_MIXER_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL2_mixer/lib/x64)
+	set(DEVIL_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/DevIL/WIN/lib/x64/Release)
 else()
 	set(ASSIMP_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/assimp/lib/Release)
 	set(GLEW_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/GLEW/lib/Release/Win32)
 	set(SDL_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL/lib/x86)
-	set(SDL_IMAGE_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL_image/lib/x86)
-	set(SDL_MIXER_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL_mixer/lib/x86)
+	set(SDL_IMAGE_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL2_image/lib/x86)
+	set(SDL_MIXER_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/SDL2_mixer/lib/x86)
+    set(DEVIL_LINK_DIR ${DEPENDENCIES_SOURCE_DIR}/DevIL/WIN/lib/x86/Release)
 endif()
 
 link_directories(${ASSIMP_LINK_DIR})
@@ -139,6 +143,7 @@ link_directories(${GLEW_LINK_DIR})
 link_directories(${SDL_LINK_DIR})
 link_directories(${SDL_IMAGE_LINK_DIR})
 link_directories(${SDL_MIXER_LINK_DIR})
+link_directories(${DEVIL_LINK_DIR})
 
 if(WIN32)
 	if(MSVC)
@@ -153,12 +158,39 @@ target_link_libraries(${PROJECT_NAME} SDL2.lib)
 target_link_libraries(${PROJECT_NAME} SDL2main.lib)
 target_link_libraries(${PROJECT_NAME} SDL2_image.lib)
 target_link_libraries(${PROJECT_NAME} SDL2_mixer.lib)
-target_link_libraries(${PROJECT_NAME} assimp-vc140-mc.lib)
+target_link_libraries(${PROJECT_NAME} assimp-vc140-mt.lib)
+target_link_libraries(${PROJECT_NAME} DevIL.lib)
+
+# Finding OpenGL
 
 find_package(OpenGL REQUIRED)
+
 if(OPENGL_FOUND)
 	include_directories(${OPENGL_INCLUDE_DIRS})
 	target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
 endif()	
 
+# Finding Boost
+
+#find_package(Boost REQUIRED)
+
+if(BOOST_FOUND)
+    include_directories(${BOOST_INCLUDE_DIRS})
+endif()
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${DEPENDENCIES_SOURCE_DIR}/GLEW/bin/Release/Win32/glew32.dll"
+    "${CMAKE_CURRENT_BINARY_DIR}")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${SDL_LINK_DIR}/SDL2.dll"
+    "${CMAKE_CURRENT_BINARY_DIR}")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${DEVIL_LINK_DIR}/DevIL.dll"
+    "${CMAKE_CURRENT_BINARY_DIR}")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${SDL_IMAGE_LINK_DIR}/SDL2_image.dll"
+    "${CMAKE_CURRENT_BINARY_DIR}")
 

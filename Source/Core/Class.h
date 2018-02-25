@@ -18,7 +18,6 @@ public:
 	{ }
 	virtual ~Class() {}
 
-
 private:
 
 	const long ClassID;
