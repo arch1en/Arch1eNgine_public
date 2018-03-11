@@ -21,6 +21,6 @@ public:
 	template<typename Class, typename... Args>
 	void UpdateModule(Args... args)
 	{
-		Class::GetSingleton().Update(args...);
+		Class::GetInstance().Update(args...);
 	}
 };

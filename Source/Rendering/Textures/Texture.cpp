@@ -31,18 +31,23 @@ an::CTexture::CTexture(){}
 void an::CTexture::Initiate(std::string aPath, STextureData aTextureData)
 {
 	mData = aTextureData;
-	GenerateTexture(aPath);
+	mInitiated = GenerateTexture(aPath);
 }
 
-void an::CTexture::GenerateTexture(std::string aPath)
+bool an::CTexture::GenerateTexture(std::string aPath)
 {
-	glGenTextures(1, &mTexture);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
+	glGenTextures(1, &mTextureID);
+	glBindTexture(GL_TEXTURE_2D, mTextureID);
 
-	int Width, Height, NrChannels;
+	ILuint ImageID = 0;
+
+	ilGenImages(1, &ImageID);
+	ilBindImage(ImageID);
+
+	int NrChannels;
 	unsigned char* Data = nullptr;
 
-	if (LoadTextureImage(aPath, Width, Height, NrChannels, Data) == 0)
+	if (LoadTextureImage(ImageID, aPath, Width, Height, NrChannels, Data) == 0)
 	{
 		GLenum Target = GL_TEXTURE_2D;
 
@@ -61,19 +66,26 @@ void an::CTexture::GenerateTexture(std::string aPath)
 			0,					// Dunno, but always 0
 			GL_RGB,				// Format of the pixels in the array that will be loaded
 			GL_UNSIGNED_BYTE,	// Datatype of the coordinates in the array that will be loaded
-			(void*)Data				// image array
+			Data				// image array
 		);
+
 		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(Data);
 	}
 	else
 	{
 		Log(DebugType::EDT_Warning, "");
+		return false;
 	}
 
+	glBindTexture(GL_TEXTURE_2D, 0);
+	Data = nullptr;
+	ilBindImage(0);
+	ilDeleteImage(ImageID);
+
+	return true;
 }
 
-int an::CTexture::LoadTextureImage(std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData)
+int an::CTexture::LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData)
 {
 	std::ifstream file(path);
 
@@ -85,14 +97,20 @@ int an::CTexture::LoadTextureImage(std::string path, int& aOutWidth, int& aOutHe
 	}
 
 	file.close();
+	ilInit();
 
-	aOutImageData = stbi_load(path.c_str(), &aOutWidth, &aOutHeight, &aOutNrChannels, 0);
-
-	if (aOutImageData[0] == 0)
+	if (!ilLoadImage(path.c_str()))
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Sampler : image not loaded, check file path");
-		return 2;
+		Log(DebugType::EDT_Error, "Cannot load image under path : %s", path.c_str());
+		return 3;
 	}
+
+	aOutWidth = ilGetInteger(IL_IMAGE_WIDTH);
+	aOutHeight = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	aOutImageData = new unsigned char[aOutWidth * aOutHeight * 3];
+
+	ilCopyPixels(0, 0, 0, aOutWidth, aOutHeight, 1, IL_RGB, IL_UNSIGNED_BYTE, aOutImageData);
 
 	return 0;
 }
@@ -100,4 +118,14 @@ int an::CTexture::LoadTextureImage(std::string path, int& aOutWidth, int& aOutHe
 const  an::STextureData*  an::CTexture::GetData() const
 {
 	return &mData;
+}
+
+bool an::CTexture::IsInitiated() const
+{
+	return mInitiated;
+}
+
+GLuint an::CTexture::GetTextureID() const
+{
+	return mTextureID;
 }

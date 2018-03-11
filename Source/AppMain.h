@@ -10,11 +10,15 @@
 #pragma once
 
 #include "stdafx.h"
-#include "Factories\FactoryMesh.h"
-#include "Factories\FactoryActor.h"
-#include "Rendering\Renderer.h"
+#include "Factories/FactoryMesh.h"
+#include "Factories/FactoryActor.h"
+#include "Rendering/Renderer.h"
 #include "Core/ModuleHandler.h"
-#include "Actors\ACamera.h"
+#include "Actors/ACamera.h"
+
+#include "Pools/TextureObjectPool.h"
+#include "Pools/MaterialObjectPool.h"
+
 
 class AppMain
 {
@@ -43,7 +47,7 @@ public:
 
 	bool Init();
 	bool InitGL();
-	void InitializeComponents();
+	void InitializeActors();
 
 	/**
 	*   Responsible for loading core modules that all other systems are dependent on.
@@ -71,8 +75,12 @@ private:
 	SDL_Event		Event;
 	FactoryActor	mFactoryActor;
 	ModuleHandler	mModuleHandler;
-	ACamera			mMainCamera;
+	std::unique_ptr<ACamera> mMainCamera;
 
+	// ObjectPools
+
+	std::unique_ptr<TextureObjectPool>	mTextureObjectPool;
+	std::unique_ptr<MaterialObjectPool> mMaterialObjectPool;
 
 	std::vector<std::shared_ptr<AActor>> mActors;
 

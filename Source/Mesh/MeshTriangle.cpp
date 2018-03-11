@@ -11,22 +11,24 @@
 
 MeshTriangle::MeshTriangle()
 {
-	mPolygonData.Indices =  {	
-		-1.0f, -1.0f, +0.0f,
-		+0.0f, +1.0f, +0.0f,
-		+1.0f, -1.0f, +0.0f, };
+	mPolygonData.Vertices =  {	
+		Vector3<GLfloat>(-1.0f, -1.0f, +0.0f),
+		Vector3<GLfloat>(+0.0f, +1.0f, +0.0f),
+		Vector3<GLfloat>(+1.0f, -1.0f, +0.0f)
+	};
 
 	mPolygonData.Color = {
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, };
+		Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Vector3<GLfloat>(0.0f, 0.0f, 1.0f)
+	};
 
 	mPolygonData.Elements = { 0, 1, 2 };
 
 	mPolygonData.TextureCoordinates = {
-		0.0f, 0.0f,
-		0.5f, 1.0f,
-		1.0f, 0.0f,
+		Vector2<GLfloat>(0.0f, 0.0f),
+		Vector2<GLfloat>(0.5f, 1.0f),
+		Vector2<GLfloat>(1.0f, 0.0f)
 	};
 
 	MeshTag = "Primitive2DTriangle";

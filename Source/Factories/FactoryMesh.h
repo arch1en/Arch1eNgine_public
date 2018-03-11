@@ -38,6 +38,7 @@ public:
 	void SetAllocatorGPU(std::shared_ptr<AllocatorGPU> aAllocator);
 
 	std::shared_ptr<MeshBase> NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType);
+
 	void DestroyMesh(std::shared_ptr<MeshComponent> aMesh);
 
 private:

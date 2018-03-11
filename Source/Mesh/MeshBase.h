@@ -11,14 +11,15 @@
 
 #include "../stdafx.h"
 #include <memory>
-#include <Rendering\Textures\Texture.h>
+#include <Rendering/Textures/Texture.h>
+#include <Math/Math.h>
 
 struct PolygonData
 {
-	std::vector<GLfloat>	Indices;
-	std::vector<GLfloat>	Color;
-	std::vector<GLuint>	Elements;
-	std::vector<GLfloat>	TextureCoordinates;
+	std::vector<Vector3<GLfloat>>	Vertices;
+	std::vector<Vector3<GLfloat>>	Color;
+	std::vector<GLuint>		Elements;
+	std::vector<Vector2<GLfloat>>	TextureCoordinates;
 
 	PolygonData()
 	{}
@@ -32,11 +33,15 @@ public:
 	virtual ~MeshBase() {}
 
 	PolygonData		mPolygonData;
-	an::CTexture	mTexture;
+	
+	std::shared_ptr<an::CTexture> GetTexture() const;
+	bool HasTexture() const;
 
 protected:
 
 	const char*			MeshTag;
+
+	std::shared_ptr<an::CTexture>	mTexture;
 
 private:
 

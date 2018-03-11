@@ -43,7 +43,7 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 	GLuint NewEBO;
 	GLuint NewTBO;
 
-	GLsizeiptr IndicesBufferSize = sizeof(aMesh->mPolygonData.Indices[0]) * aMesh->mPolygonData.Indices.size();
+	GLsizeiptr IndicesBufferSize = sizeof(aMesh->mPolygonData.Vertices[0]) * aMesh->mPolygonData.Vertices.size();
 	GLsizeiptr ColorBufferSize = sizeof(aMesh->mPolygonData.Color[0]) * aMesh->mPolygonData.Color.size();
 	GLsizeiptr ElementBufferSize = sizeof(aMesh->mPolygonData.Elements[0]) * aMesh->mPolygonData.Elements.size();
 	GLsizeiptr TextureBufferSize = sizeof(aMesh->mPolygonData.TextureCoordinates[0]) * aMesh->mPolygonData.TextureCoordinates.size();
@@ -77,7 +77,11 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 
 	glGenBuffers(1, &NewVBO);
 	glGenBuffers(1, &NewEBO);
-	glGenBuffers(1, &NewTBO);
+
+	if (TextureBufferSize > 0)
+	{
+		glGenBuffers(1, &NewTBO);
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, NewVBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewEBO);
@@ -85,7 +89,7 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 	GLintptr Offset = 0;
 
 	glBufferData(GL_ARRAY_BUFFER, CombinedBufferSize, 0, GL_STATIC_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, Offset, IndicesBufferSize, &aMesh->mPolygonData.Indices[0]);
+		glBufferSubData(GL_ARRAY_BUFFER, Offset, IndicesBufferSize, &aMesh->mPolygonData.Vertices[0]);
 		Offset += IndicesBufferSize;
 		glBufferSubData(GL_ARRAY_BUFFER, Offset, ColorBufferSize, &aMesh->mPolygonData.Color[0]);
 	if (TextureBufferSize > 0)
@@ -114,6 +118,10 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 
 	mVBOs.push_back(NewVBO);
 	mEBOs.push_back(NewEBO);
+	if (TextureBufferSize > 0)
+	{
+		mTBOs.push_back(NewTBO);
+	}
 
 	return true;
 }

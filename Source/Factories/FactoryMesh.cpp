@@ -38,7 +38,7 @@ FactoryMesh* FactoryMesh::GetInstance()
 	return &Instance;
 }
 
-std::shared_ptr<MeshBase> FactoryMesh::NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType)
+std::shared_ptr<MeshComponent> FactoryMesh::NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType)
 {
 	if (mRenderer == nullptr || mAllocatorGPU == nullptr)
 	{
