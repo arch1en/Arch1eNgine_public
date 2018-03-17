@@ -5,15 +5,15 @@
 class Texture;
 struct TextureData;
 
-class FactoryTexture
+class TextureBuilder
 {
 public:
 
-	FactoryTexture() {}
-	~FactoryTexture() {}
+	TextureBuilder() {}
+	~TextureBuilder() {}
 
 	const unsigned char* LoadImageFromFile(const char* aFilePath);
-	void CreateTexture(TextureData aData);
+	std::unique_ptr<Texture>  CreateTexture(TextureData aData);
 
 private:
 

@@ -19,7 +19,7 @@ int ConfigLoader::LoadConfigData(const std::string& InFileName, const std::strin
 {
 	std::fstream FStream;
 
-	std::string FilePath(an::Paths::GetInstance().GetPathConfig() + InFileName + ".ini");
+	std::string FilePath(Paths::GetInstance().GetPathConfig() + InFileName + ".ini");
 
 	FStream.open(FilePath);
 
@@ -48,7 +48,7 @@ int ConfigLoader::LoadConfigData(const std::string& InFileName, const std::strin
 
 				std::vector<std::string> Tokens;
 
-				an::Split(LineData, '=', Tokens);
+				Split(LineData, '=', Tokens);
 
 				if (Tokens.size() != 2)
 				{
@@ -93,7 +93,7 @@ int ConfigLoader::LoadInputData(const std::string& InFileName, const std::string
 {
 	std::fstream FStream;
 
-	std::string FilePath(an::Paths::GetInstance().GetPathConfig() + InFileName + ".ini");
+	std::string FilePath(Paths::GetInstance().GetPathConfig() + InFileName + ".ini");
 
 	FStream.open(FilePath);
 
@@ -122,7 +122,7 @@ int ConfigLoader::LoadInputData(const std::string& InFileName, const std::string
 
 				std::vector<std::string> Tokens;
 
-				an::Split(LineData, '=', Tokens);
+				Split(LineData, '=', Tokens);
 
 				if (Tokens.size() != 2)
 				{
@@ -134,7 +134,7 @@ int ConfigLoader::LoadInputData(const std::string& InFileName, const std::string
 				if (Tokens[1].size() > 1)
 				{
 					char Key = 0;
-					an::TranslateInputKeyToSDLKeycode(Tokens[1], Key);
+					TranslateInputKeyToSDLKeycode(Tokens[1], Key);
 					Tokens[1].clear();
 					Tokens[1] = Key;
 				}

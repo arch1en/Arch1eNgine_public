@@ -16,8 +16,6 @@ std::shared_ptr<AActor> FactoryActor::NewActor(std::string aActorType)
 			Log(DebugType::EDT_Error, "Error creating new actor.");
 			return nullptr;
 		}
-		ATriangle* TriangleActor = static_cast<ATriangle*>(Actor.get());
-		TriangleActor->Initiate();
 
 		return Actor;
 	}
@@ -29,8 +27,6 @@ std::shared_ptr<AActor> FactoryActor::NewActor(std::string aActorType)
 			Log(DebugType::EDT_Error, "Error creating new actor.");
 			return nullptr;
 		}
-		ACube* CubeActor = static_cast<ACube*>(Actor.get());
-		CubeActor->Initiate();
 
 		return Actor;
 	}

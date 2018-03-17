@@ -11,7 +11,7 @@
 
 #include "../stdafx.h"
 #include <memory>
-#include <Rendering/Textures/Texture.h>
+#include <Engine/Rendering/Textures/Texture.h>
 #include <Math/Math.h>
 
 struct PolygonData
@@ -34,14 +34,14 @@ public:
 
 	PolygonData		mPolygonData;
 	
-	std::shared_ptr<an::CTexture> GetTexture() const;
+	std::shared_ptr<Texture> GetTexture() const;
 	bool HasTexture() const;
 
 protected:
 
 	const char*			MeshTag;
 
-	std::shared_ptr<an::CTexture>	mTexture;
+	std::shared_ptr<Texture>	mTexture;
 
 private:
 

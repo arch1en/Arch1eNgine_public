@@ -15,12 +15,13 @@ AActor::AActor()
 	: Class()
 	, mRootComponent{nullptr}
 {
-	mRootComponent = new ActorComponent(this);
+	mRootComponent = std::make_shared<ActorComponent>(this);
 }
 
 AActor::~AActor()
 {
-	delete mRootComponent;
+	mRootComponent.reset();
+	mRootComponent = nullptr;
 }
 
 void AActor::Update(float aDeltaTime)

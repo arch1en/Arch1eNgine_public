@@ -2,18 +2,18 @@
 //
 //  @project    : Arch1eN Engine
 //  @author     : Artur Ostrowski
-//  @usage      : A 2D triangle actor able to be placed on the screen.
-//  @version    : 1.0.0
+//  @usage      : A plane actor able to be placed on the screen.
 //
 ////////////////////////////////////////
 #pragma once
 
 #include "stdafx.h"
-
 #include "Actors/AMeshActor.h"
 
-class ATriangle : public AMeshActor
+class APlane : public AMeshActor
 {
 public:
-	ATriangle();
+
+	APlane();
+	~APlane() {}
 };

@@ -13,8 +13,8 @@
 
 #include <memory>
 
-#include "Allocators/AllocatorGPU.h"
-#include "Rendering/Renderer.h"
+#include "Engine/Allocators/AllocatorGPU.h"
+#include "Engine/Rendering/Renderer.h"
 
 class MeshBase;
 
@@ -31,13 +31,13 @@ public:
 	FactoryMesh();
 	~FactoryMesh() {}
 
-	void Initialize();
 	static FactoryMesh* GetInstance();
 
 	void SetRenderer(std::shared_ptr<Renderer> aRenderer);
 	void SetAllocatorGPU(std::shared_ptr<AllocatorGPU> aAllocator);
 
 	std::shared_ptr<MeshBase> NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType);
+
 	void DestroyMesh(std::shared_ptr<MeshComponent> aMesh);
 
 private:

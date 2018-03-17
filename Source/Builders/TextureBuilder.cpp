@@ -1,4 +1,4 @@
-#include "FactoryTexture.h"	
+#include "TextureBuilder.h"	
 
 #include "Helpers.h"
 #include "Engine/Rendering/Textures/Texture.h"
@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-const unsigned char* FactoryTexture::LoadImageFromFile(const char* aFilePath)
+const unsigned char* TextureBuilder::LoadImageFromFile(const char* aFilePath)
 {
 	int InitFlags = 0;
 	std::string Extension;
@@ -75,7 +75,7 @@ const unsigned char* FactoryTexture::LoadImageFromFile(const char* aFilePath)
 	return nullptr;
 }
 
-void FactoryTexture::CreateTexture(TextureData aData)
+std::unique_ptr<Texture> TextureBuilder::CreateTexture(TextureData aData)
 {
 	std::unique_ptr<Texture> NewTexture = std::make_unique<Texture>();
 
@@ -90,4 +90,5 @@ void FactoryTexture::CreateTexture(TextureData aData)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, aData.Filter_Min);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, aData.Filter_Mag);
 
+	return NewTexture;
 }

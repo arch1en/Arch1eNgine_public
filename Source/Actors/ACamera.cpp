@@ -33,6 +33,8 @@ ACamera::ACamera()
 	mInputComponent->BindContinuous("Input.Scene", this, &ACamera::InputListener);
 	mInputComponent->BindMouseMotion("Input.Scene", this, &ACamera::MouseMotionListener);
 	mInputComponent->SetGrabInput(false);
+	mInputComponent->SetMouseSensitivity(0.1f);
+
 	mMovementComponent->SetSpeed(0.1f);
 	SetWorldPosition(glm::vec3(3.f, 0.f, 5.f));
 }
@@ -83,7 +85,6 @@ void ACamera::MouseMotionListener(const MouseData& aMouseData)
 
 	if (NewRotation.x > 89.0f) NewRotation.x = 89.0f;
 	if (NewRotation.x < -89.0f) NewRotation.x = -89.0f;
-
 
 	// [Rotation] ToDo : Rotation should also determine a facing direction !
 	SetWorldRotation(NewRotation);

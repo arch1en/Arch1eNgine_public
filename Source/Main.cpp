@@ -1,15 +1,12 @@
 #include "stdafx.h"
 
-#include "AppMain.h"
+#include "Engine/Engine.h"
 
 #undef main
 
+Engine GEngine;
+
 int main(int argc, char** argv[])
 {
-	AppMain app;
-	app.Init();
-	app.Loop();
-	app.Destroy();
-
 	return 0;
 }

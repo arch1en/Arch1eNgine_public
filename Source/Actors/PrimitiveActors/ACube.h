@@ -10,16 +10,10 @@
 
 #include "stdafx.h"
 
-#include "Actors/AActor.h"
-#include "Components\MeshComponent.h"
+#include "Actors/AMeshActor.h"
 
-class ACube : public AActor
+class ACube : public AMeshActor
 {
 public:
 	ACube();
-	void Initiate();
-
-private:
-
-	std::shared_ptr<MeshComponent> mMeshComponent;
 };

@@ -13,13 +13,15 @@
 #include <stack>
 
 #include "Components/MeshComponent.h"
-#include "Rendering\ShaderProgram.h"
+#include "Engine/Rendering/ShaderProgram.h"
 
 class Renderer
 {
 public:
-	Renderer();
+	Renderer() {}
 	~Renderer();
+
+	void Initialize();
 
 	/**
 	*   Draws meshes that are on RenderingStack.
@@ -28,7 +30,6 @@ public:
 		const glm::mat4& aViewMatrix);
 
 	void AddMeshToDraw(std::shared_ptr<MeshComponent> InMesh);
-	void Initiate();
 private:
 
 	GLenum	DrawingMode;

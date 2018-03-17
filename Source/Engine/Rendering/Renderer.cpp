@@ -11,22 +11,14 @@
 #include "Mesh/MeshBase.h"
 #include "IO/Paths.h"
 
-Renderer::Renderer()
+void Renderer::Initialize()
 {
 	DrawingMode = GL_TRIANGLES;
-}
 
-Renderer::~Renderer()
-{
-
-}
-
-void Renderer::Initiate()
-{
 	mShaderProgram.Init();
 
-	mShaderProgram.LoadShader((an::Paths::GetInstance().GetPathAssets() + "\\Shaders\\hello_glsl.vert").c_str(), GL_VERTEX_SHADER);
-	mShaderProgram.LoadShader((an::Paths::GetInstance().GetPathAssets() + "\\Shaders\\hello_glsl.frag").c_str(), GL_FRAGMENT_SHADER);
+	mShaderProgram.LoadShader((Paths::GetInstance().GetPathAssets() + "\\Shaders\\hello_glsl.vert").c_str(), GL_VERTEX_SHADER);
+	mShaderProgram.LoadShader((Paths::GetInstance().GetPathAssets() + "\\Shaders\\hello_glsl.frag").c_str(), GL_FRAGMENT_SHADER);
 
 	mShaderProgram.LinkProgram();
 	mShaderProgram.CheckProgramStatus();
@@ -40,6 +32,11 @@ void Renderer::Initiate()
 	// ~TEMP TEXTURE SETUP
 
 	mShaderProgram.Bind();
+}
+
+Renderer::~Renderer()
+{
+
 }
 
 void Renderer::AddMeshToDraw(std::shared_ptr<MeshComponent> InMesh)

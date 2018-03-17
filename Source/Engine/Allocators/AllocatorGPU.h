@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "Mesh/MeshBase.h"
 #include <vector>
 
@@ -24,8 +24,9 @@ class AllocatorGPU
 {
 public:
 	AllocatorGPU() {}
-	void Initialize();
 	~AllocatorGPU();
+
+	void Initialize();
 
 	bool AllocateStaticMesh(MeshBase* aMesh);
 	void AllocateTextureData(MeshBase* aMesh);

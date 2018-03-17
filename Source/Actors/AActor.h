@@ -10,7 +10,7 @@
 
 #include "stdafx.h"
 
-#include "Core/Class.h"
+#include "Engine/Core/Class.h"
 #include <glm/gtc/quaternion.hpp>
 
 class BaseComponent;
@@ -36,7 +36,7 @@ public:
 
 protected:
 
-	ActorComponent*				mRootComponent;
+	std::shared_ptr<ActorComponent>				mRootComponent;
 
 	std::vector<BaseComponent*> mComponents;
 

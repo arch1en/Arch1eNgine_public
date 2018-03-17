@@ -2,7 +2,7 @@
 
 #include <stb_image.h>
 
-an::STextureData::STextureData
+TextureData::TextureData
 	(
 	ETextureWrappingMode aWrap_S,
 	ETextureWrappingMode aWrap_T,
@@ -16,7 +16,7 @@ an::STextureData::STextureData
 	Filter_Mag = aFilter_Mag;
 }
 
-an::STextureData::STextureData(const STextureData &aData)
+TextureData::TextureData(const TextureData &aData)
 {
 	Wrap_S = aData.Wrap_S;
 	Wrap_T = aData.Wrap_T;
@@ -26,15 +26,15 @@ an::STextureData::STextureData(const STextureData &aData)
 	BorderColor = aData.BorderColor;
 }
 
-an::CTexture::CTexture(){}
+Texture::Texture(){}
 
-void an::CTexture::Initiate(std::string aPath, STextureData aTextureData)
+void Texture::Initiate(std::string aPath, TextureData aTextureData)
 {
 	mData = aTextureData;
 	mInitiated = GenerateTexture(aPath);
 }
 
-bool an::CTexture::GenerateTexture(std::string aPath)
+bool Texture::GenerateTexture(std::string aPath)
 {
 	glGenTextures(1, &mTextureID);
 	glBindTexture(GL_TEXTURE_2D, mTextureID);
@@ -56,17 +56,30 @@ bool an::CTexture::GenerateTexture(std::string aPath)
 		glTexParameteri(Target, GL_TEXTURE_MIN_FILTER, mData.Filter_Min);
 		glTexParameteri(Target, GL_TEXTURE_MAG_FILTER, mData.Filter_Mag);
 
-		glTexImage2D			// Function starts to load image from coord (0,0). Remember this.
+		glTexImage2D			// Allocate memory on the GPU
 		(
 			GL_TEXTURE_2D,		// Texture target
 			0,					// Level of Detail
 			GL_RGB,				// Internal pixel format (format in which pixels will be stored in GPU)
 			Width,				// Width of an image
 			Height,				// Height of an image
-			0,					// Dunno, but always 0
+			0,					// Wether it has a border
 			GL_RGB,				// Format of the pixels in the array that will be loaded
 			GL_UNSIGNED_BYTE,	// Datatype of the coordinates in the array that will be loaded
-			Data				// image array
+			nullptr				// Data (image array)
+		);
+
+		glTexSubImage2D			// Load data onto the GPU. Function starts to load image from coord (0,0). Remember this.
+		(
+			GL_TEXTURE_2D,		// Texture target
+			0,					// Level of Detail
+			0,					// X Offset
+			0,					// Y Offset
+			Width,				// Width of an image
+			Height,				// Height of an image
+			GL_RGB,				// Format of the pixels in the array that will be loaded
+			GL_UNSIGNED_BYTE,	// Datatype of the coordinates in the array that will be loaded
+			Data				// Data (image array)
 		);
 
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -85,7 +98,7 @@ bool an::CTexture::GenerateTexture(std::string aPath)
 	return true;
 }
 
-int an::CTexture::LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData)
+int Texture::LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData)
 {
 	std::ifstream file(path);
 
@@ -115,17 +128,17 @@ int an::CTexture::LoadTextureImage(ILuint ImageID, std::string path, int& aOutWi
 	return 0;
 }
 
-const  an::STextureData*  an::CTexture::GetData() const
+const  TextureData*  Texture::GetData() const
 {
 	return &mData;
 }
 
-bool an::CTexture::IsInitiated() const
+bool Texture::IsInitiated() const
 {
 	return mInitiated;
 }
 
-GLuint an::CTexture::GetTextureID() const
+GLuint Texture::GetTextureID() const
 {
 	return mTextureID;
 }

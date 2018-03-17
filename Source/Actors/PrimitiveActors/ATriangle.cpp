@@ -1,15 +1,11 @@
 #include "ATriangle.h"
-#include "Factories/FactoryMesh.h"
+#include "Engine/Engine.h"
+#include "Builders/MeshBuilder.h"
+#include "Mesh/MeshTriangle.h"
+
+extern Engine GEngine;
 
 ATriangle::ATriangle()
 {
-
-}
-
-void ATriangle::Initiate()
-{
-	mMeshComponent = std::make_shared<MeshComponent>(this);
-
-	FactoryMesh* Factory = FactoryMesh::GetInstance();
-	Factory->NewMesh(mMeshComponent, "triangle");
+	GEngine.GetMeshBuilder()->NewMesh<MeshTriangle>(mMeshComponent);;
 }

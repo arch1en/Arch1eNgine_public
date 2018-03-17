@@ -21,29 +21,46 @@
 ///
 ////////////////////////////////////////////////////////////////
 
-#include "AppMain.h"
+#include "Engine.h"
+#include "Allocators/AllocatorGPU.h"
 #include "IO/Paths.h"
 #include "IL/il.h"
+
+#include "Builders/ActorBuilder.h"
+#include "Builders/MeshBuilder.h"
+
+#include "Rendering/Renderer.h"
 // TEST
 #include "IO/ConfigLoader.h"
+#include "Actors/PrimitiveActors/ACube.h"
 // ~TEST
-AppMain::AppMain()
+Engine::Engine()
 	: Window(nullptr)
 	, GLContext()
 	, Start(0)
 	, Running(false)
 	, Event()
-	, mRenderer(std::make_shared<Renderer>())
+	, mAllocatorGPU{ std::make_shared<AllocatorGPU>() }
+	, mRenderer{ std::make_shared<Renderer>() }
 	, mMainCamera(nullptr)
+	, mActorBuilder{std::make_shared<ActorBuilder>()}
 {
+	mMeshBuilder = std::make_shared<MeshBuilder>(mRenderer, mAllocatorGPU);
+	Init();
+	Loop();
 }
 
-AppMain::~AppMain()
+Engine::~Engine()
 {
 	Destroy();
 }
 
-bool AppMain::Init()
+std::shared_ptr<MeshBuilder>	Engine::GetMeshBuilder()
+{
+	return mMeshBuilder;
+}
+
+bool Engine::Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		return false;
@@ -114,7 +131,7 @@ bool AppMain::Init()
 	return true;
 }
 
-bool AppMain::InitGL()
+bool Engine::InitGL()
 {
 
 	if (glewInit())
@@ -123,16 +140,8 @@ bool AppMain::InitGL()
 		return false;
 	}
 
-
-	mAllocatorGPU = std::make_shared<AllocatorGPU>();
 	mAllocatorGPU->Initialize();
-
-	FactoryMesh* Factory = FactoryMesh::GetInstance();
-	Factory->SetRenderer(mRenderer);
-	Factory->SetAllocatorGPU(mAllocatorGPU);
-	Factory->Initialize();
-
-	mRenderer->Initiate();
+	mRenderer->Initialize();
 	////////////////////////////////////////////////////////////////
 	///
 	///		The correct order of initializing buffers is:
@@ -149,9 +158,9 @@ bool AppMain::InitGL()
 	return true;
 }
 
-void AppMain::InitializeActors()
+void Engine::InitializeActors()
 {
-	mMainCamera = std::make_unique<ACamera>();
+	mMainCamera = mActorBuilder->NewActor<ACamera>();
 
 	// TEST
 	std::map<std::string, std::string> test;
@@ -160,10 +169,11 @@ void AppMain::InitializeActors()
 	Loader.LoadConfigData("InputProperties", "Input.Scene", test);
 	// ~TEST
 
-	Actor = mFactoryActor.NewActor("cube");
+	Actor = mActorBuilder->NewActor<ACube>();
+
 }
 
-bool AppMain::Loop() 
+bool Engine::Loop() 
 {
 	while (Running)
 	{
@@ -205,7 +215,7 @@ bool AppMain::Loop()
 	return true;
 }
 
-void AppMain::Update(double aDeltaTime)
+void Engine::Update(double aDeltaTime)
 {
 	for (const auto& Iter : mActors)
 	{	
@@ -213,7 +223,7 @@ void AppMain::Update(double aDeltaTime)
 	}
 }
 
-void AppMain::Render()
+void Engine::Render()
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -234,12 +244,12 @@ void AppMain::Render()
 	glFlush();
 }
 
-void AppMain::Events()
+void Engine::Events()
 {
 
 }
 
-void AppMain::ErrorHandle(const char* msg)
+void Engine::ErrorHandle(const char* msg)
 {
 	printf(msg);
 	switch (glGetError())
@@ -274,7 +284,7 @@ void AppMain::ErrorHandle(const char* msg)
 	printf("\n");
 }
 
-void AppMain::Destroy()
+void Engine::Destroy()
 {
 	SDL_GL_DeleteContext(GLContext);
 	SDL_DestroyWindow(Window);

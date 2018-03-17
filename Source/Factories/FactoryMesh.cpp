@@ -17,11 +17,6 @@ FactoryMesh::FactoryMesh()
 
 }
 
-void FactoryMesh::Initialize()
-{
-	// Dummy. Fill up if needed.
-}
-
 void FactoryMesh::SetRenderer(std::shared_ptr<Renderer> aRenderer)
 {
 	mRenderer = aRenderer;

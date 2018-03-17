@@ -61,6 +61,7 @@ public:
 	inline std::vector<std::function<void(const MouseData&)>>& GetMouseMotionDelegates() { return mMouseMotionDelegates; }
 	inline const glm::vec2&	GetLastMousePosition() const { return mLastMousePosition; }
 	inline const float	GetMouseSensitivity() const { return mMouseSensitivity; }
+	inline void	SetMouseSensitivity(float aSensitivity) { mMouseSensitivity = aSensitivity; }
 
 	void SetGrabInput(bool aState);
 

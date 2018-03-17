@@ -13,7 +13,7 @@
 #include <string>
 #include <sstream>
 
-void an::Split(const char * InSentence, char InDelimiter, std::vector<std::string> & OutTokens)
+void Split(const char * InSentence, char InDelimiter, std::vector<std::string> & OutTokens)
 {
 	std::stringstream SStream;
 	SStream.str(InSentence);
@@ -25,7 +25,7 @@ void an::Split(const char * InSentence, char InDelimiter, std::vector<std::strin
 	}
 }
 
-std::string an::GetFileExtension(const char* aFilePath)
+std::string GetFileExtension(const char* aFilePath)
 {
 	std::vector<std::string> OutTokens;
 	Split(aFilePath, '.', OutTokens);
@@ -39,7 +39,7 @@ std::string an::GetFileExtension(const char* aFilePath)
 	}
 }
 
-void an::TranslateInputKeyToSDLKeycode(const std::string& aKey, char& aOutChar)
+void TranslateInputKeyToSDLKeycode(const std::string& aKey, char& aOutChar)
 {
 	if (aKey.compare("space") == 0) { aOutChar = char(SDLK_SPACE); return; }
 	if (aKey.compare("lshift") == 0) { aOutChar = char(SDLK_LSHIFT); return; }

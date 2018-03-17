@@ -18,6 +18,7 @@ enum class DebugType : uint8_t
 	EDT_Warning,
 	EDT_Error,
 	EDT_Fatal,
+	EDT_Assertion,
 	EDT_Total		// U can't touch this ! (HAMMER TIME)
 };
 

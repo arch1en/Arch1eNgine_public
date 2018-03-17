@@ -11,6 +11,15 @@
 
 #include "Debuggers/Debugger.h"
 
+void AllocatorGPU::Initialize()
+{
+	GLuint NewVAO;
+	glGenVertexArrays(1, &NewVAO);
+	glBindVertexArray(NewVAO);
+	mVAOs.push_back(NewVAO);
+	SetActiveVAO(NewVAO);
+}
+
 AllocatorGPU::~AllocatorGPU()
 {
 	if (mVBOs.size() > 0)
@@ -26,15 +35,8 @@ AllocatorGPU::~AllocatorGPU()
 		glDeleteVertexArrays(mVAOs.size(), &mVAOs[0]);
 	}
 	Log(DebugType::EDT_Notice, "AllocatorGPU::Dtor - All buffers are destroyed.");
-}
 
-void AllocatorGPU::Initialize()
-{
-	GLuint NewVAO;
-	glGenVertexArrays(1, &NewVAO);
-	glBindVertexArray(NewVAO);
-	mVAOs.push_back(NewVAO);
-	SetActiveVAO(NewVAO);
+
 }
 
 bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
@@ -104,7 +106,7 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)IndicesBufferSize);
 	if (TextureBufferSize > 0)
 	{
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)ColorBufferSize);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(IndicesBufferSize + ColorBufferSize));
 	}
 
 	glEnableVertexAttribArray(0);

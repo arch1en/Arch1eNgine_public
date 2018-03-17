@@ -13,46 +13,43 @@
 
 #include <vector>
 
-namespace an
+void Split(const char * InSentence, char InDelimiter, std::vector<std::string> & OutTokens);
+
+template <class return_type, class... params>
+class Delegate
 {
-	void Split(const char * InSentence, char InDelimiter, std::vector<std::string> & OutTokens);
+	typedef return_type(*Type)(void* Callee, params...);
+public:
 
-	template <class return_type, class... params>
-	class Delegate
+	Delegate(void* InCallee, Type InFunctionCallback)
+		: FunctionPointerCallee{ InCallee }
+		, FunctionPointerCallbackFunction{ InFunctionCallback }
+	{}
+
+	template<class T, return_type(T::*TMethod)(params...)>
+	static Delegate FromFunction(T* Callee)
 	{
-		typedef return_type(*Type)(void* Callee, params...);
-	public:
+		Delegate d(Callee, &MethodCaller<T, TMethod>);
+		return d;
+	}
 
-		Delegate(void* InCallee, Type InFunctionCallback)
-			: FunctionPointerCallee{InCallee}
-			, FunctionPointerCallbackFunction{InFunctionCallback}
-		{}
+	return_type operator()(params... Parameters) const
+	{
+		return (*FunctionPointerCallbackFunction)(FunctionPointerCallee, Parameters);
+	}
 
-		template<class T, return_type(T::*TMethod)(params...)>
-		static Delegate FromFunction(T* Callee)
-		{
-			Delegate d(Callee, &MethodCaller<T, TMethod>);
-			return d;
-		}
+private:
+	void* FunctionPointerCallee;
+	Type FunctionPointerCallbackFunction;
 
-		return_type operator()(params... Parameters) const
-		{
-			return (*FunctionPointerCallbackFunction)(FunctionPointerCallee, Parameters);
-		}
+	template <class T, return_type(T::*TMethod)(params...)>
+	static return_type MethodCaller(void* Callee, params... Parameters)
+	{
+		T* p = static_cast<T*>(Callee);
+		return(p->*TMethod)(Parameters...);
+	}
+};
 
-	private:
-		void* FunctionPointerCallee;
-		Type FunctionPointerCallbackFunction;
-
-		template <class T, return_type(T::*TMethod)(params...)>
-		static return_type MethodCaller(void* Callee, params... Parameters)
-		{
-			T* p = static_cast<T*>(Callee);
-			return(p->*TMethod)(Parameters...);
-		}
-	};
-
-	std::string GetFileExtension(const char* aFilePath);
-	void TranslateInputKeyToSDLKeycode(const std::string& aKey, char& aOutChar);
-}
+std::string GetFileExtension(const char* aFilePath);
+void TranslateInputKeyToSDLKeycode(const std::string& aKey, char& aOutChar);
 
