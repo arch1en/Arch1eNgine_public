@@ -16,7 +16,7 @@
 #include "Engine/Allocators/AllocatorGPU.h"
 #include "Engine/Rendering/Renderer.h"
 
-class MeshBase;
+class Mesh;
 
 enum class MeshType : uint8_t
 {
@@ -36,7 +36,7 @@ public:
 	void SetRenderer(std::shared_ptr<Renderer> aRenderer);
 	void SetAllocatorGPU(std::shared_ptr<AllocatorGPU> aAllocator);
 
-	std::shared_ptr<MeshBase> NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType);
+	std::shared_ptr<Mesh> NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType);
 
 	void DestroyMesh(std::shared_ptr<MeshComponent> aMesh);
 

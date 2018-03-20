@@ -12,9 +12,7 @@
 #include "stdafx.h"
 #include "Core/ModuleHandler.h"
 #include "Actors/ACamera.h"
-
-#include "Pools/TextureObjectPool.h"
-#include "Pools/MaterialObjectPool.h"
+#include "Actors/AMeshActor.h"
 
 class ActorBuilder;
 class MeshBuilder;
@@ -89,14 +87,10 @@ private:
 	std::shared_ptr<ActorBuilder>	mActorBuilder;
 	std::shared_ptr<MeshBuilder>	mMeshBuilder;
 
-	// ObjectPools
-	std::unique_ptr<TextureObjectPool>	mTextureObjectPool;
-	std::unique_ptr<MaterialObjectPool> mMaterialObjectPool;
-
 	std::vector<std::shared_ptr<AActor>> mActors;
 
 	// TEMP
-	std::shared_ptr<AActor> Actor;
+	std::shared_ptr<AMeshActor> Actor;
 	// ~TEMP
 
 }; 

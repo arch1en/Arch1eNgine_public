@@ -7,7 +7,7 @@
 //
 ////////////////////////////////////////
 #include "FactoryMesh.h"
-#include "Mesh/MeshBase.h"
+#include "Mesh/Mesh.h"
 #include "Mesh/MeshTriangle.h"
 #include "Mesh/MeshCube.h"
 
@@ -33,7 +33,7 @@ FactoryMesh* FactoryMesh::GetInstance()
 	return &Instance;
 }
 
-std::shared_ptr<MeshBase> FactoryMesh::NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType)
+std::shared_ptr<Mesh> FactoryMesh::NewMesh(std::shared_ptr<MeshComponent> aComponent, std::string InMeshType)
 {
 	if (mRenderer == nullptr || mAllocatorGPU == nullptr)
 	{
@@ -41,7 +41,7 @@ std::shared_ptr<MeshBase> FactoryMesh::NewMesh(std::shared_ptr<MeshComponent> aC
 		return nullptr;
 	}
 
-	std::shared_ptr<MeshBase> Mesh(nullptr);
+	std::shared_ptr<Mesh> Mesh(nullptr);
 
 	if (InMeshType.compare("triangle") == 0)
 	{

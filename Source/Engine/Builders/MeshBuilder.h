@@ -17,7 +17,7 @@
 #include "Engine/Rendering/Renderer.h"
 #include "Debuggers/Assertions.h"
 
-class MeshBase;
+class Mesh;
 
 enum class MeshType : uint8_t
 {
@@ -33,38 +33,59 @@ public:
 	virtual ~MeshBuilder();
 
 	template<class T>
-	std::shared_ptr<T> NewMesh(std::shared_ptr<MeshComponent> aComponent)
+	void NewStaticMesh(std::shared_ptr<MeshComponent> aComponent)
 	{
-		static_assert(std::is_base_of<MeshBase, T>::value, "Cannot create new mesh that is not deriving from MeshBase.");
+		static_assert(std::is_base_of<Mesh, T>::value, "Cannot create new mesh that is not deriving from Mesh.");
 
 		if (mRenderer == nullptr || mAllocatorGPU == nullptr)
 		{
 			Log(DebugType::EDT_Error, "Mesh creation failed ! Renderer or GPU Allocator is invalid !");
-			return nullptr;
+			return;
 		}
 
-		std::shared_ptr<T> Mesh = std::make_shared<T>();
+		std::shared_ptr<T> NewMesh = std::make_shared<T>();
 
-		bool MeshAllocationResult = mAllocatorGPU->AllocateStaticMesh(Mesh.get());
+		PrepareMeshToDraw<T>(NewMesh, aComponent);
+	}
+
+	template<class T>
+	void NewStaticMesh(PolygonData aData, std::shared_ptr<MeshComponent> aComponent)
+	{
+		static_assert(std::is_base_of<Mesh, T>::value, "Cannot create new mesh that is not deriving from Mesh.");
+
+		if (mRenderer == nullptr || mAllocatorGPU == nullptr)
+		{
+			Log(DebugType::EDT_Error, "Mesh creation failed ! Renderer or GPU Allocator is invalid !");
+			return;
+		}
+
+		std::shared_ptr<T> NewMesh = std::make_shared<T>();
+		NewMesh->mPolygonData = aData;
+
+		PrepareMeshToDraw<T>(NewMesh, aComponent);
+	}
+
+	void DestroyMesh(std::shared_ptr<MeshComponent> aMesh);
+
+private:
+
+	template<class T>
+	void PrepareMeshToDraw(std::shared_ptr<T> aMesh, std::shared_ptr<MeshComponent> aComponent)
+	{
+		bool MeshAllocationResult = mAllocatorGPU->AllocateStaticMesh(aMesh.get());
 		if (MeshAllocationResult == false)
 		{
 			Log(DebugType::EDT_Error, "Mesh creation failed !");
-			return nullptr;
+			return;
 		}
-		aComponent->SetMesh(Mesh);
+		aComponent->SetMesh(aMesh);
 		mRenderer->AddMeshToDraw(aComponent);
 
 		// Allocate memory for mesh
 		// Create Mesh
 		// Return Mesh
 		mCreatedMeshes.push_back(aComponent);
-
-		return Mesh;
 	}
-
-	void DestroyMesh(std::shared_ptr<MeshComponent> aMesh);
-
-private:
 
 	std::shared_ptr<Renderer>		mRenderer;
 	std::shared_ptr<AllocatorGPU>	mAllocatorGPU;

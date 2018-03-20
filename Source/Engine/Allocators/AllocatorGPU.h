@@ -10,7 +10,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "Mesh/MeshBase.h"
+#include "Mesh/Mesh.h"
 #include <vector>
 
 struct MeshData
@@ -28,8 +28,8 @@ public:
 
 	void Initialize();
 
-	bool AllocateStaticMesh(MeshBase* aMesh);
-	void AllocateTextureData(MeshBase* aMesh);
+	bool AllocateStaticMesh(Mesh* aMesh);
+	void AllocateTextureData(Mesh* aMesh);
 
 	GLuint GetActiveVAO() const;
 

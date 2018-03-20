@@ -1,6 +1,6 @@
 #include "ACube.h"
 #include "Engine/Engine.h"
-#include "Builders/MeshBuilder.h"
+#include "Engine/Builders/MeshBuilder.h"
 #include "Mesh/MeshCube.h"
 
 extern Engine GEngine;
@@ -8,7 +8,7 @@ extern Engine GEngine;
 ACube::ACube()
 {
 
-	GEngine.GetMeshBuilder()->NewMesh<MeshCube>(mMeshComponent);
+	GEngine.GetMeshBuilder()->NewStaticMesh<MeshCube>(mMeshComponent);
 	//FactoryMesh* Factory = FactoryMesh::GetInstance();
 	//Factory->NewMesh(mMeshComponent, "cube");
 }

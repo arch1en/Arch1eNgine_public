@@ -39,7 +39,7 @@ AllocatorGPU::~AllocatorGPU()
 
 }
 
-bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
+bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 {
 	GLuint NewVBO;
 	GLuint NewEBO;
@@ -72,10 +72,6 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 	{
 		Log(DebugType::EDT_Notice, "Texture Buffer is empty.");
 	}
-	else
-	{
-		CombinedBufferSize += TextureBufferSize;
-	}
 
 	glGenBuffers(1, &NewVBO);
 	glGenBuffers(1, &NewEBO);
@@ -99,8 +95,6 @@ bool AllocatorGPU::AllocateStaticMesh(MeshBase* aMesh)
 		Offset += ColorBufferSize;
 		glBufferSubData(GL_ARRAY_BUFFER, Offset, TextureBufferSize, &aMesh->mPolygonData.TextureCoordinates[0]);
 	}
-
-	GLsizei Stride = TextureBufferSize > 0 ? 8 : 6 * sizeof(GLfloat);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)IndicesBufferSize);

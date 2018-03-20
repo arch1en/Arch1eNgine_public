@@ -5,33 +5,28 @@
 #include <assimp/mesh.h>
 
 #include "Math/Math.h"
-#include "Mesh/MeshBase.h"
+#include "Mesh/Mesh.h"
 
 // TODO : Needs implementation !
-class MeshImporter
+namespace MeshImporter
 {
-public:
-
-	//template<class T>
-	std::unique_ptr<MeshBase> ImportMesh(std::string Path, int MeshIndex)
+	template<class T>
+	std::shared_ptr<T> ImportMesh(std::string aPath, int aMeshIndex)
 	{
-		//static_assert(std::is_base_of<MeshBase, T>::value, "T must derive from MeshBase !");
+		static_assert(std::is_base_of<Mesh, T>::value, "T must derive from Mesh !");
 
 		const aiScene* Scene = aiImportFile(Path.c_str(), 0);
 
-		aiMesh* ImportedMesh = Scene->mMeshes[MeshIndex];
+		aiMesh* ImportedMesh = Scene->mMeshes[aMeshIndex];
 
-		//std::unique_ptr<T> NewMesh = std::make_unique<T>();
-		std::unique_ptr<MeshBase> NewMesh = std::make_unique<MeshBase>();
+		std::shared_ptr<T> NewMesh = std::make_unique<Mesh>();
 
 		// Load Vertices
 		for (unsigned int i = 0; i < ImportedMesh->mNumVertices; i++)
 		{
 			NewMesh->mPolygonData.Vertices.push_back(Vector3<GLfloat>(ImportedMesh->mVertices[i].x, ImportedMesh->mVertices[i].y, ImportedMesh->mVertices[i].z));
 		}
-		//(*ImportedMesh)->Ver
 
-		//NewMesh->mPolygonData
-
+		return NewMesh;
 	}
 };

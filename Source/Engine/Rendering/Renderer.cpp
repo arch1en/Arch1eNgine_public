@@ -8,7 +8,7 @@
 //
 ////////////////////////////////////////
 #include "Renderer.h"
-#include "Mesh/MeshBase.h"
+#include "Mesh/Mesh.h"
 #include "IO/Paths.h"
 
 void Renderer::Initialize()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdafx.h"
+#include <stdafx.h>
 
 class Texture;
 struct TextureData;
@@ -12,8 +12,7 @@ public:
 	TextureBuilder() {}
 	~TextureBuilder() {}
 
-	const unsigned char* LoadImageFromFile(const char* aFilePath);
-	std::unique_ptr<Texture>  CreateTexture(TextureData aData);
+	std::unique_ptr<Texture>  CreateTexture(TextureData aData, std::string aPath);
 
 private:
 

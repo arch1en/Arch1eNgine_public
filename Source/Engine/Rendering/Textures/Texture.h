@@ -65,27 +65,24 @@ struct TextureData
 
 class Texture
 {
+	friend class TextureBuilder;
+
 public:
 
 	Texture();
-	void Initiate(std::string aPath, TextureData aTextureData);
+	//void Initiate(std::string aPath, TextureData aTextureData);
 	const TextureData* GetData() const;
 
 	GLuint GetTextureID() const;
-	bool IsInitiated() const;
+	//bool IsInitiated() const;
 
 private:
-
-	bool			mInitiated = false;
 
 	GLuint			mTextureID;
 	TextureData		mData;
 
 	int Width = 0;
 	int Height = 0;
-
-	bool GenerateTexture(std::string aPath);
-	int LoadTextureImage(ILuint ImageID, std::string path, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData);
 
 };
 

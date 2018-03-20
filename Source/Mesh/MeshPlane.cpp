@@ -62,7 +62,7 @@ MeshPlane::MeshPlane()
 		ETextureFilteringMode::Linear);
 
 	mTexture = std::make_shared<Texture>();
-	mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\cheshire.jpg", Data);
+	//mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\cheshire.jpg", Data);
 
 	MeshTag = "PrimitivePlane";
 }

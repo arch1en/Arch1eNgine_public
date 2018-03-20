@@ -16,6 +16,8 @@ public:
 
 	AMeshActor();
 
+	std::shared_ptr<MeshComponent> GetMeshComponent();
+
 protected:
 
 	std::shared_ptr<MeshComponent> mMeshComponent;

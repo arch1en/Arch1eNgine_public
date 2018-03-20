@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "ActorComponent.h"
 
-class MeshBase;
+class Mesh;
 
 class MeshComponent : public ActorComponent
 {
@@ -11,12 +11,12 @@ public:
 	MeshComponent(AActor* aOwner)
 		:ActorComponent{ aOwner }
 	{}
-	void SetMesh(std::shared_ptr<MeshBase> aMesh);
-	std::shared_ptr<MeshBase> GetMesh() const;
+	void SetMesh(std::shared_ptr<Mesh> aMesh);
+	std::shared_ptr<Mesh> GetMesh() const;
 	virtual void Update(float aDeltaTime) override;
 
 private:
 
-	std::shared_ptr<MeshBase>	mMesh;
+	std::shared_ptr<Mesh>	mMesh;
 
 };

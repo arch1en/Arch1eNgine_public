@@ -76,16 +76,20 @@ MeshCube::MeshCube()
 	mPolygonData.TextureCoordinates = 
 	{
 		// front
-		Vector2<GLfloat>(1.f, 1.f),
 		Vector2<GLfloat>(1.f, 0.f),
-		Vector2<GLfloat>(0.f, 0.f),
+		Vector2<GLfloat>(1.f, 1.f),
 		Vector2<GLfloat>(0.f, 1.f),
+		Vector2<GLfloat>(0.f, 0.f),
 
-		// back
-		Vector2<GLfloat>(1.f, 1.f),
 		Vector2<GLfloat>(1.f, 0.f),
-		Vector2<GLfloat>(0.f, 0.f),
+		Vector2<GLfloat>(1.f, 1.f),
 		Vector2<GLfloat>(0.f, 1.f),
+		Vector2<GLfloat>(0.f, 0.f),
+		// back
+		//Vector2<GLfloat>(1.f, 1.f),
+		//Vector2<GLfloat>(1.f, 0.f),
+		//Vector2<GLfloat>(0.f, 0.f),
+		//Vector2<GLfloat>(0.f, 1.f),
 	};
 
 	TextureData Data(
@@ -95,7 +99,7 @@ MeshCube::MeshCube()
 		ETextureFilteringMode::Linear);
 
 	mTexture = std::make_shared<Texture>();
-	mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\cheshire.jpg", Data);
+	//mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png", Data);
 
 	MeshTag = "PrimitiveCube";
 

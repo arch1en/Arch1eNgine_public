@@ -7,14 +7,14 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-#include "MeshBase.h"
+#include "Mesh.h"
 
-bool MeshBase::HasTexture() const
+bool Mesh::HasTexture() const
 {
-	return mTexture->IsInitiated();
+	return true;// mTexture->IsInitiated();
 }
 
-std::shared_ptr<Texture> MeshBase::GetTexture() const
+std::shared_ptr<Texture> Mesh::GetTexture() const
 {
 	return mTexture;
 }

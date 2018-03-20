@@ -8,9 +8,9 @@
 #pragma once
 
 #include <stdafx.h>
-#include "MeshBase.h"
+#include "Mesh.h"
 
-class MeshPlane : public MeshBase
+class MeshPlane : public Mesh
 {
 public:
 	MeshPlane();

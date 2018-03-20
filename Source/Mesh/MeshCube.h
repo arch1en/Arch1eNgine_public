@@ -10,9 +10,9 @@
 #pragma once
 
 #include "stdafx.cpp"
-#include "MeshBase.h"
+#include "Mesh.h"
 
-class MeshCube : public MeshBase
+class MeshCube : public Mesh
 {
 public:
 	MeshCube();

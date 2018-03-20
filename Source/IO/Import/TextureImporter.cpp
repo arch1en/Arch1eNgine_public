@@ -1,13 +1,54 @@
-#include "TextureBuilder.h"	
+#include "TextureImporter.h"
 
 #include "Helpers.h"
-#include "Engine/Rendering/Textures/Texture.h"
 
 #include <SDL_image.h>
-
 #include <algorithm>
 
-const unsigned char* TextureBuilder::LoadImageFromFile(const char* aFilePath)
+TextureImporter::TextureImporter()
+{
+	ilGenImages(1, &mImageID);
+	ilBindImage(mImageID);
+}
+
+TextureImporter::~TextureImporter()
+{
+	ilBindImage(0);
+	ilDeleteImage(mImageID);
+}
+
+int TextureImporter::LoadTextureImage(std::string aPath, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData)
+{
+	std::ifstream file(aPath);
+
+	if (!file.good())
+	{
+		Log(DebugType::EDT_Error, "Sampler : cannot open file");
+		file.close();
+		return 1;
+	}
+
+	file.close();
+	ilInit();
+
+	if (!ilLoadImage(aPath.c_str()))
+	{
+		Log(DebugType::EDT_Error, "Cannot load image under path : %s", aPath.c_str());
+		file.close();
+		return 3;
+	}
+
+	aOutWidth = ilGetInteger(IL_IMAGE_WIDTH);
+	aOutHeight = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	aOutImageData = new unsigned char[aOutWidth * aOutHeight * 3];
+
+	ilCopyPixels(0, 0, 0, aOutWidth, aOutHeight, 1, IL_RGB, IL_UNSIGNED_BYTE, aOutImageData);
+
+	return 0;
+}
+
+const unsigned char* TextureImporter::LoadImageFromFile(const char* aFilePath)
 {
 	int InitFlags = 0;
 	std::string Extension;
@@ -73,22 +114,4 @@ const unsigned char* TextureBuilder::LoadImageFromFile(const char* aFilePath)
 	IMG_Quit();
 
 	return nullptr;
-}
-
-std::unique_ptr<Texture> TextureBuilder::CreateTexture(TextureData aData)
-{
-	std::unique_ptr<Texture> NewTexture = std::make_unique<Texture>();
-
-	GLuint NewTextureID;
-
-	glGenTextures(1, &NewTextureID);
-	glBindTexture(GL_TEXTURE_2D, NewTextureID);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, aData.Wrap_S);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, aData.Wrap_T);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, aData.Filter_Min);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, aData.Filter_Mag);
-
-	return NewTexture;
 }

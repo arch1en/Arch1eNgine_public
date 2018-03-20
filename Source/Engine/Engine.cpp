@@ -33,6 +33,7 @@
 // TEST
 #include "IO/ConfigLoader.h"
 #include "Actors/PrimitiveActors/ACube.h"
+#include "IO/Import/MeshImporter.h"
 // ~TEST
 Engine::Engine()
 	: Window(nullptr)
@@ -169,8 +170,9 @@ void Engine::InitializeActors()
 	Loader.LoadConfigData("InputProperties", "Input.Scene", test);
 	// ~TEST
 
-	Actor = mActorBuilder->NewActor<ACube>();
-
+	Actor = mActorBuilder->NewActor<AMeshActor>();
+	
+	GetMeshBuilder()->NewStaticMesh<Mesh>(Actor->GetMeshComponent());
 }
 
 bool Engine::Loop() 

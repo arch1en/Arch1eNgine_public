@@ -9,7 +9,7 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "../stdafx.h"
+#include <stdafx.h>
 #include <memory>
 #include <Engine/Rendering/Textures/Texture.h>
 #include <Math/Math.h>
@@ -26,11 +26,11 @@ struct PolygonData
 
 };
 
-class MeshBase
+class Mesh
 {
 
 public:
-	virtual ~MeshBase() {}
+	virtual ~Mesh() {}
 
 	PolygonData		mPolygonData;
 	
