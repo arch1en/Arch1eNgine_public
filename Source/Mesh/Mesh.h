@@ -14,15 +14,36 @@
 #include <Engine/Rendering/Textures/Texture.h>
 #include <Math/Math.h>
 
+#include "Engine/Rendering/Material.h"
+
+struct Face
+{
+	Face() = delete;
+	Face(unsigned int NumIndices, ...);
+	Face(unsigned int NumIndices, unsigned int IndicesArray[]);
+
+	~Face();
+
+	std::vector<unsigned int> Indices;
+
+	const unsigned int GetNumIndices() const;
+
+};
+
 struct PolygonData
 {
-	std::vector<Vector3<GLfloat>>	Vertices;
-	std::vector<Vector3<GLfloat>>	Color;
-	std::vector<GLuint>		Elements;
-	std::vector<Vector2<GLfloat>>	TextureCoordinates;
-
 	PolygonData()
 	{}
+
+	unsigned int NumElements;
+
+	std::vector<Vector3<GLfloat>>	Vertices;
+	std::vector<Vector3<GLfloat>>	VertexNormals;
+	std::vector<Face>				Faces;
+	std::vector<Vector2<GLfloat>>	TextureCoordinates;
+	std::vector<std::shared_ptr<Material>>	Materials;
+
+	void ReCalculateNumberOfIndexElements();
 
 };
 
@@ -34,14 +55,11 @@ public:
 
 	PolygonData		mPolygonData;
 	
-	std::shared_ptr<Texture> GetTexture() const;
-	bool HasTexture() const;
+	void AddMaterial(std::shared_ptr<Material> NewMaterial);
 
 protected:
 
-	const char*			MeshTag;
-
-	std::shared_ptr<Texture>	mTexture;
+	const char*					MeshTag;
 
 private:
 

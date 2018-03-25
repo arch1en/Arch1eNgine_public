@@ -11,6 +11,10 @@
 #include "Mesh/Mesh.h"
 #include "IO/Paths.h"
 
+// TEMP
+#include "Engine/Rendering/Material.h"
+// ~TEMP
+
 void Renderer::Initialize()
 {
 	DrawingMode = GL_TRIANGLES;
@@ -26,6 +30,7 @@ void Renderer::Initialize()
 	mModelUniformLocation = mShaderProgram.GetUniformLocation("model");
 	mViewUniformLocation = mShaderProgram.GetUniformLocation("view");
 	mProjectionUniformLocation = mShaderProgram.GetUniformLocation("projection");
+	mColorUniformLocation = mShaderProgram.GetUniformLocation("color");
 
 	// TEMP TEXTURE SETUP
 	glUniform1i(mShaderProgram.GetUniformLocation("aTexture"), 0);
@@ -62,15 +67,19 @@ void Renderer::DrawMeshes(const GLsizei aVAOIndex, const glm::mat4& aViewMatrix)
 		ProjectionMatrix = glm::perspective(glm::radians(45.f), (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT, 0.1f, 100.0f);
 		glUniformMatrix4fv(mProjectionUniformLocation, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 
-		if (iter->GetMesh()->HasTexture())
+		const Color* DiffuseColor = iter->GetMesh()->mPolygonData.Materials[0]->GetDiffuseColor();
+
+		glUniform4f(mColorUniformLocation, DiffuseColor->r, DiffuseColor->g, DiffuseColor->b, DiffuseColor->a);
+
+		if (iter->GetMesh()->mPolygonData.Materials[0]->HasTextures())
 		{
-			glBindTexture(GL_TEXTURE_2D, iter->GetMesh()->GetTexture()->GetTextureID());
+			glBindTexture(GL_TEXTURE_2D, iter->GetMesh()->mPolygonData.Materials[0]->GetTextures()->at(0)->GetTextureID());
 		}
 
-		glDrawElements(DrawingMode, iter->GetMesh()->mPolygonData.Elements.size(), GL_UNSIGNED_INT, 0);// &iter->mPolygonData.Elements[0]);
+		glDrawElements(DrawingMode, iter->GetMesh()->mPolygonData.NumElements, GL_UNSIGNED_INT, 0);// &iter->mPolygonData.Elements[0]);
 		// TODO [High] : Handle VAO Binding !
 
-		if (iter->GetMesh()->HasTexture())
+		if (iter->GetMesh()->mPolygonData.Materials[0]->HasTextures())
 		{
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}

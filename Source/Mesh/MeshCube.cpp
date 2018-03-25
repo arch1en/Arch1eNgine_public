@@ -11,6 +11,13 @@
 #include "IO/Paths.h"
 #include "Math/Math.h"
 
+#include "Engine/Engine.h"
+
+#include "Engine/Builders/TextureBuilder.h"
+#include "Engine/Builders/MaterialBuilder.h"
+
+extern Engine GEngine;
+
 MeshCube::MeshCube()
 {
 	mPolygonData.Vertices = {	   
@@ -26,18 +33,18 @@ MeshCube::MeshCube()
 		Vector3<GLfloat>(-1.0f, -1.0f, -1.0f)
 	};
 
-	mPolygonData.Color = {	    
-		// front colors
-		Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
-		// back colors
-		Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Vector3<GLfloat>(1.0f, 1.0f, 1.0f)
-	};
+	//mPolygonData.Color = {	    
+	//	// front colors
+	//	Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+	//	Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+	//	Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+	//	Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+	//	// back colors
+	//	Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+	//	Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+	//	Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+	//	Vector3<GLfloat>(1.0f, 1.0f, 1.0f)
+	//};
 	    //6---------------------/5
 	  //  .  				  // |
 	//2---------------------1	 |
@@ -51,27 +58,29 @@ MeshCube::MeshCube()
 	//						| //
 	//3--------------------/0
 
-	mPolygonData.Elements = {			
+	mPolygonData.Faces = {			
 		// front
-		0, 1, 2,
-		2, 3, 0,
+		Face(3, 0, 1, 2),
+		Face(3, 2, 3, 0),
 		// top
-		1, 5, 6,
-		6, 2, 1,
+		Face(3, 1, 5, 6),
+		Face(3, 6, 2, 1),
 		// back
-		7, 6, 5,
-		5, 4, 7,
+		Face(3, 7, 6, 5),
+		Face(3, 5, 4, 7),
 		// bottom
-		4, 0, 3,
-		3, 7, 4,
+		Face(3, 4, 0, 3),
+		Face(3, 3, 7, 4),
 		// left
-		4, 5, 1,
-		1, 0, 4,
+		Face(3, 4, 5, 1),
+		Face(3, 1, 0, 4),
 		// right
-		3, 2, 6,
-		6, 7, 3,
+		Face(3, 3, 2, 6),
+		Face(3, 6, 7, 3),
 
 		};
+
+	mPolygonData.ReCalculateNumberOfIndexElements();
 
 	mPolygonData.TextureCoordinates = 
 	{
@@ -98,7 +107,8 @@ MeshCube::MeshCube()
 		ETextureFilteringMode::Nearest,
 		ETextureFilteringMode::Linear);
 
-	mTexture = std::make_shared<Texture>();
+	mPolygonData.Materials.push_back(GEngine.GetMaterialBuilder()->NewMaterial()); //std::make_shared<Texture>();
+	mPolygonData.Materials[0]->AddTexture(GEngine.GetTextureBuilder()->CreateTexture(Data, Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png"));
 	//mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png", Data);
 
 	MeshTag = "PrimitiveCube";

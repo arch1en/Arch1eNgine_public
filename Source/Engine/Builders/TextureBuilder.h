@@ -12,7 +12,7 @@ public:
 	TextureBuilder() {}
 	~TextureBuilder() {}
 
-	std::unique_ptr<Texture>  CreateTexture(TextureData aData, std::string aPath);
+	std::shared_ptr<Texture>  CreateTexture(TextureData aData, std::string aPath);
 
 private:
 

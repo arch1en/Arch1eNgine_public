@@ -19,14 +19,13 @@ MeshPlane::MeshPlane()
 		Vector3<GLfloat>(-1.0f,  -1.0f,  1.0f),
 	};
 
-	mPolygonData.Color = {
-		// front colors
-		Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
-
-	};
+	//mPolygonData.Color = {
+	//	// front colors
+	//	Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+	//	Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+	//	Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+	//	Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+	//};
 
 	//2---------------------1
 	//	    				| 
@@ -39,10 +38,10 @@ MeshPlane::MeshPlane()
 	//						| 
 	//3--------------------/0
 
-	mPolygonData.Elements = {
+	mPolygonData.Faces = {
 		// front
-		0, 1, 2,
-		2, 3, 0,
+		Face(0, 1, 2),
+		Face(2, 3, 0)
 	};
 
 	mPolygonData.TextureCoordinates =
@@ -61,7 +60,7 @@ MeshPlane::MeshPlane()
 		ETextureFilteringMode::Nearest,
 		ETextureFilteringMode::Linear);
 
-	mTexture = std::make_shared<Texture>();
+	//mTexture = std::make_shared<Texture>();
 	//mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\cheshire.jpg", Data);
 
 	MeshTag = "PrimitivePlane";

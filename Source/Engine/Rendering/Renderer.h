@@ -40,6 +40,7 @@ private:
 	GLint mModelUniformLocation = -1;
 	GLint mViewUniformLocation = -1;
 	GLint mProjectionUniformLocation = -1;
+	GLint mColorUniformLocation = -1;
 
 	// Keeps all objects that needs to be rendered on the scene.
 	std::vector<std::shared_ptr<MeshComponent>> Meshes;

@@ -11,22 +11,31 @@
 namespace MeshImporter
 {
 	template<class T>
-	std::shared_ptr<T> ImportMesh(std::string aPath, int aMeshIndex)
+	void ImportMeshData(std::shared_ptr<T>& aMesh, std::string aPath, int aMeshIndex)
 	{
 		static_assert(std::is_base_of<Mesh, T>::value, "T must derive from Mesh !");
 
-		const aiScene* Scene = aiImportFile(Path.c_str(), 0);
-
+		const aiScene* Scene = aiImportFile(aPath.c_str(), 0);
+		if (!Scene)
+		{
+			Log(DebugType::EDT_Warning, "File importing failed on path %s", aPath.c_str());
+			return;
+		}
 		aiMesh* ImportedMesh = Scene->mMeshes[aMeshIndex];
-
-		std::shared_ptr<T> NewMesh = std::make_unique<Mesh>();
 
 		// Load Vertices
 		for (unsigned int i = 0; i < ImportedMesh->mNumVertices; i++)
 		{
-			NewMesh->mPolygonData.Vertices.push_back(Vector3<GLfloat>(ImportedMesh->mVertices[i].x, ImportedMesh->mVertices[i].y, ImportedMesh->mVertices[i].z));
+			aMesh->mPolygonData.Vertices.push_back(Vector3<GLfloat>(ImportedMesh->mVertices[i].x, ImportedMesh->mVertices[i].y, ImportedMesh->mVertices[i].z));
 		}
-
-		return NewMesh;
+		// Load Faces
+		if (ImportedMesh->HasFaces())
+		{
+			for (unsigned int i = 0; i < ImportedMesh->mNumFaces; i++)
+			{
+				aMesh->mPolygonData.Faces.push_back(Face(ImportedMesh->mFaces[i].mNumIndices, ImportedMesh->mFaces[i].mIndices));
+			}
+			aMesh->mPolygonData.ReCalculateNumberOfIndexElements();
+		}
 	}
 };

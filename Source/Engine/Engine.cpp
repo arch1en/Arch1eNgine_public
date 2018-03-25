@@ -28,6 +28,8 @@
 
 #include "Builders/ActorBuilder.h"
 #include "Builders/MeshBuilder.h"
+#include "Builders/MaterialBuilder.h"
+#include "Builders/TextureBuilder.h"
 
 #include "Rendering/Renderer.h"
 // TEST
@@ -54,11 +56,6 @@ Engine::Engine()
 Engine::~Engine()
 {
 	Destroy();
-}
-
-std::shared_ptr<MeshBuilder>	Engine::GetMeshBuilder()
-{
-	return mMeshBuilder;
 }
 
 bool Engine::Init()
@@ -170,9 +167,10 @@ void Engine::InitializeActors()
 	Loader.LoadConfigData("InputProperties", "Input.Scene", test);
 	// ~TEST
 
-	Actor = mActorBuilder->NewActor<AMeshActor>();
+	Actor = GetActorBuilder()->NewActor<AMeshActor>();
 	
-	GetMeshBuilder()->NewStaticMesh<Mesh>(Actor->GetMeshComponent());
+	std::shared_ptr<Mesh> NewMesh = GetMeshBuilder()->NewStaticMesh<Mesh>(Actor->GetMeshComponent(), Paths::GetInstance().GetPathAssets() + "Models\\Monkey.obj", 0);
+	NewMesh->AddMaterial(GetMaterialBuilder()->NewMaterial());
 }
 
 bool Engine::Loop() 
@@ -294,3 +292,22 @@ void Engine::Destroy()
 
 }
 
+const std::shared_ptr<ActorBuilder>	Engine::GetActorBuilder() const
+{
+	return mActorBuilder;
+}
+
+const std::shared_ptr<MeshBuilder>	Engine::GetMeshBuilder() const
+{
+	return mMeshBuilder;
+}
+
+const std::shared_ptr<MaterialBuilder>	Engine::GetMaterialBuilder() const
+{
+	return mMaterialBuilder;
+}
+
+const std::shared_ptr<TextureBuilder>	Engine::GetTextureBuilder() const
+{
+	return mTextureBuilder;
+}

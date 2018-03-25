@@ -15,7 +15,7 @@ void main()
 {
 	TexCoord = aTexCoord;
 
-	VertColor = aColor;
+	VertColor = vec3(1.0, 0.0, 0.0);
 
 	gl_Position = projection * view * model * vec4(aPosition, 1.0);
 }

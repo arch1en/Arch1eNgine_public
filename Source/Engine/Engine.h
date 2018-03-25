@@ -16,6 +16,8 @@
 
 class ActorBuilder;
 class MeshBuilder;
+class MaterialBuilder;
+class TextureBuilder;
 
 class AllocatorGPU;
 class Renderer;
@@ -45,7 +47,10 @@ public:
 	Engine();
 	virtual ~Engine();
 
-	std::shared_ptr<MeshBuilder>	GetMeshBuilder();
+	const std::shared_ptr<ActorBuilder>		GetActorBuilder() const;
+	const std::shared_ptr<MeshBuilder>		GetMeshBuilder() const;
+	const std::shared_ptr<MaterialBuilder>	GetMaterialBuilder() const;
+	const std::shared_ptr<TextureBuilder>	GetTextureBuilder() const;
 
 private:
 
@@ -84,8 +89,10 @@ private:
 	std::shared_ptr<Renderer>		mRenderer;
 
 	// Builders
-	std::shared_ptr<ActorBuilder>	mActorBuilder;
-	std::shared_ptr<MeshBuilder>	mMeshBuilder;
+	std::shared_ptr<ActorBuilder>		mActorBuilder;
+	std::shared_ptr<MeshBuilder>		mMeshBuilder;
+	std::shared_ptr<MaterialBuilder>	mMaterialBuilder;
+	std::shared_ptr<TextureBuilder>		mTextureBuilder;
 
 	std::vector<std::shared_ptr<AActor>> mActors;
 

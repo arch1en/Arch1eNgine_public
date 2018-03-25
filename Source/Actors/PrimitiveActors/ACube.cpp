@@ -7,8 +7,5 @@ extern Engine GEngine;
 
 ACube::ACube()
 {
-
 	GEngine.GetMeshBuilder()->NewStaticMesh<MeshCube>(mMeshComponent);
-	//FactoryMesh* Factory = FactoryMesh::GetInstance();
-	//Factory->NewMesh(mMeshComponent, "cube");
 }

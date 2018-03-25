@@ -9,7 +9,7 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "../stdafx.h"
+#include <stdafx.h>
 
 #pragma region Vector2
 template<class T = float>

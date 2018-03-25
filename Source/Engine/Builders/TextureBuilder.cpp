@@ -5,9 +5,9 @@
 
 #include <memory>
 
-std::unique_ptr<Texture>  TextureBuilder::CreateTexture(TextureData aData, std::string aPath)
+std::shared_ptr<Texture>  TextureBuilder::CreateTexture(TextureData aData, std::string aPath)
 {
-	std::unique_ptr<Texture> NewTexture = std::make_unique<Texture>();
+	std::shared_ptr<Texture> NewTexture = std::make_shared<Texture>();
 
 	GLenum Target = GL_TEXTURE_2D;
 

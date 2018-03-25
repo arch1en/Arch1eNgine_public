@@ -136,4 +136,8 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${SDL_IMAGE_LINK_DIR}/SDL2_image.dll"
     "${CMAKE_CURRENT_BINARY_DIR}")
+	
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${ASSIMP_LINK_DIR}/assimp-vc140-mt.dll"
+    "${CMAKE_CURRENT_BINARY_DIR}")
 
