@@ -15,5 +15,5 @@ class APlane : public AMeshActor
 public:
 
 	APlane();
-	~APlane() {}
+	~APlane();
 };

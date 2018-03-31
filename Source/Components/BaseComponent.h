@@ -16,8 +16,8 @@
 class BaseComponent : public Class
 {
 public:
-	BaseComponent() {}
-	~BaseComponent() {}
+	BaseComponent();
+	~BaseComponent();
 
 	const std::string GetComponentType() const;
 	virtual void Update(float aDeltaTime) = 0;

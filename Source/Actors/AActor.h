@@ -20,13 +20,13 @@ class AActor : public Class
 {
 public:
 	AActor();
-	~AActor();
+	~AActor() override;
 
 	virtual void Update(float aDeltaTime);
 
-	void SetWorldPosition(const glm::vec3 aPosition);
-	void SetWorldRotation(const glm::vec3 aRotation);
-	void SetFacingDirection(const glm::vec3 aDirection);
+	void SetWorldPosition(glm::vec3 aPosition);
+	void SetWorldRotation(glm::vec3 aRotation);
+	void SetFacingDirection(glm::vec3 aDirection);
 
 	const glm::vec3 GetWorldPosition() const;
 	const glm::vec3 GetWorldRotation() const;

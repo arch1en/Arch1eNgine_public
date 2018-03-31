@@ -9,7 +9,6 @@
 #include "ACamera.h"
 
 ACamera::ACamera()
-	: AActor()
 {
 	mCameraComponent = std::make_shared<CameraComponent>(this);
 	if (mCameraComponent != nullptr)
@@ -72,8 +71,8 @@ void ACamera::MouseMotionListener(const MouseData& aMouseData)
 {
 	const glm::vec2& LastMousePosition = mInputComponent->GetLastMousePosition();
 	
-	GLfloat OffsetX = GLfloat(aMouseData.DirectionX);
-	GLfloat OffsetY = GLfloat(-aMouseData.DirectionY);
+	auto OffsetX = GLfloat(aMouseData.DirectionX);
+	auto OffsetY = GLfloat(-aMouseData.DirectionY);
 
 	OffsetX *= mInputComponent->GetMouseSensitivity();
 	OffsetY *= mInputComponent->GetMouseSensitivity();

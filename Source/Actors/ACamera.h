@@ -19,7 +19,7 @@ class ACamera : public AActor
 {
 public:
 	ACamera();
-	~ACamera();
+	~ACamera() override;
 
 	const std::shared_ptr<CameraComponent> GetCameraComponent() const;
 

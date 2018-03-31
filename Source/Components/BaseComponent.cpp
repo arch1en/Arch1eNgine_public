@@ -8,6 +8,12 @@
 ////////////////////////////////////////
 #include "BaseComponent.h"
 
+BaseComponent::BaseComponent()
+{}
+
+BaseComponent::~BaseComponent()
+{}
+
 const std::string BaseComponent::GetComponentType() const
 {
 	return mComponentType;

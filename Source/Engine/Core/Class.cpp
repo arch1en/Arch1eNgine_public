@@ -7,3 +7,12 @@
 //
 ////////////////////////////////////////
 #include "Class.h"
+
+Class::Class()
+	: ClassID{ staticClassID++ }
+{
+
+}
+
+Class::~Class()
+{}

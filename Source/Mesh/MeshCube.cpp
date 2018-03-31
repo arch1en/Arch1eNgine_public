@@ -22,15 +22,15 @@ MeshCube::MeshCube()
 {
 	mPolygonData.Vertices = {	   
 		// front
-		Vector3<GLfloat>(1.0f, -1.0f,  1.0f),
-		Vector3<GLfloat>(1.0f, 1.0f,  1.0f),
-		Vector3<GLfloat>(-1.0f,  1.0f,  1.0f),
-		Vector3<GLfloat>(-1.0f,  -1.0f,  1.0f),
+		Vector3<GLfloat>(1.0f, -1.0f,  -1.0f),
+		Vector3<GLfloat>(1.0f, 1.0f,  -1.0f),
+		Vector3<GLfloat>(-1.0f,  1.0f,  -1.0f),
+		Vector3<GLfloat>(-1.0f,  -1.0f,  -1.0f),
 		// back
-		Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
-		Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
-		Vector3<GLfloat>(-1.0f,  1.0f, -1.0f),
-		Vector3<GLfloat>(-1.0f, -1.0f, -1.0f)
+		Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
+		Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+		Vector3<GLfloat>(-1.0f,  1.0f, 1.0f),
+		Vector3<GLfloat>(-1.0f, -1.0f, 1.0f)
 	};
 
 	//mPolygonData.Color = {	    
@@ -45,6 +45,7 @@ MeshCube::MeshCube()
 	//	Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 	//	Vector3<GLfloat>(1.0f, 1.0f, 1.0f)
 	//};
+
 	    //6---------------------/5
 	  //  .  				  // |
 	//2---------------------1	 |
@@ -61,22 +62,22 @@ MeshCube::MeshCube()
 	mPolygonData.Faces = {			
 		// front
 		Face(3, 0, 1, 2),
-		Face(3, 2, 3, 0),
+		Face(3, 0, 2, 3),
 		// top
 		Face(3, 1, 5, 6),
-		Face(3, 6, 2, 1),
+		Face(3, 1, 6, 2),
 		// back
-		Face(3, 7, 6, 5),
-		Face(3, 5, 4, 7),
+		Face(3, 7, 4, 5),
+		Face(3, 7, 5, 6),
 		// bottom
 		Face(3, 4, 0, 3),
-		Face(3, 3, 7, 4),
+		Face(3, 4, 3, 7),
 		// left
-		Face(3, 4, 5, 1),
-		Face(3, 1, 0, 4),
-		// right
 		Face(3, 3, 2, 6),
-		Face(3, 6, 7, 3),
+		Face(3, 3, 6, 7),
+		// right
+		Face(3, 4, 5, 1),
+		Face(3, 4, 1, 0),
 
 		};
 
@@ -109,6 +110,7 @@ MeshCube::MeshCube()
 
 	mPolygonData.Materials.push_back(GEngine.GetMaterialBuilder()->NewMaterial()); //std::make_shared<Texture>();
 	mPolygonData.Materials[0]->AddTexture(GEngine.GetTextureBuilder()->CreateTexture(Data, Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png"));
+	mPolygonData.Materials[0]->SetDiffuseColor(Colors::White);
 	//mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png", Data);
 
 	MeshTag = "PrimitiveCube";

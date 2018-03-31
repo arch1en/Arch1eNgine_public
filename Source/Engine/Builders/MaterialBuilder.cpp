@@ -11,8 +11,8 @@ std::shared_ptr<Material> MaterialBuilder::NewDefaultMaterial()
 {
 	std::shared_ptr<Material> CreatedMaterial = NewMaterial();
 
-	CreatedMaterial->SetDiffuseColor(Color::Grey);
-	CreatedMaterial->SetSpecularColor(Color::Grey);
+	CreatedMaterial->SetDiffuseColor(Colors::Grey);
+	CreatedMaterial->SetSpecularColor(Colors::Grey);
 
 	return CreatedMaterial;
 }

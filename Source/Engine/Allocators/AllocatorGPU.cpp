@@ -35,8 +35,6 @@ AllocatorGPU::~AllocatorGPU()
 		glDeleteVertexArrays(mVAOs.size(), &mVAOs[0]);
 	}
 	Log(DebugType::EDT_Notice, "AllocatorGPU::Dtor - All buffers are destroyed.");
-
-
 }
 
 bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
@@ -50,7 +48,7 @@ bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 	GLsizeiptr ElementBufferSize = sizeof(aMesh->mPolygonData.Faces[0].Indices[0]) * aMesh->mPolygonData.NumElements;
 	GLsizeiptr TextureBufferSize = sizeof(aMesh->mPolygonData.TextureCoordinates[0]) * aMesh->mPolygonData.TextureCoordinates.size();
 
-	GLsizeiptr CombinedBufferSize = IndicesBufferSize + /*ColorBufferSize +*/ TextureBufferSize;
+	GLsizeiptr CombinedArrayBufferSize = IndicesBufferSize + /*ColorBufferSize +*/ TextureBufferSize;
 
 	if (IndicesBufferSize == 0)
 	{
@@ -86,7 +84,7 @@ bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 
 	GLintptr Offset = 0;
 
-	glBufferData(GL_ARRAY_BUFFER, CombinedBufferSize, 0, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, CombinedArrayBufferSize, 0, GL_STATIC_DRAW);
 		glBufferSubData(GL_ARRAY_BUFFER, Offset, IndicesBufferSize, &aMesh->mPolygonData.Vertices[0]);
 		Offset += IndicesBufferSize;
 		//glBufferSubData(GL_ARRAY_BUFFER, Offset, ColorBufferSize, &aMesh->mPolygonData.Color[0]);
@@ -100,17 +98,24 @@ bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)IndicesBufferSize);
 	if (TextureBufferSize > 0)
 	{
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(IndicesBufferSize/* + ColorBufferSize*/));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(IndicesBufferSize/* + ColorBufferSize*/));
 	}
 
 	glEnableVertexAttribArray(0);
 	//glEnableVertexAttribArray(1);
 	if (TextureBufferSize > 0)
 	{
-		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(1);
 	}
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ElementBufferSize, &aMesh->mPolygonData.Faces[0].Indices[0], GL_STATIC_DRAW);
+	GLintptr ElementBufferOffset = 0;
+	for (int i = 0; i < aMesh->mPolygonData.Faces.size(); i++)
+	{
+		GLintptr FaceBufferSize = sizeof(aMesh->mPolygonData.Faces[i].Indices[0]) * aMesh->mPolygonData.Faces[i].GetNumIndices();
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, ElementBufferOffset, FaceBufferSize, &aMesh->mPolygonData.Faces[i].Indices[0]);
+		ElementBufferOffset += FaceBufferSize;
+	}
 
 	mVBOs.push_back(NewVBO);
 	mEBOs.push_back(NewEBO);

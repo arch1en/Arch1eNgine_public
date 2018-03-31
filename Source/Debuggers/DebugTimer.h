@@ -26,8 +26,8 @@ public:
 
 private:
 
-	DebugTimer() {}
-	~DebugTimer() {}
+	DebugTimer() = default;
+	~DebugTimer() = default;
 
 	clock_t StartTime;
 	clock_t StopTime;

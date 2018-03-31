@@ -23,10 +23,10 @@ int ConfigLoader::LoadConfigData(const std::string& InFileName, const std::strin
 
 	FStream.open(FilePath);
 
-	bool FoundCategory = false;
-
 	if (FStream.is_open() == true)
 	{
+		bool FoundCategory = false;
+
 		while (FStream.eof() != true)
 		{
 			const size_t LineDataSize = 256;

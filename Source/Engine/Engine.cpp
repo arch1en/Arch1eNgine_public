@@ -167,10 +167,10 @@ void Engine::InitializeActors()
 	Loader.LoadConfigData("InputProperties", "Input.Scene", test);
 	// ~TEST
 
-	Actor = GetActorBuilder()->NewActor<AMeshActor>();
-	
-	std::shared_ptr<Mesh> NewMesh = GetMeshBuilder()->NewStaticMesh<Mesh>(Actor->GetMeshComponent(), Paths::GetInstance().GetPathAssets() + "Models\\Monkey.obj", 0);
-	NewMesh->AddMaterial(GetMaterialBuilder()->NewMaterial());
+	Actor = GetActorBuilder()->NewActor<ACube>();
+
+	//std::shared_ptr<Mesh> NewMesh = GetMeshBuilder()->NewStaticMesh<Mesh>(Actor->GetMeshComponent(), Paths::GetInstance().GetPathAssets() + "Models\\TriangulatedCube.obj", 0);
+	//NewMesh->AddMaterial(GetMaterialBuilder()->NewDefaultMaterial());
 }
 
 bool Engine::Loop() 

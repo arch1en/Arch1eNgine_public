@@ -9,3 +9,6 @@ APlane::APlane()
 {
 	GEngine.GetMeshBuilder()->NewStaticMesh<MeshPlane>(mMeshComponent);
 }
+
+APlane::~APlane()
+{}

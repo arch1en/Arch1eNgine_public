@@ -13,10 +13,8 @@ static long staticClassID = 0;
 class Class
 {
 public:
-	Class()
-		: ClassID{staticClassID++}
-	{ }
-	virtual ~Class() {}
+	Class();
+	virtual ~Class();
 
 private:
 

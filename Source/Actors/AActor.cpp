@@ -12,8 +12,6 @@
 #include "Components/ActorComponent.h"
 
 AActor::AActor()
-	: Class()
-	, mRootComponent{nullptr}
 {
 	mRootComponent = std::make_shared<ActorComponent>(this);
 }

@@ -50,8 +50,6 @@ public:
 
 		MeshImporter::ImportMeshData<T>(NewMesh, aPath, aMeshIndex);
 
-
-
 		PrepareMeshToDraw<T>(NewMesh, aComponent);
 
 		return NewMesh;

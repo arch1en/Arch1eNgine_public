@@ -52,17 +52,14 @@ struct Color
 		return Color(this->r / Other.r, this->g / Other.g, this->b / Other.b, this->a / Other.a);
 	}
 
-	static const Color White;
-	static const Color Grey;
-	static const Color Black;
-	static const Color Red;
-	static const Color Green;
-	static const Color Blue;
 };
 
-const Color Color::White(1.f);
-const Color Color::Grey(0.5f, 0.5f, 0.5f, 1.0f);
-const Color Color::Black(0.f, 0.f, 0.f, 1.f);
-const Color Color::Red(1.f, 0.f, 0.f, 1.f);
-const Color Color::Green(0.f, 1.f, 0.f, 1.f);
-const Color Color::Blue(0.f, 0.f, 1.f, 1.f);
+namespace Colors
+{
+	static const Color White(1.f);
+	static const Color Grey(0.5f, 0.5f, 0.5f, 1.0f);
+	static const Color Black(0.f, 0.f, 0.f, 1.f);
+	static const Color Red(1.f, 0.f, 0.f, 1.f);
+	static const Color Green(0.f, 1.f, 0.f, 1.f);
+	static const Color Blue(0.f, 0.f, 1.f, 1.f);
+}

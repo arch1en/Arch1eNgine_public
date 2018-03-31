@@ -7,6 +7,8 @@
 #include "Math/Math.h"
 #include "Mesh/Mesh.h"
 
+#include <iostream>
+
 // TODO : Needs implementation !
 namespace MeshImporter
 {
@@ -38,4 +40,31 @@ namespace MeshImporter
 			aMesh->mPolygonData.ReCalculateNumberOfIndexElements();
 		}
 	}
+
+	/*void ImportWavefrontMesh(std::shared_ptr<T>& aMesh, std::string aPath, int aMeshIndex)
+	{
+		std::fstream Data;
+		Data.open(aPath, std::fstream::out);
+		if (!Data.good())
+		{
+			Log(DebugType::Warning, "File opening failure (%s)", aPath);
+			return;
+		}
+
+		constexpr unsigned int BufferSize = 256;
+
+		char buffer[BufferSize];
+
+		while (Data.rdstate() & std::ifstream::eofbit != 0)
+		{
+			Data.getline(buffer, BufferSize);
+			if (buffer[0] == 'v')
+			{
+
+			}
+		}
+
+
+		Data.close();
+	}*/
 };
