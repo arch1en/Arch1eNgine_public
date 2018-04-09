@@ -64,8 +64,23 @@ function generate_glew()
   cmake_generate(BuildDirs["GLEW"], DependencyDirs["GLEW"])
 end
 
-function build_glew()
-  cmake_build(DependencyDirs["GLEW"])
+function build_glew(BuildDir)
+  if os.target() == "windows" then
+  os.mkdir(BuildDir .. "/lib")
+  os.mkdir(BuildDir .. "/bin")
+
+  io.popen("gcc -DGLEW_NO_GLU -O2 -Wall -W Iinclude -DGLEW_BUILD -o src/glew.o -c src/glew.c; " .. BuildDir)
+  io.popen("gcc -shared -Wl,-soname,libglew32.dll -Wl, --out-implib,lib/libglew32.dll.a -o lib/glew32.dll src/glew.o -L/mingw/lib -lglu32 -lopengl32 -lgdi32 -luser32 -lkernel32; " .. BuildDir)
+  io.popen("ar cr lib/libglew32.a src/glew.o; " .. BuildDir)
+
+  io.popen("gcc -DGLEW_NO_GLU -DGLEW_MX -O2 -Wall -W -Iinclude -DGLEW_BUILD -o src/glew.mx.o -c src/glew.c; " .. BuildDir)
+  io.popen("gcc -shared -Wl,-soname,libglew32mx.dll -Wl, --out-implib,lib/libglew32mx.dll.a -o lib/glew32mx.dll src/glew.mx.o -L/mingw/lib -lglu32 -lopengl32 -lgdi32 -luser32 -lkernel32; " .. BuildDir)
+  io.popen("ar cr lib/libglew32mx.a src/glew.mx.o")
+  end
+
+
+
+  --cmake_build(DependencyDirs["GLEW"])
 end
 
 function clean_glew()

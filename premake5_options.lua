@@ -2,7 +2,7 @@
 newoption {
   trigger = "dependency",
   description = "Choose which dependency project should be taken into action (clean, build or rebuild).",
-  default = "all"
+  default = "all",
   allowed = {
     { "all", "Everything will be taken into action." },
     { "assimp", "Only ASSIMP library will be taken into action." },

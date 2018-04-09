@@ -103,6 +103,8 @@ workspace("Arch1eNgine")
 			os.rmdir(BuildDirs[CurrentProjectConfigName])
 			os.mkdir(BuildDirs[CurrentProjectConfigName])
 
+			--print(io.popen("cd Assets"))
+			print(io.popen("dir"))
 
 			--io.popen("cmake --build " .. BuildDirs[CurrentProjectConfigName])
 		end
