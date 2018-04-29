@@ -11,6 +11,8 @@
 #include "Mesh/Mesh.h"
 #include "IO/Paths.h"
 
+struct Color;
+
 // TEMP
 #include "Engine/Rendering/Material.h"
 // ~TEMP
@@ -67,9 +69,9 @@ void Renderer::DrawMeshes(const GLsizei aVAOIndex, const glm::mat4& aViewMatrix)
 		ProjectionMatrix = glm::perspective(glm::radians(45.f), (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT, 0.1f, 100.0f);
 		glUniformMatrix4fv(mProjectionUniformLocation, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 
-		const Color* DiffuseColor = iter->GetMesh()->mPolygonData.Materials[0]->GetDiffuseColor();
+		const Color DiffuseColor = iter->GetMesh()->mPolygonData.Materials[0]->GetDiffuseColor();
 
-		glUniform4f(mColorUniformLocation, DiffuseColor->r, DiffuseColor->g, DiffuseColor->b, DiffuseColor->a);
+		glUniform4f(mColorUniformLocation, DiffuseColor.R, DiffuseColor.G, DiffuseColor.B, DiffuseColor.A);
 
 		if (iter->GetMesh()->mPolygonData.Materials[0]->HasTextures())
 		{

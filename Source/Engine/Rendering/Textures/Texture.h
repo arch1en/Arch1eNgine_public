@@ -13,6 +13,13 @@
 
 #include "IL/il.h"
 
+enum ETextureType
+{
+	Ambient,
+	Specular,
+
+};
+
 enum ETextureWrappingMode
 {
 	Repeat = GL_REPEAT,

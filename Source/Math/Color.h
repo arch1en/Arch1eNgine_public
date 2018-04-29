@@ -2,64 +2,32 @@
 
 #include <stdafx.h>
 
+#include <utility>
+
 struct Color
 {
-	float r;
-	float g;
-	float b;
-	float a;
+	float R;
+	float G;
+	float B;
+	float A;
 
-	Color()
-	{
-		Color(0.f);
-	}
+	constexpr Color() : R(0.f), G(0.f), B(0.f), A(0.f) {}
+	constexpr explicit Color(float Value) : R(Value), G(Value), B(Value), A(Value) {}
+	constexpr explicit Color(float r, float g, float b) : R(r), G(g), B(b), A(1.f) {}
+	constexpr explicit Color(float r, float g, float b, float a) : R(r), G(g), B(b), A(a) {}
+	constexpr explicit Color(float rgb, float a) : R(rgb), G(rgb), B(rgb), A(a) {}
 
-	Color(float Value)
-	{
-		r = g = b = a = Value;
-	}
+	Color& operator=(const Color& Other) { this->R = Other.R; this->G = Other.G; this->B = Other.B;  this->A = Other.A; return *this; }
+	Color& operator+(const Color& Other) { this->R = this->R + Other.R; this->G = this->G + Other.G; this->B = this->B + Other.B;  this->A = this->A + Other.A; return *this; }
+	Color& operator-(const Color& Other) { this->R = this->R - Other.R; this->G = this->G - Other.G; this->B = this->B - Other.B;  this->A = this->A - Other.A; return *this; }
+	Color& operator*(const Color& Other) { this->R = this->R * Other.R; this->G = this->G * Other.G; this->B = this->B * Other.B;  this->A = this->A * Other.A; return *this; }
+	Color& operator/(const Color& Other) { this->R = this->R / Other.R; this->G = this->G / Other.G; this->B = this->B / Other.B;  this->A = this->A / Other.A; return *this; }
 
-	Color(float R, float G, float B)
-	{
-		r = R;
-		g = G;
-		b = B;
-	}
-
-	Color(float R, float G, float B, float A)
-	{
-		Color(R, G, B);
-		a = A;
-	}
-
-	Color operator+(const Color& Other)
-	{
-		return Color(this->r + Other.r, this->g + Other.g, this->b + Other.b, this->a + Other.a);
-	}
-
-	Color operator-(const Color& Other)
-	{
-		return Color(this->r - Other.r, this->g - Other.g, this->b - Other.b, this->a - Other.a);
-	}
-
-	Color operator*(const Color& Other)
-	{
-		return Color(this->r * Other.r, this->g * Other.g, this->b * Other.b, this->a * Other.a);
-	}
-
-	Color operator/(const Color& Other)
-	{
-		return Color(this->r / Other.r, this->g / Other.g, this->b / Other.b, this->a / Other.a);
-	}
+	static constexpr Color White() { return Color(1.f); }
+	static constexpr Color Grey() { return Color(0.5, 1.f); }
+	static constexpr Color Black() { return Color(0.f); }
+	static constexpr Color Red() { return Color(1.f, 0.f, 0.f, 1.f); }
+	static constexpr Color Green() { return Color(0.f, 1.f, 0.f, 1.f); }
+	static constexpr Color Blue() { return Color(0.f, 0.f, 1.f, 1.f); }
 
 };
-
-namespace Colors
-{
-	static const Color White(1.f);
-	static const Color Grey(0.5f, 0.5f, 0.5f, 1.0f);
-	static const Color Black(0.f, 0.f, 0.f, 1.f);
-	static const Color Red(1.f, 0.f, 0.f, 1.f);
-	static const Color Green(0.f, 1.f, 0.f, 1.f);
-	static const Color Blue(0.f, 0.f, 1.f, 1.f);
-}

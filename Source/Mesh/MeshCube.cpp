@@ -15,6 +15,9 @@
 
 #include "Engine/Builders/TextureBuilder.h"
 #include "Engine/Builders/MaterialBuilder.h"
+#include "Engine/Rendering/Material.h"
+
+#include "Math/Color.h"
 
 extern Engine GEngine;
 
@@ -110,7 +113,7 @@ MeshCube::MeshCube()
 
 	mPolygonData.Materials.push_back(GEngine.GetMaterialBuilder()->NewMaterial()); //std::make_shared<Texture>();
 	mPolygonData.Materials[0]->AddTexture(GEngine.GetTextureBuilder()->CreateTexture(Data, Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png"));
-	mPolygonData.Materials[0]->SetDiffuseColor(Colors::White);
+	mPolygonData.Materials[0]->SetDiffuseColor(Color::White());
 	//mTexture->Initiate(Paths::GetInstance().GetPathAssets() + "Textures\\dirt.png", Data);
 
 	MeshTag = "PrimitiveCube";

@@ -15,22 +15,22 @@ const std::vector<std::shared_ptr<Texture>>*	Material::GetTextures() const
 	return &mTextures;
 }
 
-void Material::SetDiffuseColor(Color aColor)
+void Material::SetDiffuseColor(const Color& aColor)
 {
-	mDiffuse = aColor;
+	mDiffuseColor = aColor;
 }
 
-void Material::SetSpecularColor(Color aColor)
+void Material::SetSpecularColor(const Color& aColor)
 {
-	mSpecular = aColor;
+	mSpecularColor = aColor;
 }
 
-const Color*	Material::GetDiffuseColor() const
+Color	Material::GetDiffuseColor() const
 {
-	return &mDiffuse;
+	return mDiffuseColor;
 }
 
-const Color*	Material::GetSpecularColor() const
+Color	Material::GetSpecularColor() const
 {
-	return &mSpecular;
+	return mSpecularColor;
 }

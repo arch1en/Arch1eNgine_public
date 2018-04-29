@@ -13,16 +13,16 @@ public:
 	const bool HasTextures() const;
 	const std::vector<std::shared_ptr<Texture>>*	GetTextures() const;
 
-	void SetDiffuseColor(Color aColor);
-	void SetSpecularColor(Color aColor);
+	void SetDiffuseColor (const Color& aColor);
+	void SetSpecularColor(const Color& aColor);
 
-	const Color*	GetDiffuseColor() const;
-	const Color*	GetSpecularColor() const;
+	Color	GetDiffuseColor() const;
+	Color	GetSpecularColor() const;
 
 private:
 
-	Color														mDiffuse;
-	Color														mSpecular;
+	Color														mDiffuseColor;
+	Color														mSpecularColor;
 	std::vector<std::shared_ptr<Texture>>						mTextures;
 
 };

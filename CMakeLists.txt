@@ -55,7 +55,6 @@ file(GLOB_RECURSE SourceFiles ${PROJECT_SOURCE_DIR}/*.cpp ${PROJECT_SOURCE_DIR}/
 include_directories(${DEPENDENCIES_SOURCE_DIR}/GLM)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/assimp/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/GLEW/include)
-include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL2_image/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL2_mixer/include)
 include_directories(${DEPENDENCIES_SOURCE_DIR}/DevIL/WIN/include)
@@ -101,6 +100,21 @@ target_link_libraries(${PROJECT_NAME} SDL2_image.lib)
 target_link_libraries(${PROJECT_NAME} SDL2_mixer.lib)
 target_link_libraries(${PROJECT_NAME} assimp-vc140-mt.lib)
 target_link_libraries(${PROJECT_NAME} DevIL.lib)
+
+### -=- ADDING DEPENDENCIES -=- ###
+
+# SDL
+
+include(${DEPENDENCIES_SOURCE_DIR}/SDL/CMakeLists.txt)
+include_directories(${DEPENDENCIES_SOURCE_DIR}/SDL/include)
+
+
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 8) # Is machine 64 bit ?
+
+else()
+
+endif()
+### ~=~ ADDING DEPENDENCIES ~=~ ###
 
 # Finding OpenGL
 

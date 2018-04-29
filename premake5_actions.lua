@@ -9,8 +9,8 @@ newaction {
   onStart = function()
     if _OPTIONS["dependency"] == "assimp" then
       generate_assimp()
-    elseif _OPTIONS["dependency"] == "devil" then
-      generate_devil()
+    --elseif _OPTIONS["dependency"] == "devil" then
+    --  generate_devil()
     elseif _OPTIONS["dependency"] == "freetype" then
       generate_freetype()
     elseif _OPTIONS["dependency"] == "glew" then
@@ -34,8 +34,8 @@ newaction {
     print("Build : Starting process")
     if _OPTIONS["dependency"] == "assimp" then
       build_assimp()
-    elseif _OPTIONS["dependency"] == "devil" then
-      build_devil()
+    --elseif _OPTIONS["dependency"] == "devil" then
+    --  build_devil()
     elseif _OPTIONS["dependency"] == "freetype" then
       build_freetype()
     elseif _OPTIONS["dependency"] == "glew" then
@@ -72,8 +72,8 @@ newaction {
     print("Clean : Starting process")
     if _OPTIONS["dependency"] == "assimp" then
       clean_assimp()
-    elseif _OPTIONS["dependency"] == "devil" then
-      clean_devil()
+    --elseif _OPTIONS["dependency"] == "devil" then
+    --  clean_devil()
     elseif _OPTIONS["dependency"] == "freetype" then
       clean_freetype()
     elseif _OPTIONS["dependency"] == "glew" then

@@ -110,7 +110,7 @@ bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ElementBufferSize, &aMesh->mPolygonData.Faces[0].Indices[0], GL_STATIC_DRAW);
 	GLintptr ElementBufferOffset = 0;
-	for (int i = 0; i < aMesh->mPolygonData.Faces.size(); i++)
+	for (size_t i = 0; i < aMesh->mPolygonData.Faces.size(); i++)
 	{
 		GLintptr FaceBufferSize = sizeof(aMesh->mPolygonData.Faces[i].Indices[0]) * aMesh->mPolygonData.Faces[i].GetNumIndices();
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, ElementBufferOffset, FaceBufferSize, &aMesh->mPolygonData.Faces[i].Indices[0]);

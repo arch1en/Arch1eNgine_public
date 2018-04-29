@@ -10,9 +10,9 @@ require("premake5_options")
 Rebuilds = {}
 
 -- CONFIGURATIONS --
-RebuildAll = true
+--RebuildAll = true
 
-Rebuilds["ASSIMP"] = true
+--Rebuilds["ASSIMP"] = true
 --------------------
 
 BuildsDir = "Builds"
@@ -26,7 +26,7 @@ DependencyNames["GLM"] = "GLM"
 DependencyNames["ASSIMP"] = "ASSIMP"
 DependencyNames["GLEW"] = "GLEW"
 DependencyNames["SDL2"] = "SDL2"
-DependencyNames["DevIL"] = "DevIL"
+--DependencyNames["DevIL"] = "DevIL"
 DependencyNames["FreeType"] = "FreeType"
 
 DependencyLinkFileNames = {}
@@ -35,7 +35,7 @@ DependencyLinkFileNames["ASSIMP"] = "assimp-vc140-mt"
 DependencyLinkFileNames["GLEW"]  = "glew32"
 DependencyLinkFileNames["SDL2"] = "SDL2"
 DependencyLinkFileNames["SDL2main"] = "SDL2main"
-DependencyLinkFileNames["DevIL"] = "DevIL"
+--DependencyLinkFileNames["DevIL"] = "DevIL"
 DependencyLinkFileNames["FreeType"] = ""
 
 DependencyDirs = {}
@@ -44,7 +44,7 @@ DependencyDirs["ASSIMP"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .
 DependencyDirs["GLM"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["GLM"]
 DependencyDirs["GLEW"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["GLEW"]
 DependencyDirs["SDL2"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["SDL2"]
-DependencyDirs["DevIL"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["DevIL"]
+--DependencyDirs["DevIL"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["DevIL"]
 DependencyDirs["FreeType"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["FreeType"]
 
 BuildDirs = {}
@@ -53,7 +53,7 @@ BuildDirs["ASSIMP"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. Dependenc
 BuildDirs["GLM"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["GLM"]
 BuildDirs["GLEW"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["GLEW"]
 BuildDirs["SDL2"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["SDL2"]
-BuildDirs["DevIL"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["DevIL"]
+--BuildDirs["DevIL"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["DevIL"]
 BuildDirs["FreeType"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["FreeType"]
 
 DependencyLinkDirs = {}
@@ -62,7 +62,7 @@ DependencyLinkDirs["GLM"] = ""
 DependencyLinkDirs["ASSIMP"] = ""
 DependencyLinkDirs["GLEW"] = ""
 DependencyLinkDirs["SDL2"] = ""
-DependencyLinkDirs["DevIL"] = ""
+--DependencyLinkDirs["DevIL"] = ""
 DependencyLinkDirs["FreeType"] = ""
 
 DependencyIncludeDirs = {}
@@ -71,14 +71,14 @@ DependencyIncludeDirs["GLM"] = ""
 DependencyIncludeDirs["ASSIMP"] = ""
 DependencyIncludeDirs["GLEW"] = ""
 DependencyIncludeDirs["SDL2"] = ""
-DependencyIncludeDirs["DevIL"] = ""
+--DependencyIncludeDirs["DevIL"] = ""
 DependencyIncludeDirs["FreeType"] = ""
 
-if RebuildAll == true then
-	printf("Rebuilding solution...")
-	os.rmdir(WorkspaceDirectory .. "/" .. BuildsDir)
-	os.mkdir(WorkspaceDirectory .. "/" .. BuildsDir)
-end
+--if RebuildAll == true then
+	--printf("Rebuilding solution...")
+	--os.rmdir(WorkspaceDirectory .. "/" .. BuildsDir)
+	--os.mkdir(WorkspaceDirectory .. "/" .. BuildsDir)
+--end
 
 workspace("Arch1eNgine")
 	configurations({ "Debug", "Release" })
@@ -99,15 +99,15 @@ workspace("Arch1eNgine")
 		--targetdir("Binaries/")
 		--location(BuildDirs[CurrentProjectConfigName])
 
-		if Rebuilds["ASSIMP"] == true then
-			os.rmdir(BuildDirs[CurrentProjectConfigName])
-			os.mkdir(BuildDirs[CurrentProjectConfigName])
+		--if Rebuilds["ASSIMP"] == true then
+			--os.rmdir(BuildDirs[CurrentProjectConfigName])
+			--os.mkdir(BuildDirs[CurrentProjectConfigName])
 
 			--print(io.popen("cd Assets"))
-			print(io.popen("dir"))
+			--print(io.popen("dir"))
 
 			--io.popen("cmake --build " .. BuildDirs[CurrentProjectConfigName])
-		end
+		--end
 
 		--os.execute("cmake -E remove_directory " .. BuildDirs[CurrentProjectConfigName])
 		--os.execute("cmake -E make_directory " .. BuildDirs[CurrentProjectConfigName])
