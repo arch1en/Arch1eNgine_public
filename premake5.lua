@@ -4,75 +4,67 @@
 -- GLM
 --
 
+BuildsDir = "Builds"
+DependenciesDir = "Dependencies"
+WorkspaceDirectory = io.popen("cd"):read('*l'):gsub("\\","/") -- ugly hack, because premake tokens doesnt work -.-
+
+require("premake5_config")
 require("premake5_functions")
 require("premake5_actions")
 require("premake5_options")
 Rebuilds = {}
 
+DependencyDirs = {}
+
+for k,v in pairs(DependencyNames) do
+  DependencyDirs[k] = WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..v
+end
+
+BuildDirs = {}
+
+for k,v in pairs(DependencyNames) do
+  BuildDirs[k] = WorkspaceDirectory.. "/" ..BuildsDir.. "/" ..v
+end
+
+for i,v in ipairs(DependencyIncludeDirs) do
+  v = DependencyDirs[i].. "/" ..v
+end
+
+for i,v in ipairs(DependencyLinkDirs) do
+  v = DependencyDirs[i].. "/" ..v
+  print(v)
+end
+
+GetFilePath(WorkspaceDirectory, README, false)
 -- CONFIGURATIONS --
 --RebuildAll = true
 
 --Rebuilds["ASSIMP"] = true
 --------------------
+--DependencyLinkDirs = {}
 
-BuildsDir = "Builds"
-DependenciesDir = "Dependencies"
-
-WorkspaceDirectory = io.popen("cd"):read('*l'):gsub("\\","/") -- ugly hack, because premake tokens doesnt work -.-
-
-DependencyNames = {}
-
-DependencyNames["GLM"] = "GLM"
-DependencyNames["ASSIMP"] = "ASSIMP"
-DependencyNames["GLEW"] = "GLEW"
-DependencyNames["SDL2"] = "SDL2"
---DependencyNames["DevIL"] = "DevIL"
-DependencyNames["FreeType"] = "FreeType"
-
-DependencyLinkFileNames = {}
-
-DependencyLinkFileNames["ASSIMP"] = "assimp-vc140-mt"
-DependencyLinkFileNames["GLEW"]  = "glew32"
-DependencyLinkFileNames["SDL2"] = "SDL2"
-DependencyLinkFileNames["SDL2main"] = "SDL2main"
---DependencyLinkFileNames["DevIL"] = "DevIL"
-DependencyLinkFileNames["FreeType"] = ""
-
-DependencyDirs = {}
-
-DependencyDirs["ASSIMP"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["ASSIMP"]
-DependencyDirs["GLM"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["GLM"]
-DependencyDirs["GLEW"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["GLEW"]
-DependencyDirs["SDL2"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["SDL2"]
---DependencyDirs["DevIL"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["DevIL"]
-DependencyDirs["FreeType"] = WorkspaceDirectory .. "/" .. DependenciesDir .. "/" .. DependencyNames["FreeType"]
-
-BuildDirs = {}
-
-BuildDirs["ASSIMP"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["ASSIMP"]
-BuildDirs["GLM"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["GLM"]
-BuildDirs["GLEW"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["GLEW"]
-BuildDirs["SDL2"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["SDL2"]
---BuildDirs["DevIL"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["DevIL"]
-BuildDirs["FreeType"] = WorkspaceDirectory .. "/" .. BuildsDir .. "/" .. DependencyNames["FreeType"]
-
-DependencyLinkDirs = {}
-
-DependencyLinkDirs["GLM"] = ""
-DependencyLinkDirs["ASSIMP"] = ""
-DependencyLinkDirs["GLEW"] = ""
-DependencyLinkDirs["SDL2"] = ""
+--DependencyLinkDirs["GLM"] = ""
+--DependencyLinkDirs["ASSIMP"] = ""
+--DependencyLinkDirs["GLEW"] = ""
+--DependencyLinkDirs["SDL2"] = ""
 --DependencyLinkDirs["DevIL"] = ""
-DependencyLinkDirs["FreeType"] = ""
+--DependencyLinkDirs["FreeType"] = ""
 
-DependencyIncludeDirs = {}
+--DependencyIncludeDirs = {}
 
-DependencyIncludeDirs["GLM"] = ""
-DependencyIncludeDirs["ASSIMP"] = ""
-DependencyIncludeDirs["GLEW"] = ""
-DependencyIncludeDirs["SDL2"] = ""
+--DependencyIncludeDirs["GLM"] = ""
+--DependencyIncludeDirs["ASSIMP"] = ""
+--DependencyIncludeDirs["GLEW"] = ""
+--DependencyIncludeDirs["SDL2"] = ""
 --DependencyIncludeDirs["DevIL"] = ""
-DependencyIncludeDirs["FreeType"] = ""
+--DependencyIncludeDirs["FreeType"] = ""
+
+
+
+
+
+
+
 
 --if RebuildAll == true then
 	--printf("Rebuilding solution...")
@@ -112,62 +104,60 @@ workspace("Arch1eNgine")
 		--os.execute("cmake -E remove_directory " .. BuildDirs[CurrentProjectConfigName])
 		--os.execute("cmake -E make_directory " .. BuildDirs[CurrentProjectConfigName])
 
-		-- Including directories...
-		DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
 		-- Linking directory...
-		if os.is64bit() then
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release" -- This is the same for 32 and 64 bit machine, change that later.
-		else
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release" -- This is the same for 32 and 64 bit machine, change that later.
-		end
+		--if os.is64bit() then
+		--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release" -- This is the same for 32 and 64 bit machine, change that later.
+		--else
+		--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release" -- This is the same for 32 and 64 bit machine, change that later.
+		--end
 
 	-- GLEW --
-	CurrentProjectConfigName = "GLEW"
-	project(DependencyNames[CurrentProjectConfigName])
-		kind("SharedLib")
-		targetdir("Binaries/")
-		location(BuildDirs[CurrentProjectConfigName])
+	--CurrentProjectConfigName = "GLEW"
+	--project(DependencyNames[CurrentProjectConfigName])
+	--	kind("SharedLib")
+	--	targetdir("Binaries/")
+	--	location(BuildDirs[CurrentProjectConfigName])
 		-- Including directories...
-		DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
+	--	DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
 		-- Linking directory...
-		DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release/"
-		if os.is64bit() then
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64"
-		else
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/Win32"
-		end
+	--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release/"
+	--	if os.is64bit() then
+	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64"
+	--	else
+	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/Win32"
+	--	end
 
 	-- SDL2 --
-	CurrentProjectConfigName = "SDL2"
-	project(DependencyNames[CurrentProjectConfigName])
-		kind("SharedLib")
-		targetdir("Binaries/")
-		location(BuildDirs[CurrentProjectConfigName])
+	--CurrentProjectConfigName = "SDL2"
+	--project(DependencyNames[CurrentProjectConfigName])
+	--	kind("SharedLib")
+	--	targetdir("Binaries/")
+	--	location(BuildDirs[CurrentProjectConfigName])
 		-- Including directories...
-		DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
+	--	DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
 		-- Linking directory...
-		DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/"
-		if os.is64bit() then
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64"
-		else
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x86"
-		end
+	--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/"
+	--	if os.is64bit() then
+	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64"
+	--	else
+	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x86"
+	--	end
 
 	-- DevIL --
-	CurrentProjectConfigName = "DevIL"
-	project(DependencyNames[CurrentProjectConfigName])
-		kind("SharedLib")
-		targetdir("Binaries/")
-		location(BuildDirs[CurrentProjectConfigName])
+	--CurrentProjectConfigName = "DevIL"
+	--project(DependencyNames[CurrentProjectConfigName])
+	--	kind("SharedLib")
+	--	targetdir("Binaries/")
+	--	location(BuildDirs[CurrentProjectConfigName])
 		-- Including directories...
-		DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/WIN/include"
+	--	DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/WIN/include"
 		-- Linking directory...
-		DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/WIN/lib"
-		if os.is64bit() then
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64/Release"
-		else
-			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x86/Release"
-		end
+--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/WIN/lib"
+--		if os.is64bit() then
+--			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64/Release"
+--		else
+--			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x86/Release"
+--		end
 
 project("Engine")
 	kind("ConsoleApp")
@@ -195,9 +185,9 @@ project("Engine")
 	end
 
 configuration("windows")
-	postbuildcommands {
-		"cmake --build " .. BuildDirs[CurrentProjectConfigName]
-	}
+	--postbuildcommands {
+	--	"cmake --build " .. BuildDirs[CurrentProjectConfigName]
+	--}
 
 	filter("system:windows")
 		links({"OpenGL32"})

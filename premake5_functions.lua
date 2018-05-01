@@ -1,5 +1,18 @@
 -- CMake Functions
 -- Reads cmd output one line by one.
+function AdaptDirSlashes(String)
+  if os.istarget("windows") then
+    return String:gsub("/","\\")
+  elseif os.istarget("linux") then
+    return String:gsub("\\","/")
+  else
+    return String:gsub("\\","/")
+  end
+
+  return String
+
+end
+
 function LiveLog(log)
   repeat
     local logLine = log:read(1)
@@ -7,6 +20,7 @@ function LiveLog(log)
       io.write(logLine) io.flush()
     end
   until not logLine
+  log:close()
 end
 
 function FolderExists(Path)
@@ -27,24 +41,46 @@ function CreateFolderIfDoesntExist(DependencyName)
   if FolderExists(BuildDirs[DependencyName]) == false then
     os.mkdir(BuildDirs[DependencyName])
     return DependencyName .. " Build folder missing. Creating..."
+  else
+    return DependencyName .. " Build folder exists. Onward..."
   end
 end
 
+-- Returns directory where file resids, otherwise returns false.
+function GetFilePath(InitialDirectory, FileName, Recursive)
+  local command = ""
+  if os.target() == "windows" then
+    InitialDirectory = AdaptDirSlashes(InitialDirectory)
+    command = "dir " ..InitialDirectory.. " /b"
+  end
+
+  local result = io.popen(command)
+  for filename in result:lines() do
+    print(filename:match('%w+%.1%w+'))
+    if Recursive == true then
+
+    end
+    --print(filename)
+  end
+  result:close()
+
+
+end
+
 function cmake_generate(BuildDir, DependencyDir)
-  local log = io.popen("cd /d " .. BuildDir .. " && cmake -G \"Visual Studio 15 2017 Win64\" " .. DependencyDir, 'r')
+  local log = io.popen("cd /d " .. BuildDir .. " && " ..CMakeAbsoluteDir.. "//cmake -G \"Visual Studio 15 2017 Win64\" " .. DependencyDir, 'r')
   LiveLog(log)
-  log:close()
 end
 
 function cmake_build(BuildDir)
   local log = io.popen("cd /d " .. BuildDir .. " && cmake --build .", 'r')
   LiveLog(log)
-  log:close()
 end
 
 -- GNU Makefile Functions
 function makefile_generate(BuildDir)
-  io.popen("make -C" .. BuildDir)
+  local log = io.popen("make -C" .. BuildDir)
+  LiveLog(log)
 end
 
 function makefile_build()
@@ -135,7 +171,8 @@ end
 function generate_glew()
   print("Generate : Generating GLEW")
   print("Generate : " ..CreateFolderIfDoesntExist("GLEW"))
-  cmake_generate(BuildDirs["GLEW"], DependencyDirs["GLEW"])
+  makefile_generate(BuildDirs["GLEW"])
+  --cmake_generate(BuildDirs["GLEW"], DependencyDirs["GLEW"])
 end
 
 function build_glew(BuildDir)
