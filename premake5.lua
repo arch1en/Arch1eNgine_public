@@ -32,10 +32,10 @@ end
 
 for i,v in ipairs(DependencyLinkDirs) do
   v = DependencyDirs[i].. "/" ..v
-  print(v)
+  --print(v)
 end
 
-GetFilePath(WorkspaceDirectory, README, false)
+GetFilePath(WorkspaceDirectory, "README.md", false)
 -- CONFIGURATIONS --
 --RebuildAll = true
 

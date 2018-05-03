@@ -48,6 +48,14 @@ end
 
 -- Returns directory where file resids, otherwise returns false.
 function GetFilePath(InitialDirectory, FileName, Recursive)
+  if InitialDirectory == nil then
+    print("Error : InitialDirectory argument is invalid.")
+    return ""
+  elseif FileName:match('%w+%.%w+') == nil then
+    print("Error : " ..FileName.. " is a wrong FileName argument.")
+    return ""
+  end
+
   local command = ""
   if os.target() == "windows" then
     InitialDirectory = AdaptDirSlashes(InitialDirectory)
@@ -55,16 +63,22 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
   end
 
   local result = io.popen(command)
-  for filename in result:lines() do
-    print(filename:match('%w+%.1%w+'))
+  for file in result:lines() do
+    if file:match('(' ..FileName.. ')') ~= nil then -- File found
+      print("Found : " ..file:match('%w+%.%w+'))
+    elseif file:match('.+[^%.%w+]') ~= nil then  -- We have a directory
+      print("Dir : " ..file:match('.+[^%.$w+]'))
+    else -- We have a file
+      print("File : " ..file)
+      return file
+    end
+
     if Recursive == true then
 
     end
     --print(filename)
   end
   result:close()
-
-
 end
 
 function cmake_generate(BuildDir, DependencyDir)
