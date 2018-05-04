@@ -35,7 +35,7 @@ for i,v in ipairs(DependencyLinkDirs) do
   --print(v)
 end
 
-GetFilePath(WorkspaceDirectory, "README.md", false)
+print("Found Path : " ..GetFilePath(WorkspaceDirectory, "README", true))
 -- CONFIGURATIONS --
 --RebuildAll = true
 

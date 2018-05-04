@@ -1,5 +1,23 @@
 -- CMake Functions
 -- Reads cmd output one line by one.
+--- Check if a file or directory exists in this path
+function FileExists(Path)
+   local ok, err, code = os.rename(file, file)
+   if not ok then
+      if code == 13 then
+         -- Permission denied, but it exists
+         return true
+      end
+   end
+   return ok, err
+end
+
+--- Check if a directory exists in this path
+function IsDir(Path)
+   -- "/" works on both Unix and Windows
+   return FileExists(AdaptDirSlashes(Path.."/"))
+end
+
 function AdaptDirSlashes(String)
   if os.istarget("windows") then
     return String:gsub("/","\\")
@@ -8,9 +26,7 @@ function AdaptDirSlashes(String)
   else
     return String:gsub("\\","/")
   end
-
   return String
-
 end
 
 function LiveLog(log)
@@ -46,7 +62,7 @@ function CreateFolderIfDoesntExist(DependencyName)
   end
 end
 
--- Returns directory where file resids, otherwise returns false.
+-- Returns directory where file resids, otherwise returns empty string.
 function GetFilePath(InitialDirectory, FileName, Recursive)
   if InitialDirectory == nil then
     print("Error : InitialDirectory argument is invalid.")
@@ -57,6 +73,8 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
   end
 
   local command = ""
+  
+  -- Windows variant.
   if os.target() == "windows" then
     InitialDirectory = AdaptDirSlashes(InitialDirectory)
     command = "dir " ..InitialDirectory.. " /b"
@@ -65,20 +83,27 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
   local result = io.popen(command)
   for file in result:lines() do
     if file:match('(' ..FileName.. ')') ~= nil then -- File found
-      print("Found : " ..file:match('%w+%.%w+'))
-    elseif file:match('.+[^%.%w+]') ~= nil then  -- We have a directory
-      print("Dir : " ..file:match('.+[^%.$w+]'))
+      --print("Found : " ..file:match('%w+%.%w+'))
+      result:close()
+      return InitialDirectory
+    elseif file:match('^[^.]*$') ~= nil then  -- We have a directory
+      --print("Dir : " ..file:match('.+[^%.$w+]'))
+
+      if Recursive == true then
+        local FilePath = GetFilePath(AdaptDirSlashes(InitialDirectory.. "/" ..file), FileName, true)
+        if FilePath ~= "" then
+          --print("Recursion Found : " ..FileName.. " in " ..FilePath)
+          result:close()
+          return FilePath
+        end
+      end
+
     else -- We have a file
-      print("File : " ..file)
-      return file
+      --print("File : " ..file)
     end
-
-    if Recursive == true then
-
-    end
-    --print(filename)
   end
   result:close()
+  return ""
 end
 
 function cmake_generate(BuildDir, DependencyDir)
