@@ -1,4 +1,44 @@
 -- CMake Functions
+
+function AdaptDirSlashes(String)
+  if os.istarget("windows") then
+    return String:gsub("/","\\")
+  elseif os.istarget("linux") then
+    return String:gsub("\\","/")
+  else
+    return String:gsub("\\","/")
+  end
+  return String
+end
+
+-- Initialization block
+BuildsDir = "Builds"
+DependenciesDir = "Dependencies"
+WorkspaceDirectory = AdaptDirSlashes(io.popen("cd"):read('*l')) -- ugly hack, because premake tokens doesnt work -.-
+
+DependencyDirs = {}
+
+for _,v in pairs(DependencyNames) do
+  DependencyDirs[v] = AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..v)
+end
+
+BuildDirs = {}
+
+for _,v in pairs(DependencyNames) do
+  BuildDirs[v] = AdaptDirSlashes(WorkspaceDirectory.. "/" ..BuildsDir.. "/" ..v)
+end
+
+for i,v in ipairs(DependencyIncludeDirs) do
+  v = DependencyDirs[DependencyNames[i]].. "/" ..v
+end
+
+for i,v in ipairs(DependencyLinkDirs) do
+  v = DependencyDirs[DependencyNames[i]].. "/" ..v
+  --print(v)
+end
+
+-- ~ Initialization block
+
 -- Reads cmd output one line by one.
 --- Check if a file or directory exists in this path
 function FileExists(Path)
@@ -18,16 +58,7 @@ function IsDir(Path)
    return FileExists(AdaptDirSlashes(Path.."/"))
 end
 
-function AdaptDirSlashes(String)
-  if os.istarget("windows") then
-    return String:gsub("/","\\")
-  elseif os.istarget("linux") then
-    return String:gsub("\\","/")
-  else
-    return String:gsub("\\","/")
-  end
-  return String
-end
+
 
 function LiveLog(log)
   repeat
@@ -54,7 +85,7 @@ function FolderExists(Path)
 end
 
 function CreateFolderIfDoesntExist(DependencyName)
-  if FolderExists(BuildDirs[DependencyName]) == false then
+  if os.isdir(BuildDirs[DependencyName]) == false then
     os.mkdir(BuildDirs[DependencyName])
     return DependencyName .. " Build folder missing. Creating..."
   else
@@ -63,6 +94,7 @@ function CreateFolderIfDoesntExist(DependencyName)
 end
 
 -- Returns directory where file resids, otherwise returns empty string.
+-- Yeah, ive discovered that premake5 already has a function for a file/folder search.
 function GetFilePath(InitialDirectory, FileName, Recursive)
   if InitialDirectory == nil then
     print("Error : InitialDirectory argument is invalid.")
@@ -73,7 +105,7 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
   end
 
   local command = ""
-  
+
   -- Windows variant.
   if os.target() == "windows" then
     InitialDirectory = AdaptDirSlashes(InitialDirectory)
@@ -106,41 +138,53 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
   return ""
 end
 
-function cmake_generate(BuildDir, DependencyDir)
-  local log = io.popen("cd /d " .. BuildDir .. " && " ..CMakeAbsoluteDir.. "//cmake -G \"Visual Studio 15 2017 Win64\" " .. DependencyDir, 'r')
+function CMakeGenerate(BuildDir, DependencyDir)
+  local log = ""
+  if os.target() == "windows" then
+    log = io.popen("cd /d " .. BuildDir .. " && " ..AdaptDirSlashes(CMakeExecutableDir.. "//cmake").. " -G \"Visual Studio 15 2017 Win64\" " .. DependencyDir, 'r')
+  else
+    print("CMakeGenerate Error : Operational System target invalid or inoperable.")
+    return
+  end
   LiveLog(log)
 end
 
-function cmake_build(BuildDir)
-  local log = io.popen("cd /d " .. BuildDir .. " && cmake --build .", 'r')
+function CMakeBuild(BuildDir)
+  local log = ""
+  if os.target() == "windows" then
+    log = io.popen("cd /d " .. BuildDir .. " && cmake --build .", 'r')
+  else
+    print("CMakeBuild Error : Operational System target invalid or inoperable.")
+    return
+  end
   LiveLog(log)
 end
 
 -- GNU Makefile Functions
-function makefile_generate(BuildDir)
+function MakefileGenerate(BuildDir, DependencyDir)
   local log = io.popen("make -C" .. BuildDir)
   LiveLog(log)
 end
 
-function makefile_build()
+function MakefileBuild(BuildDir, DependencyDir)
 
 end
 
-function generate_all()
-  generate_assimp()
+--function generate_all()
+--  generate_assimp()
   --generate_devil()
-  generate_freetype()
-  generate_glew()
-  generate_sdl2()
-end
+--  generate_freetype()
+--  generate_glew()
+--  generate_sdl2()
+--end
 
-function build_all()
-  build_assimp()
+--function build_all()
+--  build_assimp()
   --build_devil()
-  build_freetype()
-  build_glew()
-  build_sdl2()
-end
+--  build_freetype()
+--  build_glew()
+--  build_sdl2()
+--end
 
 function clean_all()
   clean_assimp()
@@ -151,6 +195,73 @@ function clean_all()
 end
 
 -- ASSIMP Functions
+
+function GetDependencyNameByOption(aOption)
+  for _, v in ipairs(DependencyNames) do
+    if aOption == v:lower() then
+      return v
+    end
+  end
+  return ""
+end
+
+-- Returns name of the tool, that this dependency is using.
+function DetermineDependencyBuildTool(DependencyName)
+  if os.matchfiles(DependencyDirs[DependencyName].. "/CMakeLists.txt") ~= nil then
+    return "cmake"
+  elseif os.matchfiles(DependencyDirs[DependencyName].. "/Makefile") ~= nil then
+    return "makefile"
+  end
+  return ""
+end
+
+function CleanDependency(DependencyOption)
+  local Dependency = GetDependencyNameByOption(DependencyOption)
+  if Dependency == "" then
+    print("Error : Cannot clean " ..DependencyOption.. " option.")
+    return
+  end
+
+  print("Clean : Cleaning " ..Dependency)
+  os.rmdir(BuildDirs[Dependency])
+
+end
+
+function GenerateDependency(DependencyOption)
+  local Dependency = GetDependencyNameByOption(DependencyOption)
+  if Dependency == "" then
+    print("Error : Cannot generate " ..DependencyOption.. " option.")
+    return
+  end
+
+  local GenerationTool = DetermineDependencyBuildTool(Dependency)
+
+  print("Generate : Generating " ..Dependency)
+  print("Generate : " ..CreateFolderIfDoesntExist(Dependency))
+
+  if GenerationTool == "cmake" then
+    CMakeGenerate(BuildDirs[Dependency], DependencyDirs[Dependency])
+  elseif GenerationTool == "make" then
+    MakefileGenerate(BuildDirs[Dependency], DependencyDirs[Dependency])
+  end
+end
+
+function BuildDependency(DependencyOption)
+  local Dependency = GetDependencyNameByOption(DependencyOption)
+  if Dependency == "" then
+    print("Error : Cannot build " ..DependencyOption.. " option.")
+    return
+  end
+
+  local BuildTool = DetermineDependencyBuildTool(Dependency)
+
+  if BuildTool == "cmake" then
+    CMakeBuild(BuildDirs[Dependency], DependencyDirs[Dependency])
+  elseif BuildTool == "make" then
+    MakefileBuild(BuildDirs[Dependency], DependencyDirs[Dependency])
+  end
+
+end
 
 function generate_assimp()
   print("Generate : Generating ASSIMP")

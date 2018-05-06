@@ -1,41 +1,17 @@
-
--- List of dependencies that doesnt require building :
--- Dear ImGui
--- GLM
---
-
-BuildsDir = "Builds"
-DependenciesDir = "Dependencies"
-WorkspaceDirectory = io.popen("cd"):read('*l'):gsub("\\","/") -- ugly hack, because premake tokens doesnt work -.-
-
 require("premake5_config")
 require("premake5_functions")
 require("premake5_actions")
 require("premake5_options")
+
+
+
 Rebuilds = {}
 
-DependencyDirs = {}
 
-for k,v in pairs(DependencyNames) do
-  DependencyDirs[k] = WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..v
-end
 
-BuildDirs = {}
 
-for k,v in pairs(DependencyNames) do
-  BuildDirs[k] = WorkspaceDirectory.. "/" ..BuildsDir.. "/" ..v
-end
 
-for i,v in ipairs(DependencyIncludeDirs) do
-  v = DependencyDirs[i].. "/" ..v
-end
-
-for i,v in ipairs(DependencyLinkDirs) do
-  v = DependencyDirs[i].. "/" ..v
-  --print(v)
-end
-
-print("Found Path : " ..GetFilePath(WorkspaceDirectory, "README", true))
+--print("Found Path : " ..GetFilePath(WorkspaceDirectory, "README", true))
 -- CONFIGURATIONS --
 --RebuildAll = true
 
