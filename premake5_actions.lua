@@ -3,11 +3,34 @@ premake.modules.lua = {}
 local m = premake.modules.lua
 local p = premake
 
-newaction {
+newaction
+{
+  trigger = "clean",
+  description = "Clean dependency that is currently set.",
+  onStart = function()
+    print("Clean : Starting process")
+    if _OPTIONS["dependency"] == "all" then
+      CleanAllDependencies()
+    else
+      CleanDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+    end
+  end,
+
+  onEnd = function()
+    print("Clean : Finished")
+  end,
+}
+
+newaction
+{
   trigger = "generate",
   description = "Generate dependency that is currently set.",
   onStart = function()
-      GenerateDependency(_OPTIONS["dependency"] )
+    if _OPTIONS["dependency"] == "all" then
+      GenerateAllDependencies()
+    else
+      GenerateDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+    end
   end,
 
   onEnd = function()
@@ -15,12 +38,17 @@ newaction {
   end
 }
 
-newaction {
+newaction
+{
   trigger = "build",
   description = "Build dependency that is currently set.",
   onStart = function()
     print("Build : Starting process")
-    BuildDependency(_OPTIONS["dependency"])
+    if _OPTIONS["dependency"] == "all" then
+      BuildAllDependencies()
+    else
+      BuildDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+    end
   end,
 
   --onWorkspace = function(wks)
@@ -41,40 +69,46 @@ newaction {
 
 }
 
-newaction {
-  trigger = "clean",
-  description = "Clean dependency that is currently set.",
+newaction
+{
+  trigger = "organize",
+  description = "Organize libraries of the dependency that is currently set.",
   onStart = function()
-    print("Clean : Starting process")
-      CleanDependency(_OPTIONS["dependency"])
+    print("Organize : Starting process")
+    if _OPTIONS["dependency"] == "all" then
+      OrganizeAllDependencies()
+    else
+      OrganizeDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+    end
   end,
-
-  --execute = function()
-  --  print("Clean : Executing...")
-  --end,
 
   onEnd = function()
-    print("Clean : Finished")
-  end,
+    print("Organize : Finished")
+  end
 }
 
-newaction {
+newaction
+{
   trigger = "rebuild",
   description = "Rebuild dependency that is currently set.",
   onStart = function()
     print("Rebuild : Starting process")
-    clean_dependency(_OPTIONS["dependency"])
-    generate_dependency(_OPTIONS["dependency"])
-    build_dependency(_OPTIONS["dependency"])
+    if _OPTIONS["dependency"] == "all" then
+      CleanAllDependencies()
+      GenerateAllDependencies()
+      BuildAllDependencies()
+    else
+      CleanDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      GenerateDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      BuildDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+    end
   end,
-
-  --execute = function()
-  --  print("Rebuild : Executing...")
-  --end,
 
   onEnd = function()
     print("Rebuild : Finished")
   end,
 }
+
+
 
 return m

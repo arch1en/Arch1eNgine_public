@@ -12,53 +12,88 @@ function AdaptDirSlashes(String)
 end
 
 -- Initialization block
-BuildsDir = "Builds"
 DependenciesDir = "Dependencies"
+BuildsDir = "Builds"
+LibrariesDir = "Libraries"
+DependencyBuildsDir = BuildsDir.. "/" ..DependenciesDir
+DependencyLibrariesDir = BuildsDir.. "/" ..LibrariesDir.. "/" ..DependenciesDir
+
 WorkspaceDirectory = AdaptDirSlashes(io.popen("cd"):read('*l')) -- ugly hack, because premake tokens doesnt work -.-
 
 DependencyDirs = {}
 
-for _,v in pairs(DependencyNames) do
-  DependencyDirs[v] = AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..v)
+for _,v in ipairs(Dependencies) do
+  DependencyDirs[v["Name"]] = AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..v["Name"])
 end
 
-BuildDirs = {}
+DependenciesBuildDirs = {}
 
-for _,v in pairs(DependencyNames) do
-  BuildDirs[v] = AdaptDirSlashes(WorkspaceDirectory.. "/" ..BuildsDir.. "/" ..v)
+for _,v in pairs(Dependencies) do
+  DependenciesBuildDirs[v["Name"]] = AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyBuildsDir.. "/" ..v["Name"])
 end
 
-for i,v in ipairs(DependencyIncludeDirs) do
-  v = DependencyDirs[DependencyNames[i]].. "/" ..v
+for _,v in ipairs(Dependencies) do
+  for _,w in pairs(v["IncludeDirs"]) do
+    w = DependencyDirs[v["Name"]].. "/" ..w
+  end
 end
 
-for i,v in ipairs(DependencyLinkDirs) do
-  v = DependencyDirs[DependencyNames[i]].. "/" ..v
+--for _,v in ipairs(Dependencies) do
+--  for _,w in pairs(v["LinkDirs"]) do
+--    w = DependencyDirs[v["Name"]].. "/" ..w
+--  end
   --print(v)
-end
+--end
 
 -- ~ Initialization block
 
 -- Reads cmd output one line by one.
 --- Check if a file or directory exists in this path
-function FileExists(Path)
-   local ok, err, code = os.rename(file, file)
-   if not ok then
-      if code == 13 then
+--function FileExists(Path)
+--   local ok, err, code = os.rename(file, file)
+--   if not ok then
+--      if code == 13 then
          -- Permission denied, but it exists
-         return true
-      end
-   end
-   return ok, err
-end
+--         return true
+--      end
+--   end
+--   return ok, err
+--end
 
 --- Check if a directory exists in this path
-function IsDir(Path)
+--function IsDir(Path)
    -- "/" works on both Unix and Windows
-   return FileExists(AdaptDirSlashes(Path.."/"))
+--   return FileExists(AdaptDirSlashes(Path.."/"))
+--end
+
+-- os.copyfile doesnt work for windows for some reason...
+function CopyFile(Source, Destination)
+  if os.target() == "windows" then
+      io.popen("copy "..Source.. " " ..Destination,'r')
+  else
+    print("CopyFile Error : Inoperable target OS.")
+  end
 end
 
+function FindDependencyByName(Args)
+  setmetatable(Args, {__index={Lowercase=false}})
+  local DependencyName, Lowercase =
+    Args[1] or Args.DependencyName,
+    Args[2] or Args.Lowercase
 
+  for i,v in pairs(Dependencies) do
+    if Lowercase == true then
+      if v["Name"]:lower() == DependencyName:lower() then
+        return i
+      end
+    else
+      if v["Name"] == DependencyName then
+        return i
+      end
+    end
+
+  end
+end
 
 function LiveLog(log)
   repeat
@@ -70,30 +105,44 @@ function LiveLog(log)
   log:close()
 end
 
-function FolderExists(Path)
-  local FileHandle, StrError = io.open(Path.."\\*.*","r")
-  if FileHandle ~= nil then
-    io.close(FileHandle)
-    return true
+function FindDependencyLibraryFiles(DependencyIndex)
+  local LibraryFileExtension = ""
+  if os.target() == "windows" then
+    LibraryFileExtension = "dll"
+  elseif os.target() == "linux" then
+    LibraryFileExtension = "a"
+  end
+
+  local FilePaths = {}
+
+  for i,v in pairs(Dependencies[DependencyIndex]["LinkFileNames"]) do
+    local FoundFiles = os.matchfiles(DependenciesBuildDirs[Dependencies[DependencyIndex]["Name"]].. "/**" ..v.. "." ..LibraryFileExtension)
+    FilePaths[i] = FoundFiles[1]
+  end
+
+  return FilePaths
+end
+
+function CreateFolderIfDoesntExist(FolderPath, FolderName)
+  local Directory = FolderPath.. "/" ..FolderName
+  if os.isdir(Directory) == false then
+    os.mkdir(Directory)
+    return FolderName.. " folder missing. Creating..."
   else
-    if string.match(StrError, "No such file or directory") then
-      return false
-    else
-      return true
-    end
+    return FolderName.. " folder exists. Skipping creation..."
   end
 end
 
-function CreateFolderIfDoesntExist(DependencyName)
-  if os.isdir(BuildDirs[DependencyName]) == false then
-    os.mkdir(BuildDirs[DependencyName])
-    return DependencyName .. " Build folder missing. Creating..."
-  else
-    return DependencyName .. " Build folder exists. Onward..."
-  end
-end
+--function CreateDependencyBuildFolderIfDoesntExist(DependencyName)
+--  if os.isdir(DependenciesBuildDirs[DependencyName]) == false then
+--    os.mkdir(DependenciesBuildDirs[DependencyName])
+--    return DependencyName .. " Build folder missing. Creating..."
+--  else
+--    return DependencyName .. " Build folder exists. Onward..."
+--  end
+--end
 
--- Returns directory where file resids, otherwise returns empty string.
+-- [DEPRECATED] Returns directory where file resids, otherwise returns empty string.
 -- Yeah, ive discovered that premake5 already has a function for a file/folder search.
 function GetFilePath(InitialDirectory, FileName, Recursive)
   if InitialDirectory == nil then
@@ -162,7 +211,19 @@ end
 
 -- GNU Makefile Functions
 function MakefileGenerate(BuildDir, DependencyDir)
-  local log = io.popen("make -C" .. BuildDir)
+  local makeExecutable = ""
+  if os.matchfiles(AdaptDirSlashes(MakefileExecutableDir.. "/").. "make.exe")[1] ~= nil then
+    makeExecutable = "make"
+  elseif os.matchfiles(AdaptDirSlashes(MakefileExecutableDir.. "/").. "mingw32-make.exe")[1] ~= nil then
+    makeExecutable = "mingw32-make"
+  end
+  local log = ""
+
+  if os.istarget("windows") then
+    log = io.popen("cd /d " .. BuildDir .. " && " ..AdaptDirSlashes(MakefileExecutableDir.. "/").. makeExecutable.. " -C" .. DependencyDir)
+  elseif os.istarget("linux") then
+
+  end
   LiveLog(log)
 end
 
@@ -170,28 +231,28 @@ function MakefileBuild(BuildDir, DependencyDir)
 
 end
 
---function generate_all()
---  generate_assimp()
-  --generate_devil()
---  generate_freetype()
---  generate_glew()
---  generate_sdl2()
---end
+function CleanAllDependencies()
+  for i,_ in ipairs(Dependencies) do
+    CleanDependency(i)
+  end
+end
 
---function build_all()
---  build_assimp()
-  --build_devil()
---  build_freetype()
---  build_glew()
---  build_sdl2()
---end
+function GenerateAllDependencies()
+  for i,_ in ipairs(Dependencies) do
+    GenerateDependency(i)
+  end
+end
 
-function clean_all()
-  clean_assimp()
-  --clean_devil()
-  clean_freetype()
-  clean_glew()
-  clean_sdl2()
+function BuildAllDependencies()
+  for i,_ in ipairs(Dependencies) do
+    BuildDependency(i)
+  end
+end
+
+function OrganizeAllDependencies()
+  for i,_ in ipairs(Dependencies) do
+    OrganizeDependency(i)
+  end
 end
 
 -- ASSIMP Functions
@@ -207,123 +268,97 @@ end
 
 -- Returns name of the tool, that this dependency is using.
 function DetermineDependencyBuildTool(DependencyName)
-  if os.matchfiles(DependencyDirs[DependencyName].. "/CMakeLists.txt") ~= nil then
+  if os.matchfiles(DependencyDirs[DependencyName].. "/CMakeLists.txt")[1] ~= nil then
     return "cmake"
-  elseif os.matchfiles(DependencyDirs[DependencyName].. "/Makefile") ~= nil then
+  elseif os.matchfiles(DependencyDirs[DependencyName].. "/Makefile")[1] ~= nil then
     return "makefile"
   end
   return ""
 end
 
-function CleanDependency(DependencyOption)
-  local Dependency = GetDependencyNameByOption(DependencyOption)
+function CleanDependency(DependencyIndex)
+  local Dependency = Dependencies[DependencyIndex]["Name"]
   if Dependency == "" then
-    print("Error : Cannot clean " ..DependencyOption.. " option.")
+    print("Error : Cannot clean " ..Dependency.. " option.")
     return
   end
 
-  print("Clean : Cleaning " ..Dependency)
-  os.rmdir(BuildDirs[Dependency])
-
+  if os.isdir(DependenciesBuildDirs[Dependency]) then
+    print("Clean : Cleaning " ..Dependency)
+    os.rmdir(DependenciesBuildDirs[Dependency])
+  else
+    print("Clean : Build directory for " ..Dependency.. " inaccessible or cleaned already.")
+  end
 end
 
-function GenerateDependency(DependencyOption)
-  local Dependency = GetDependencyNameByOption(DependencyOption)
+function GenerateDependency(DependencyIndex)
+  if Dependencies[DependencyIndex]["RequiresGeneration"] == false then
+    print("Generate : " ..Dependencies[DependencyIndex]["Name"].. " doesn't require generation. Skipping...")
+    return
+  end
+  local Dependency = Dependencies[DependencyIndex]["Name"]
   if Dependency == "" then
-    print("Error : Cannot generate " ..DependencyOption.. " option.")
+    print("Error : Cannot generate " ..Dependency.. " option.")
     return
   end
 
   local GenerationTool = DetermineDependencyBuildTool(Dependency)
 
+  print(GenerationTool)
   print("Generate : Generating " ..Dependency)
-  print("Generate : " ..CreateFolderIfDoesntExist(Dependency))
+
+  print("Generate : " ..CreateFolderIfDoesntExist(DependencyBuildsDir, Dependency))
 
   if GenerationTool == "cmake" then
-    CMakeGenerate(BuildDirs[Dependency], DependencyDirs[Dependency])
-  elseif GenerationTool == "make" then
-    MakefileGenerate(BuildDirs[Dependency], DependencyDirs[Dependency])
+    CMakeGenerate(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
+  elseif GenerationTool == "makefile" then
+    MakefileGenerate(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
   end
 end
 
-function BuildDependency(DependencyOption)
-  local Dependency = GetDependencyNameByOption(DependencyOption)
+function BuildDependency(DependencyIndex)
+  if Dependencies[DependencyIndex]["RequiresBuilding"] == false then
+    print("Build : " ..Dependencies[DependencyIndex]["Name"].. " doesn't require building. Skipping...")
+    return
+  end
+  local Dependency = Dependencies[DependencyIndex]["Name"]
   if Dependency == "" then
-    print("Error : Cannot build " ..DependencyOption.. " option.")
+    print("Error : Cannot build " ..Dependency.. " option.")
     return
   end
 
   local BuildTool = DetermineDependencyBuildTool(Dependency)
 
   if BuildTool == "cmake" then
-    CMakeBuild(BuildDirs[Dependency], DependencyDirs[Dependency])
+    CMakeBuild(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
   elseif BuildTool == "make" then
-    MakefileBuild(BuildDirs[Dependency], DependencyDirs[Dependency])
+    MakefileBuild(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
   end
 
 end
 
-function generate_assimp()
-  print("Generate : Generating ASSIMP")
-  print("Generate : " ..CreateFolderIfDoesntExist("ASSIMP"))
-  cmake_generate(BuildDirs["ASSIMP"], DependencyDirs["ASSIMP"])
-end
+function OrganizeDependency(DependencyIndex)
+  if #Dependencies[DependencyIndex]["LinkFileNames"] == 0 then
+    print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " have no files to link. Skipping...")
+    return
+  end
+  local FoundFiles = FindDependencyLibraryFiles(DependencyIndex)
+  --Move library files to the Builds/Libraries folder, and Dynamic Libraries to the Binaries folder.
+  if FoundFiles[1] == "" then
+    print("Organize : Error, no libraries found.")
+    return
+  end
 
-function build_assimp()
-  print("Build : Building ASSIMP")
-  cmake_build(BuildDirs["ASSIMP"])
-end
+  local Dependency = Dependencies[DependencyIndex]["Name"]
+  print("Organize : " ..CreateFolderIfDoesntExist(DependencyLibrariesDir, Dependency))
 
-function clean_assimp()
-  print("Clean : Cleaning ASSIMP")
-  os.rmdir(BuildDirs["ASSIMP"])
-end
-
--- DevIL Functions
--- DevIL was replaced by stb_image.
-
---function generate_devil()
---  print("Generate : Generating DevIL")
---  print("Generate : " ..CreateFolderIfDoesntExist("DevIL"))
---  cmake_generate(BuildDirs["DevIL"], DependencyDirs["DevIL"])
---end
-
---function build_devil()
---  print("Build : Building DevIL")
---  cmake_build(BuildDirs["DevIL"])
---end
-
---function clean_devil()
---  print("Clean : Cleaning DevIL")
---  os.rmdir(BuildDirs["DevIL"])
---end
-
--- FreeType Functions
-
-function generate_freetype()
-  print("Generate : Generating FreeType")
-  print("Generate : " ..CreateFolderIfDoesntExist("FreeType"))
-  cmake_generate(BuildDirs["FreeType"], DependencyDirs["FreeType"])
-end
-
-function build_freetype()
-  print("Build : Building FreeType")
-  cmake_build(BuildDirs["FreeType"])
-end
-
-function clean_freetype()
-  print("Clean : Cleaning FreeType")
-  os.rmdir(BuildDirs["FreeType"])
+  for _,v in pairs(FoundFiles) do
+    CopyFile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency))
+    --print(os.copyfile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency)))
+  end
 end
 
 -- GLEW Functions
-
-function generate_glew()
-  print("Generate : Generating GLEW")
-  print("Generate : " ..CreateFolderIfDoesntExist("GLEW"))
-  makefile_generate(BuildDirs["GLEW"])
-  --cmake_generate(BuildDirs["GLEW"], DependencyDirs["GLEW"])
-end
 
 function build_glew(BuildDir)
   print("Build : Building GLEW")
@@ -340,27 +375,4 @@ function build_glew(BuildDir)
   --  io.popen("ar cr lib/libglew32mx.a src/glew.mx.o")
   --end
   --cmake_build(DependencyDirs["GLEW"])
-end
-
-function clean_glew()
-  print("Clean : Cleaning GLEW")
-  os.rmdir(BuildDirs["GLEW"])
-end
-
--- SDL2 Functions
-
-function generate_sdl2()
-  print("Generate : Generating SDL2")
-  print("Generate : " ..CreateFolderIfDoesntExist("SDL2"))
-  cmake_generate(BuildDirs["SDL2"], DependencyDirs["SDL2"])
-end
-
-function build_sdl2()
-  print("Build : Building SDL2")
-  cmake_build(BuildDirs["SDL2"])
-end
-
-function clean_sdl2()
-  print("Clean : Cleaning SDL2")
-  os.rmdir(BuildDirs["SDL2"])
 end

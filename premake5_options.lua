@@ -2,8 +2,8 @@ local DependencyAllowed = {}
 
 DependencyAllowed [1] = { "all", "All libraries will be taken into action."}
 
-for i, v in ipairs(DependencyNames) do
-  DependencyAllowed[i+1] = { v:lower(), "Only " ..v.. " library will be taken into action." }
+for i, v in ipairs(Dependencies) do
+  DependencyAllowed[i+1] = { v["Name"]:lower(), "Only " ..v["Name"].. " library will be taken into action." }
 end
 
 newoption {

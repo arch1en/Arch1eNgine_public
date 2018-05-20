@@ -7,85 +7,11 @@ require("premake5_options")
 
 Rebuilds = {}
 
-
-
-
-
---print("Found Path : " ..GetFilePath(WorkspaceDirectory, "README", true))
--- CONFIGURATIONS --
---RebuildAll = true
-
---Rebuilds["ASSIMP"] = true
---------------------
---DependencyLinkDirs = {}
-
---DependencyLinkDirs["GLM"] = ""
---DependencyLinkDirs["ASSIMP"] = ""
---DependencyLinkDirs["GLEW"] = ""
---DependencyLinkDirs["SDL2"] = ""
---DependencyLinkDirs["DevIL"] = ""
---DependencyLinkDirs["FreeType"] = ""
-
---DependencyIncludeDirs = {}
-
---DependencyIncludeDirs["GLM"] = ""
---DependencyIncludeDirs["ASSIMP"] = ""
---DependencyIncludeDirs["GLEW"] = ""
---DependencyIncludeDirs["SDL2"] = ""
---DependencyIncludeDirs["DevIL"] = ""
---DependencyIncludeDirs["FreeType"] = ""
-
-
-
-
-
-
-
-
---if RebuildAll == true then
-	--printf("Rebuilding solution...")
-	--os.rmdir(WorkspaceDirectory .. "/" .. BuildsDir)
-	--os.mkdir(WorkspaceDirectory .. "/" .. BuildsDir)
---end
-
 workspace("Arch1eNgine")
 	configurations({ "Debug", "Release" })
 	platforms({"Win32", "Win64", "Linux"})
 	location("Builds")
 
--- Prepare dependencies first, so that the engine target will have all required stuff ready.
-
-	-- GLM --
-	CurrentProjectConfigName = "GLM"
-		-- Including directories...
-		DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName]
-
-	-- ASSIMP --
-	CurrentProjectConfigName = "ASSIMP"
-	--project(DependencyNames[CurrentProjectConfigName])
-		--kind("SharedLib")
-		--targetdir("Binaries/")
-		--location(BuildDirs[CurrentProjectConfigName])
-
-		--if Rebuilds["ASSIMP"] == true then
-			--os.rmdir(BuildDirs[CurrentProjectConfigName])
-			--os.mkdir(BuildDirs[CurrentProjectConfigName])
-
-			--print(io.popen("cd Assets"))
-			--print(io.popen("dir"))
-
-			--io.popen("cmake --build " .. BuildDirs[CurrentProjectConfigName])
-		--end
-
-		--os.execute("cmake -E remove_directory " .. BuildDirs[CurrentProjectConfigName])
-		--os.execute("cmake -E make_directory " .. BuildDirs[CurrentProjectConfigName])
-
-		-- Linking directory...
-		--if os.is64bit() then
-		--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release" -- This is the same for 32 and 64 bit machine, change that later.
-		--else
-		--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release" -- This is the same for 32 and 64 bit machine, change that later.
-		--end
 
 	-- GLEW --
 	--CurrentProjectConfigName = "GLEW"
@@ -146,18 +72,29 @@ project("Engine")
 	-- use removefiles function to remove any unnescessary files.
 
 	-- Including directories...
-	for i in pairs(DependencyIncludeDirs) do
-		includedirs(DependencyIncludeDirs[i])
+	for i in pairs(Dependencies) do
+		local Size = #Dependencies[i]["IncludeDirs"]
+		for j=1,Size do
+			includedirs(DependencyDirs[Dependencies[i]["Name"]].. "/" ..Dependencies[i]["IncludeDirs"][j])
+		end
 	end
 
 	-- Linking libraries...
-	for i in pairs(DependencyLinkFileNames) do
-		links(DependencyLinkFileNames[i])
+	for i in pairs(Dependencies) do
+		local Size = #Dependencies[i]["LinkFileNames"]
+		for j=1,Size do
+			local FileName = Dependencies[i]["LinkFileNames"][j]
+			if FileName ~= "" then
+				links(FileName)
+			end
+		end
 	end
 
 	-- Finding libraries...
-	for i in pairs(DependencyLinkDirs) do
-		libdirs(DependencyLinkDirs[i])
+	for i in pairs(Dependencies) do
+		if Dependencies[i]["RequiresBuilding"] == true then
+			libdirs(WorkspaceDirectory.. "/" ..BuildsDir.. "/Libraries/" ..Dependencies[i]["Name"])
+		end
 	end
 
 configuration("windows")
@@ -177,3 +114,7 @@ configuration("windows")
 
 	filter("configurations:Release")
 		optimize("On")
+
+	filter("action:vs*")
+		pchheader "Source/stdafx.h"
+		pchsource "Source/stdafx.cpp"
