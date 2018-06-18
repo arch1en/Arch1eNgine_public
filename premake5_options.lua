@@ -1,3 +1,5 @@
+-- Dependency Option
+
 local DependencyAllowed = {}
 
 DependencyAllowed [1] = { "all", "All libraries will be taken into action."}
@@ -8,7 +10,7 @@ end
 
 newoption {
   trigger = "dependency",
-  description = "Choose which dependency project should be taken into action (clean, build or rebuild).",
+  description = "Choose which dependency project should be taken into action (clean, build, rebuild or organize).",
   default = "all",
   allowed = DependencyAllowed
 }

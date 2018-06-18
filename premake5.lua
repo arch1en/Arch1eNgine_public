@@ -8,58 +8,13 @@ require("premake5_options")
 Rebuilds = {}
 
 workspace("Arch1eNgine")
-	configurations({ "Debug", "Release" })
+	local ConfigurationNames = {}
+for i,v in pairs(Configurations) do
+	ConfigurationNames[i] = v["Name"]
+end
+	configurations(ConfigurationNames)
 	platforms({"Win32", "Win64", "Linux"})
 	location("Builds")
-
-
-	-- GLEW --
-	--CurrentProjectConfigName = "GLEW"
-	--project(DependencyNames[CurrentProjectConfigName])
-	--	kind("SharedLib")
-	--	targetdir("Binaries/")
-	--	location(BuildDirs[CurrentProjectConfigName])
-		-- Including directories...
-	--	DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
-		-- Linking directory...
-	--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/Release/"
-	--	if os.is64bit() then
-	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64"
-	--	else
-	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/Win32"
-	--	end
-
-	-- SDL2 --
-	--CurrentProjectConfigName = "SDL2"
-	--project(DependencyNames[CurrentProjectConfigName])
-	--	kind("SharedLib")
-	--	targetdir("Binaries/")
-	--	location(BuildDirs[CurrentProjectConfigName])
-		-- Including directories...
-	--	DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/include"
-		-- Linking directory...
-	--	DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/lib/"
-	--	if os.is64bit() then
-	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64"
-	--	else
-	--		DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x86"
-	--	end
-
-	-- DevIL --
-	--CurrentProjectConfigName = "DevIL"
-	--project(DependencyNames[CurrentProjectConfigName])
-	--	kind("SharedLib")
-	--	targetdir("Binaries/")
-	--	location(BuildDirs[CurrentProjectConfigName])
-		-- Including directories...
-	--	DependencyIncludeDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/WIN/include"
-		-- Linking directory...
---		DependencyLinkDirs[CurrentProjectConfigName] = DependencyDirs[CurrentProjectConfigName] .. "/WIN/lib"
---		if os.is64bit() then
---			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x64/Release"
---		else
---			DependencyLinkDirs[CurrentProjectConfigName] = DependencyLinkDirs[CurrentProjectConfigName] .. "/x86/Release"
---		end
 
 project("Engine")
 	kind("ConsoleApp")
@@ -108,12 +63,20 @@ configuration("windows")
 	filter("system:not windows")
 		links({"GL"})
 
-	filter("configurations:Debug")
-		defines({"DEBUG"})
-		symbols("On")
+	for i,v in pairs(Configurations) do
+		filter("configurations:" .. v["Name"])
+		if #v["Defines"] ~= 0 then
+			local DefinesNames = {}
+			for j,w in pairs(v["Defines"]) do
+				DefinesNames[j] = w
+			end
+			defines(DefinesNames)
+		end
 
-	filter("configurations:Release")
-		optimize("On")
+		symbols(v["Symbols"])
+		optimize(v["Optimize"])
+
+	end
 
 	filter("action:vs*")
 		pchheader "Source/stdafx.h"

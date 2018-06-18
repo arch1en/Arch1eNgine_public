@@ -12,6 +12,7 @@ function AdaptDirSlashes(String)
 end
 
 -- Initialization block
+BinariesDir = "Binaries"
 DependenciesDir = "Dependencies"
 BuildsDir = "Builds"
 LibrariesDir = "Libraries"
@@ -106,18 +107,35 @@ function LiveLog(log)
 end
 
 function FindDependencyLibraryFiles(DependencyIndex)
-  local LibraryFileExtension = ""
+  local DynamicLibraryFileExtension = ""
+  local LinkerLibraryFileExtension = "lib"
   if os.target() == "windows" then
-    LibraryFileExtension = "dll"
+    DynamicLibraryFileExtension = "dll"
   elseif os.target() == "linux" then
-    LibraryFileExtension = "a"
+    DynamicLibraryFileExtension = "a"
   end
 
-  local FilePaths = {}
+  local FilePaths =
+  {
+    [1] = {},
+    [2] = {}
+  }
 
   for i,v in pairs(Dependencies[DependencyIndex]["LinkFileNames"]) do
-    local FoundFiles = os.matchfiles(DependenciesBuildDirs[Dependencies[DependencyIndex]["Name"]].. "/**" ..v.. "." ..LibraryFileExtension)
-    FilePaths[i] = FoundFiles[1]
+    local FileName = v.. "." ..DynamicLibraryFileExtension
+    local FoundFiles = os.matchfiles(DependenciesBuildDirs[Dependencies[DependencyIndex]["Name"]].. "/**" ..FileName)
+    if FoundFiles[1] == nil then
+      print("FindDependencyLibraryFiles Failed. "..FileName.." link file name was not found.")
+      return nil
+    end
+    FilePaths[1][i] = FoundFiles[1]
+    local LinkerLibraryFile = FoundFiles[1]:gsub("(" ..DynamicLibraryFileExtension..")$", LinkerLibraryFileExtension)
+    local LinkerLibraryFound = os.isfile(LinkerLibraryFile)
+    if LinkerLibraryFound == true then
+      FilePaths[2][i] = LinkerLibraryFile
+    else
+      printf("FindDependencyLibraryFiles Failed. " ..LinkerLibraryFile.. " file not found.")
+    end
   end
 
   return FilePaths
@@ -201,7 +219,7 @@ end
 function CMakeBuild(BuildDir)
   local log = ""
   if os.target() == "windows" then
-    log = io.popen("cd /d " .. BuildDir .. " && cmake --build .", 'r')
+    log = io.popen("cd /d " .. BuildDir .. " && cmake --build . --config Release", 'r')
   else
     print("CMakeBuild Error : Operational System target invalid or inoperable.")
     return
@@ -317,11 +335,12 @@ function GenerateDependency(DependencyIndex)
 end
 
 function BuildDependency(DependencyIndex)
-  if Dependencies[DependencyIndex]["RequiresBuilding"] == false then
-    print("Build : " ..Dependencies[DependencyIndex]["Name"].. " doesn't require building. Skipping...")
+  local CurrentDependency = Dependencies[DependencyIndex]
+  if CurrentDependency["RequiresBuilding"] == false then
+    print("Build : " ..CurrentDependency["Name"].. " doesn't require building. Skipping...")
     return
   end
-  local Dependency = Dependencies[DependencyIndex]["Name"]
+  local Dependency = CurrentDependency["Name"]
   if Dependency == "" then
     print("Error : Cannot build " ..Dependency.. " option.")
     return
@@ -330,11 +349,22 @@ function BuildDependency(DependencyIndex)
   local BuildTool = DetermineDependencyBuildTool(Dependency)
 
   if BuildTool == "cmake" then
+    print(CurrentDependency["BuildingProperties"]["Configurations"][0])
+   
     CMakeBuild(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
   elseif BuildTool == "make" then
     MakefileBuild(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
   end
 
+end
+
+function IsOrganizeable()
+  for _,v in pairs(Configurations) do
+    if v["Name"] then
+      return true
+    end
+  end
+  return false
 end
 
 function OrganizeDependency(DependencyIndex)
@@ -344,15 +374,24 @@ function OrganizeDependency(DependencyIndex)
   end
   local FoundFiles = FindDependencyLibraryFiles(DependencyIndex)
   --Move library files to the Builds/Libraries folder, and Dynamic Libraries to the Binaries folder.
-  if FoundFiles[1] == "" then
-    print("Organize : Error, no libraries found.")
+  if FoundFiles == nil then
+    print(Dependencies[DependencyIndex]["Name"].. "Organize : Error, no libraries found.")
     return
   end
 
   local Dependency = Dependencies[DependencyIndex]["Name"]
   print("Organize : " ..CreateFolderIfDoesntExist(DependencyLibrariesDir, Dependency))
 
-  for _,v in pairs(FoundFiles) do
+  -- Copy dynamic link files (dll and a) to respective folder.
+  for _,v in pairs(FoundFiles[1]) do
+    for _,w in pairs(Configurations) do
+      print("Organize : " ..CreateFolderIfDoesntExist(AdaptDirSlashes(WorkspaceDirectory.. "/" ..BinariesDir), w["Name"]))
+      CopyFile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..BinariesDir.. "/" ..w["Name"]))
+    end
+    --print(os.copyfile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency)))
+  end
+  -- Copy linker files (lib) to respective folder.
+  for _,v in pairs(FoundFiles[2]) do
     CopyFile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency))
     --print(os.copyfile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency)))
   end

@@ -74,11 +74,15 @@ newaction
   trigger = "organize",
   description = "Organize libraries of the dependency that is currently set.",
   onStart = function()
-    print("Organize : Starting process")
-    if _OPTIONS["dependency"] == "all" then
-      OrganizeAllDependencies()
+    if IsOrganizeable() then
+      print("Organize : Starting process")
+      if _OPTIONS["dependency"] == "all" then
+        OrganizeAllDependencies()
+      else
+        OrganizeDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      end
     else
-      OrganizeDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      print("Organize : Process failed.")
     end
   end,
 
