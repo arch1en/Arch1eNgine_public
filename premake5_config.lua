@@ -1,15 +1,11 @@
--- This is the only file that should be interacted with.
-
--- Directory where cmake executable resides.
-CMakeExecutableDir = "E://_Tools//CMake//bin"
-
--- Directory where makefile or mingw32-make executable resides.
-MakefileExecutableDir = "E://_Tools//MinGW//bin"
-
--- [TODO] Directory where autotools executable resides.
-AutotoolsExecutableDir = ""
+ 
 
 --[[
+
+Disclaimer :
+	This is the only file that should be interacted with.
+
+	
   Example :
 
   Names of dependencies that will be used in the project.
@@ -42,7 +38,21 @@ AutotoolsExecutableDir = ""
 
   If building is required, these properties will be used for further action.
   ["BuildingProperties"]
+		
+		Define configuration names that will be used during building process. 
+		For the proper build behavior, these options mave to match project configurations index.
+		["Configurations"] = { "Release", "Debug" }
+
 --]]
+
+-- Directory where cmake executable resides.
+CMakeExecutableDir = "D:/_Tools/CMake/bin"
+
+-- Directory where makefile or mingw32-make executable resides.
+MakefileExecutableDir = "D:/_Tools/MinGW/bin"
+
+-- [TODO] Directory where autotools executable resides.
+AutotoolsExecutableDir = ""
 
 Configurations =
 {
@@ -64,53 +74,74 @@ Dependencies =
 {
   {
     ["Name"] =                    "ASSIMP",
-    ["LinkFileNames"] =           { "assimp-vc140-mt" },
     ["IncludeDirs"] =             { "include" },
     ["RequiresGeneration"] =      true,
-    ["RequiresBuilding"] =        true
+    ["RequiresBuilding"] =        true,
+    ["ConfigurationProperties"] =
+    {
+        {
+            ["Name"] = "Release",
+            ["LinkFileNames"] = { "assimp-vc140-mt" }
+        },
+        {
+            ["Name"] = "Debug",
+            ["LinkFileNames"] = { "assimp-vc140-mt" }
+        }
+    }
   },
   {
     ["Name"] =                  "FreeType",
-    ["LinkFileNames"] =         {},
     ["IncludeDirs"] =           { "include" },
     ["RequiresGeneration"] =    false,
     ["RequiresBuilding"] =      false,
-
+    ["ConfigurationProperties"] =
+    {
+    }
   },
   {
     ["Name"] =                  "GLAD",
     ["LinkFileNames"] =         {},
     ["IncludeDirs"] =           { "include" },
     ["RequiresGeneration"] =    false,
-    ["RequiresBuilding"] =      false
+    ["RequiresBuilding"] =      false,
+    ["ConfigurationProperties"] =
+    {
+    }
   },
   {
     ["Name"] =                  "GLM",
-    ["LinkFileNames"] =         {},
-    ["IncludeDirs"] =           { "" },
-    ["RequiresGeneration"] =    false,
-    ["RequiresBuilding"] =      false
-  },
-  {
-    ["Name"] =                  "IMGUI",
-    ["LinkFileNames"] =         {},
     ["IncludeDirs"] =           { "" },
     ["RequiresGeneration"] =    false,
     ["RequiresBuilding"] =      false,
+    ["ConfigurationProperties"] =
+    {
+    }
+  },
+  {
+    ["Name"] =                  "IMGUI",
+    ["IncludeDirs"] =           { "" },
+    ["RequiresGeneration"] =    false,
+    ["RequiresBuilding"] =      false,
+    ["ConfigurationProperties"] =
+    {
+    }
   },
   {
     ["Name"] =                  "SDL2",
-    ["LinkFileNames"] =         { "SDL2", "SDL2main" },
     ["IncludeDirs"] =           { "include" },
     ["RequiresGeneration"] =    true,
     ["RequiresBuilding"] =      true,
-    ["BuildingProperties"] =
-    { 
-        "Configurations" = { "Debug", "Release" }, 
+    ["ConfigurationProperties"] =
+	{ 
+        {
+            ["Name"] = "Release",
+            ["LinkFileNames"] = { "SDL2", "SDL2main" }
+        },
+        { 
+            ["Name"] = "Debug",
+            ["LinkFileNames"] = { "SDL2d", "SDL2maind" } 
+        }
     },
   }
 }
 
--- TEST
-print(Dependencies[6]["BuildingProperties"]["Configurations"][0])
--- ~TEST~
