@@ -127,11 +127,20 @@ function FindDependencyLibraryFiles(DependencyIndex)
             local SearchRegex = DependenciesBuildDirs[Dependencies[DependencyIndex]["Name"]].. "/**"
             local FoundFiles = os.matchfiles(SearchRegex..DynamicLibraryFileName)
             if FoundFiles[1] ~= nil then
-                FilePaths[1][i] = FoundFiles[1]
+                for j,vf in pairs(FoundFiles) do
+                    print(vf)
+                    table.insert(FilePaths[1], vf)
+                end
             end
+
+            for i in pairs(FoundFiles) do FoundFiles[i] = nil end
+
             FoundFiles = os.matchfiles(SearchRegex..LinkerLibraryFileName)
             if FoundFiles[1] ~= nil then
-                FilePaths[2][i] = FoundFiles[1]
+                for j,vf in pairs(FoundFiles) do
+                    print(vf)
+                    table.insert(FilePaths[2], vf)
+                end
             end
         end
     end
@@ -347,8 +356,8 @@ function BuildDependency(DependencyIndex)
     local BuildTool = DetermineDependencyBuildTool(Dependency)
 
     if BuildTool == "cmake" then
-        for _,v in pairs(CurrentDependency["BuildingProperties"]["Configurations"]) do
-            CMakeBuild(DependenciesBuildDirs[Dependency], v)
+        for _,v in pairs(CurrentDependency["ConfigurationProperties"]) do
+            CMakeBuild(DependenciesBuildDirs[Dependency], v["Name"])
         end
     elseif BuildTool == "make" then
         MakefileBuild(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
@@ -371,10 +380,9 @@ function OrganizeDependency(DependencyIndex)
             print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " in " ..v0["Name"].. " configuration have no files to link.")
             break
         end
-
-        local FoundFiles = FindDependencyLibraryFiles(DependencyIndex)
-
     end
+
+    local FoundFiles = FindDependencyLibraryFiles(DependencyIndex)
     --Move library files to the Builds/Libraries folder, and Dynamic Libraries to the Binaries folder.
     if FoundFiles == nil then
         print(Dependencies[DependencyIndex]["Name"].. " Organize : Error, no libraries found.")
