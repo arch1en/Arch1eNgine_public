@@ -35,25 +35,45 @@ end
 
 -- Linking libraries...
 for _,v0 in pairs(Dependencies) do
-    for _,v1 in ipairs(v0["ConfigurationProperties"]) do
-        for i,v2 in ipairs(v1) do
-            filter("configurations:" ..Configurations[i]["Name"])
-            if v2["LinkFileNames"] ~= nil and #v2["LinkFileNames"] ~= 0 then
-                for _,v3 in ipairs(v2["LinkFileNames"]) do
-                    if v3 ~= "" then
-                        links(v3)
+
+    local ConfigurationProperties = v0["ConfigurationProperties"]
+    if ConfigurationProperties ~= nil and #ConfigurationProperties ~= 0 then
+
+        for i,v1 in ipairs(v0["ConfigurationProperties"]) do
+
+            local PlatformProperties = v1["PlatformProperties"]
+            if PlatformProperties ~= nil and #PlatformProperties ~= 0 then
+
+                for _,v2 in ipairs(v1["PlatformProperties"]) do
+                    for _,v3 in ipairs(v2) do
+                        filter("configurations:" ..Configurations[i]["Name"])
+                        if v3["LinkFileNames"] ~= nil and #v3["LinkFileNames"] ~= 0 then
+                            for _,v4 in ipairs(v3["LinkFileNames"]) do
+                                if v4 ~= "" then
+                                    links(v4)
+                                end
+                            end
+                        end
+
                     end
                 end
+
+            else
+                print("Linking libraries : " ..v0["Name"].. " in " ..v1["Name"].. " configuration has no platform properties")
             end
+
+            --      local Size = #v1["LinkFileNames"]
+            --      for j=1,Size do
+            --          local FileName = Dependencies[i]["LinkFileNames"][j]
+            --          if FileName ~= "" then
+            --              links(FileName)
+            --          end
+            --      end
         end
---      local Size = #v1["LinkFileNames"]
---      for j=1,Size do
---          local FileName = Dependencies[i]["LinkFileNames"][j]
---          if FileName ~= "" then
---              links(FileName)
---          end
---      end
+    else
+        print("Linking libraries : " ..v0["Name"].. " has no configuration.")
     end
+
 end
 
 filter {}

@@ -46,10 +46,10 @@ Disclaimer :
 --]]
 
 -- Directory where cmake executable resides.
-CMakeExecutableDir = "D:/_Tools/CMake/bin"
+CMakeExecutableDir = "E:/_Tools/CMake/bin"
 
 -- Directory where makefile or mingw32-make executable resides.
-MakefileExecutableDir = "D:/_Tools/MinGW/bin"
+MakefileExecutableDir = "E:/_Tools/MinGW/bin"
 
 -- [TODO] Directory where autotools executable resides.
 AutotoolsExecutableDir = ""
@@ -81,11 +81,23 @@ Dependencies =
     {
         {
             ["Name"] = "Release",
-            ["LinkFileNames"] = { "assimp-vc140-mt" }
+            ["PlatformProperties"] = 
+            {
+                {
+                    ["Name"] = "Win64",
+                    ["LinkFileNames"] = { "assimp-vc140-mt" }
+                }
+            }
         },
         {
             ["Name"] = "Debug",
-            ["LinkFileNames"] = { "assimp-vc140-mt" }
+            ["PlatformProperties"] = 
+            {
+                {
+                    ["Name"] = "Win64",
+                    ["LinkFileNames"] = { "assimp-vc140-mt" }
+                }
+            }
         }
     }
   },
@@ -104,27 +116,18 @@ Dependencies =
     ["IncludeDirs"] =           { "include" },
     ["RequiresGeneration"] =    false,
     ["RequiresBuilding"] =      false,
-    ["ConfigurationProperties"] =
-    {
-    }
   },
   {
     ["Name"] =                  "GLM",
     ["IncludeDirs"] =           { "" },
     ["RequiresGeneration"] =    false,
     ["RequiresBuilding"] =      false,
-    ["ConfigurationProperties"] =
-    {
-    }
   },
   {
     ["Name"] =                  "IMGUI",
     ["IncludeDirs"] =           { "" },
     ["RequiresGeneration"] =    false,
     ["RequiresBuilding"] =      false,
-    ["ConfigurationProperties"] =
-    {
-    }
   },
   {
     ["Name"] =                  "SDL2",
@@ -135,11 +138,23 @@ Dependencies =
 	{ 
         {
             ["Name"] = "Release",
-            ["LinkFileNames"] = { "SDL2", "SDL2main" }
+            ["PlatformProperties"] =
+            {
+                {
+                    ["Name"] = "Win64",
+                    ["LinkFileNames"] = { "SDL2", "SDL2main" }
+                }
+            }
         },
         { 
             ["Name"] = "Debug",
-            ["LinkFileNames"] = { "SDL2d", "SDL2maind" } 
+            ["PlatformProperties"] =
+            {
+                {
+                    ["Name"] = "Win64",
+                    ["LinkFileNames"] = { "SDL2d", "SDL2maind" } 
+                }
+            }
         }
     },
   }

@@ -81,7 +81,6 @@ function FindDependencyByName(Args)
     local DependencyName, Lowercase =
     Args[1] or Args.DependencyName,
     Args[2] or Args.Lowercase
-
     for i,v in pairs(Dependencies) do
         if Lowercase == true then
             if v["Name"]:lower() == DependencyName:lower() then
@@ -104,6 +103,59 @@ function LiveLog(log)
         end
     until not logLine
     log:close()
+end
+
+function FindDependencyLibraryFiles(DependencyIndex, ConfigurationName, PlatformName)
+    local DynamicLibraryFileExtension = ""
+    local LinkerLibraryFileExtension = "lib"
+    if os.target() == "windows" then
+        DynamicLibraryFileExtension = "dll"
+    elseif os.target() == "linux" then
+        DynamicLibraryFileExtension = "a"
+    end
+
+    local FilePaths =
+    {
+        [1] = {},
+        [2] = {}
+    }
+    local ConfigurationProperties = Dependencies[DependencyIndex]["ConfigurationProperties"]
+    local FoundFileNames = nil
+    local FoundDynamicLibraryFiles = nil
+    local FoundLinkerLibraryFiles = nil
+    for i,v0 in pairs(ConfigurationProperties) do
+        if v0["Name"] == ConfigurationName then
+            for _,v1 in pairs(ConfigurationProperties[i]) do
+                if v1["Name"] == PlatformName then
+                   FoundFileNames = v1["LinkFileNames"] 
+                end
+            end
+        end
+    end 
+
+    for i,v1 in pairs(FoundFileNames) do
+        local DynamicLibraryFileName = v1.. "." ..DynamicLibraryFileExtension
+        local LinkerLibraryFileName = v1.. "." ..LinkerLibraryFileExtension
+        local SearchRegex = DependenciesBuildDirs[Dependencies[DependencyIndex]["Name"]].. "/**"
+        local FoundFiles = os.matchfiles(SearchRegex..DynamicLibraryFileName)
+        if FoundFiles[1] ~= nil then
+            for j,vf in pairs(FoundFiles) do
+                print(vf)
+                table.insert(FilePaths[1], vf)
+            end
+        end
+
+        for i in pairs(FoundFiles) do FoundFiles[i] = nil end
+
+        FoundFiles = os.matchfiles(SearchRegex..LinkerLibraryFileName)
+        if FoundFiles[1] ~= nil then
+            for j,vf in pairs(FoundFiles) do
+                print(vf)
+                table.insert(FilePaths[2], vf)
+            end
+        end
+    end
+    return FilePaths
 end
 
 function FindDependencyLibraryFiles(DependencyIndex)
@@ -376,9 +428,11 @@ end
 
 function OrganizeDependency(DependencyIndex)
     for _,v0 in pairs(Dependencies[DependencyIndex]["ConfigurationProperties"]) do
-        if #v0["LinkFileNames"] == 0 then
-            print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " in " ..v0["Name"].. " configuration have no files to link.")
-            break
+        for _,v1 in pairs(v0["PlatformProperties"]) do
+            if #v1["LinkFileNames"] == 0 then
+                print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " in " ..v0["Name"].. " configuration have no files to link.")
+                break
+            end
         end
     end
 
