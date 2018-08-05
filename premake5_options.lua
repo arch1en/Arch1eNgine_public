@@ -14,3 +14,29 @@ newoption {
   default = "all",
   allowed = DependencyAllowed
 }
+
+local ConfigurationsAllowed = {}
+
+for i,v in ipairs(Configurations) do
+    ConfigurationsAllowed[i] = { v["Name"], "Build dependency in " ..v["Name"].. " configuration." }
+end
+
+newoption {
+    trigger = "configuration",
+    description = "Choose which configuration of selected dependency should be taken into action.",
+    default = "Debug",
+    allowed = ConfigurationsAllowed 
+}
+
+local PlatformsAllowed = {}
+
+for i,v in ipairs(Platforms) do
+    PlatformsAllowed[i] = { v["Name"], "Build dependency on " ..v["Name"].. " platform." }
+end
+
+newoption {
+    trigger = "platform",
+    description = "Choose which platform of selected configuration and dependency should be takein into action.",
+    default = "Win64",
+    allowed = PlatformsAllowed
+}

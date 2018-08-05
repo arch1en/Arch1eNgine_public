@@ -68,6 +68,13 @@ end
 --end
 
 -- os.copyfile doesnt work for windows for some reason...
+
+-- PropertyIndex = 0 for Configuration, 1 for Platform
+function IsTokenInPropertyGroup(PropertyIndex, PropertyGroupName, Token)
+    local Tokens = string.explode(PropertyGroupName, "|")
+    return Tokens[PropertyIndex] == Token
+end
+
 function CopyFile(Source, Destination)
     if os.target() == "windows" then
         io.popen("copy "..Source.. " " ..Destination,'r')
@@ -118,18 +125,17 @@ function FindDependencyLibraryFiles(DependencyIndex, ConfigurationName, Platform
     {
         [1] = {},
         [2] = {}
+    
     }
     local ConfigurationProperties = Dependencies[DependencyIndex]["ConfigurationProperties"]
+    local PropertyGroups = Dependencies[DependencyIndex]["PropertyGroups"]
+
     local FoundFileNames = nil
     local FoundDynamicLibraryFiles = nil
     local FoundLinkerLibraryFiles = nil
-    for i,v0 in pairs(ConfigurationProperties) do
-        if v0["Name"] == ConfigurationName then
-            for _,v1 in pairs(ConfigurationProperties[i]) do
-                if v1["Name"] == PlatformName then
-                   FoundFileNames = v1["LinkFileNames"] 
-                end
-            end
+    for i,v0 in pairs(PropertyGroups) do
+        if IsTokenInPropertyGroup(0, v0["Name"], ConfigurationName) and IsTokenInPropertyGroup(1, v0["Name"], PlatformName) then
+                FoundFileNames = v0["LinkFileNames"] 
         end
     end 
 
@@ -172,7 +178,7 @@ function FindDependencyLibraryFiles(DependencyIndex)
         [1] = {},
         [2] = {}
     }
-    for _,v0 in pairs(Dependencies[DependencyIndex]["ConfigurationProperties"]) do
+    for _,v0 in pairs(Dependencies[DependencyIndex]["PropertyGroups"]) do
         for i,v1 in pairs(v0["LinkFileNames"]) do
             local DynamicLibraryFileName = v1.. "." ..DynamicLibraryFileExtension
             local LinkerLibraryFileName = v1.. "." ..LinkerLibraryFileExtension
@@ -263,10 +269,10 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
     return ""
 end
 
-function CMakeGenerate(BuildDir, DependencyDir)
+function CMakeGenerate(BuildDir, DependencyDir, DependencyPlatform)
     local log = ""
     if os.target() == "windows" then
-        log = io.popen("cd /d " .. BuildDir .. " && " ..AdaptDirSlashes(CMakeExecutableDir.. "//cmake").. " -G \"Visual Studio 15 2017 Win64\" " .. DependencyDir, 'r')
+        log = io.popen("cd /d " .. BuildDir .. " && " ..AdaptDirSlashes(CMakeExecutableDir.. "//cmake").. " -G \"Visual Studio 15 2017 " ..DependencyPlatform..  "\" " .. DependencyDir, 'r')
     else
         print("CMakeGenerate Error : Operational System target invalid or inoperable.")
         return
@@ -387,7 +393,7 @@ function GenerateDependency(DependencyIndex)
     print("Generate : " ..CreateFolderIfDoesntExist(DependencyBuildsDir, Dependency))
 
     if GenerationTool == "cmake" then
-        CMakeGenerate(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
+        CMakeGenerate(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency], _OPTIONS["platform"])
     elseif GenerationTool == "makefile" then
         MakefileGenerate(DependenciesBuildDirs[Dependency], DependencyDirs[Dependency])
     end
@@ -427,16 +433,18 @@ function IsOrganizeable()
 end
 
 function OrganizeDependency(DependencyIndex)
-    for _,v0 in pairs(Dependencies[DependencyIndex]["ConfigurationProperties"]) do
-        for _,v1 in pairs(v0["PlatformProperties"]) do
-            if #v1["LinkFileNames"] == 0 then
-                print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " in " ..v0["Name"].. " configuration have no files to link.")
-                break
-            end
+    if Dependencies[DependencyIndex]["PropertyGroups"] == nil then
+        print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " has no property groups. Leaving...")
+        return
+    end
+    for _,v0 in pairs(Dependencies[DependencyIndex]["PropertyGroups"]) do
+        if #v0["LinkFileNames"] == 0 then
+            print("Organize : " ..Dependencies[DependencyIndex]["Name"].. " in " ..v0["Name"].. " configuration have no files to link.")
+            break
         end
     end
 
-    local FoundFiles = FindDependencyLibraryFiles(DependencyIndex)
+    local FoundFiles = FindDependencyLibraryFiles(DependencyIndex, _OPTIONS["configuration"], _OPTIONS["platform"])
     --Move library files to the Builds/Libraries folder, and Dynamic Libraries to the Binaries folder.
     if FoundFiles == nil then
         print(Dependencies[DependencyIndex]["Name"].. " Organize : Error, no libraries found.")

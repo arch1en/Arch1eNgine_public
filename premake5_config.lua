@@ -70,6 +70,18 @@ Configurations =
   }
 }
 
+Platforms =
+{
+    {
+        ["Name"] = "Win64",
+        ["Defines"] = { "PLATFORM_WIN64" }
+    },
+    {
+        ["Name"] = "Linux",
+        ["Defines"] = { "PLATFORM_LINUX" }
+    }
+}
+
 Dependencies =
 {
   {
@@ -81,23 +93,22 @@ Dependencies =
     {
         {
             ["Name"] = "Release",
-            ["PlatformProperties"] = 
-            {
-                {
-                    ["Name"] = "Win64",
-                    ["LinkFileNames"] = { "assimp-vc140-mt" }
-                }
-            }
         },
         {
             ["Name"] = "Debug",
-            ["PlatformProperties"] = 
-            {
-                {
-                    ["Name"] = "Win64",
-                    ["LinkFileNames"] = { "assimp-vc140-mt" }
-                }
-            }
+        }
+    },
+    ["PlatformProperties"] =
+    {
+        {
+            ["Name"] = "Win64"
+        },
+    },
+    ["PropertyGroups"] =
+    {
+        {
+            ["Name"] = "All",
+            ["LinkFileNames"] = { "assimp-vc140-mt" }
         }
     }
   },
@@ -106,9 +117,6 @@ Dependencies =
     ["IncludeDirs"] =           { "include" },
     ["RequiresGeneration"] =    false,
     ["RequiresBuilding"] =      false,
-    ["ConfigurationProperties"] =
-    {
-    }
   },
   {
     ["Name"] =                  "GLAD",
@@ -138,25 +146,28 @@ Dependencies =
 	{ 
         {
             ["Name"] = "Release",
-            ["PlatformProperties"] =
-            {
-                {
-                    ["Name"] = "Win64",
-                    ["LinkFileNames"] = { "SDL2", "SDL2main" }
-                }
-            }
         },
         { 
             ["Name"] = "Debug",
-            ["PlatformProperties"] =
-            {
-                {
-                    ["Name"] = "Win64",
-                    ["LinkFileNames"] = { "SDL2d", "SDL2maind" } 
-                }
-            }
         }
     },
+    ["PlatformProperties"] =
+    {
+        {
+            ["Name"] = "Win64"
+        }
+    },
+    ["PropertyGroups"] =
+    {
+        {
+            ["Name"] = "Release|Win64",
+            ["LinkFileNames"] = { "SDL2", "SDL2main" }
+        },
+        {
+            ["Name"] = "Debug|Win64",
+            ["LinkFileNames"] = { "SDL2d", "SDL2maind" }
+        }
+    }
   }
 }
 
