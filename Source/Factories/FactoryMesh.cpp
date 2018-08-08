@@ -6,6 +6,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "FactoryMesh.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/MeshTriangle.h"

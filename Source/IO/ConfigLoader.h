@@ -8,8 +8,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include <map>
 
 class ConfigLoader

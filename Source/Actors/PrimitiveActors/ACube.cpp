@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ACube.h"
 #include "Engine/Engine.h"
 #include "Engine/Builders/MeshBuilder.h"

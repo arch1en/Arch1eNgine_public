@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdafx.h>
-
 #include "Engine/Rendering/Material.h"
 
 class MaterialBuilder

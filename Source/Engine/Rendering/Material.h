@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdafx.h>
-
 #include "Engine/Rendering/Textures/Texture.h"
 #include "Math/Color.h"
 

@@ -8,8 +8,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include "Engine/Core/Class.h"
 #include "Actors/AActor.h"
 

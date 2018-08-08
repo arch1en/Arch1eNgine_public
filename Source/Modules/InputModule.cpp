@@ -7,6 +7,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "InputModule.h"
 #include "IO/ConfigLoader.h"
 

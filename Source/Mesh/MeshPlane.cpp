@@ -5,6 +5,7 @@
 //  @usage      : Hardcoded plane mesh for testing purposes.
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "MeshPlane.h"
 #include "IO/Paths.h"
 #include "Math/Math.h"

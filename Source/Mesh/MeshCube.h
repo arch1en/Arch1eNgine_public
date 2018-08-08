@@ -9,7 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.cpp"
 #include "Mesh.h"
 
 class MeshCube : public Mesh

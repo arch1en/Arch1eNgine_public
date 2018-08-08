@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "FactoryTexture.h"	
 
 #include "Helpers.h"

@@ -8,8 +8,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include "Modules/InputModule.h"
 
 class ModuleHandler

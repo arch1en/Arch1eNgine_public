@@ -6,6 +6,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "MeshBuilder.h"
 
 MeshBuilder::MeshBuilder(std::shared_ptr<Renderer> aRenderer, std::shared_ptr<AllocatorGPU> aAllocator)

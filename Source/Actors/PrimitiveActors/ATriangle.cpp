@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ATriangle.h"
 #include "Engine/Engine.h"
 #include "Engine/Builders/MeshBuilder.h"

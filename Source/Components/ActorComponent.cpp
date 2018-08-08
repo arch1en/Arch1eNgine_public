@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ActorComponent.h"
 
 AActor* ActorComponent::GetOwner() const

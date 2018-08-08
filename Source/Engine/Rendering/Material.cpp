@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Material.h"
 
 void Material::AddTexture(std::shared_ptr<Texture> NewTexture)

@@ -8,8 +8,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include "ActorComponent.h"
 
 class CameraComponent : public ActorComponent

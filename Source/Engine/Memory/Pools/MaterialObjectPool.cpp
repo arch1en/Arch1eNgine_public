@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MaterialObjectPool.h"
 
 #include "Engine/Rendering/Material.h"

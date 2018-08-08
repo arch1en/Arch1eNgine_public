@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "stdafx.h"
 #include <ctime>
 
 class DebugTimer

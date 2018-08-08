@@ -26,6 +26,7 @@ files({"Source/**.h", "Source/**.cpp"})
 -- use removefiles function to remove any unnescessary files.
 
 -- Including directories...
+includedirs(WorkspaceDirectory.. "/Source") 
 for i in pairs(Dependencies) do
     local Size = #Dependencies[i]["IncludeDirs"]
     for j=1,Size do
@@ -36,42 +37,24 @@ end
 -- Linking libraries...
 for _,v0 in pairs(Dependencies) do
 
-    local ConfigurationProperties = v0["ConfigurationProperties"]
-    if ConfigurationProperties ~= nil and #ConfigurationProperties ~= 0 then
-
-        for i,v1 in ipairs(v0["ConfigurationProperties"]) do
-
-            local PlatformProperties = v1["PlatformProperties"]
-            if PlatformProperties ~= nil and #PlatformProperties ~= 0 then
-
-                for _,v2 in ipairs(v1["PlatformProperties"]) do
-                    for _,v3 in ipairs(v2) do
-                        filter("configurations:" ..Configurations[i]["Name"])
-                        if v3["LinkFileNames"] ~= nil and #v3["LinkFileNames"] ~= 0 then
-                            for _,v4 in ipairs(v3["LinkFileNames"]) do
-                                if v4 ~= "" then
-                                    links(v4)
-                                end
-                            end
-                        end
-
+    local PropertyGroups = v0["PropertyGroups"]
+    if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
+        for _,v1 in ipairs(PropertyGroups) do
+            filter("configurations:" ..GetPropertyGroupConfigurationName(v1["Name"]))
+            if v1["LinkFileNames"] ~= nil and #v1["LinkFileNames"] ~= 0 then
+                for _,v2 in ipairs(v1["LinkFileNames"]) do
+                    if v2 ~= "" then
+                        links(v2)
                     end
                 end
-
             else
-                print("Linking libraries : " ..v0["Name"].. " in " ..v1["Name"].. " configuration has no platform properties")
+                print("Linking libraries : " ..v1["Name"].. " property group in " ..v0["Name"].. " dependency has no files to link")
             end
 
-            --      local Size = #v1["LinkFileNames"]
-            --      for j=1,Size do
-            --          local FileName = Dependencies[i]["LinkFileNames"][j]
-            --          if FileName ~= "" then
-            --              links(FileName)
-            --          end
-            --      end
         end
+
     else
-        print("Linking libraries : " ..v0["Name"].. " has no configuration.")
+        print("Linking libraries : "..v0["Name"].. " dependency has no property groups")
     end
 
 end
@@ -80,7 +63,7 @@ filter {}
 -- Finding libraries...
 for i in pairs(Dependencies) do
     if Dependencies[i]["RequiresBuilding"] == true then
-        libdirs(WorkspaceDirectory.. "/" ..BuildsDir.. "/Libraries/" ..Dependencies[i]["Name"])
+        libdirs(BuildsDir.. "/Libraries/Dependencies/" ..Dependencies[i]["Name"])
     end
 end
 
@@ -111,5 +94,5 @@ for i,v in pairs(Configurations) do
 end
 
 filter("action:vs*")
-pchheader "Source/stdafx.h"
-pchsource "Source/stdafx.cpp"
+pchheader "stdafx.h"
+pchsource "stdafx.cpp"

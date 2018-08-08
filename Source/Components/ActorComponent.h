@@ -9,7 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
 #include "BaseComponent.h"
 
 #include <glm/gtc/quaternion.hpp>

@@ -9,7 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include <stdafx.h>
 #include <memory>
 #include <Engine/Rendering/Textures/Texture.h>
 #include <Math/Math.h>

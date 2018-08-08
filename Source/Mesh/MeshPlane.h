@@ -7,7 +7,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include <stdafx.h>
 #include "Mesh.h"
 
 class MeshPlane : public Mesh

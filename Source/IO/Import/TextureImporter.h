@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdafx.h>
-
 #include <IL/il.h>
 
 class TextureImporter final

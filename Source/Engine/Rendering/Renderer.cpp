@@ -7,6 +7,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "Renderer.h"
 #include "Mesh/Mesh.h"
 #include "IO/Paths.h"

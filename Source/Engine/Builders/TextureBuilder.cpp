@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "TextureBuilder.h"	
 
 #include "Engine/Rendering/Textures/Texture.h"

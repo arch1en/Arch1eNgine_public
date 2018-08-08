@@ -9,8 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include <memory>
 
 #include "Engine/Allocators/AllocatorGPU.h"

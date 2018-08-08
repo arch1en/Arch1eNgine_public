@@ -8,6 +8,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "InputComponent.h"
 
 InputComponent::~InputComponent()

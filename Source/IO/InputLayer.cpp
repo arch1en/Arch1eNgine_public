@@ -7,6 +7,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "InputLayer.h"
 
 #include <algorithm>

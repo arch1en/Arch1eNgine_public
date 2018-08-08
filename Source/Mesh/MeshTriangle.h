@@ -9,7 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "../stdafx.cpp"
 #include "Mesh.h"
 
 class MeshTriangle : public Mesh

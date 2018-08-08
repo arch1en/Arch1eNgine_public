@@ -16,8 +16,8 @@ BinariesDir = "Binaries"
 DependenciesDir = "Dependencies"
 BuildsDir = "Builds"
 LibrariesDir = "Libraries"
-DependencyBuildsDir = BuildsDir.. "/" ..DependenciesDir
-DependencyLibrariesDir = BuildsDir.. "/" ..LibrariesDir.. "/" ..DependenciesDir
+DependencyBuildsDir = AdaptDirSlashes(BuildsDir.. "/" ..DependenciesDir)
+DependencyLibrariesDir = AdaptDirSlashes(BuildsDir.. "/" ..LibrariesDir.. "/" ..DependenciesDir)
 
 WorkspaceDirectory = AdaptDirSlashes(io.popen("cd"):read('*l')) -- ugly hack, because premake tokens doesnt work -.-
 
@@ -73,6 +73,14 @@ end
 function IsTokenInPropertyGroup(PropertyIndex, PropertyGroupName, Token)
     local Tokens = string.explode(PropertyGroupName, "|")
     return Tokens[PropertyIndex] == Token
+end
+
+function GetPropertyGroupConfigurationName(PropertyGroupName)
+    return string.explode(PropertyGroupName, "|")[1]
+end
+
+function GetPropertyGroupPlatformName(PropertyGroupName)
+    return string.explode(PropertyGroupName, "|")[2]
 end
 
 function CopyFile(Source, Destination)

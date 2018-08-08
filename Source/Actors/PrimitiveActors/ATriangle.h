@@ -8,8 +8,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include "Actors/AMeshActor.h"
 
 class ATriangle : public AMeshActor

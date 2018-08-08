@@ -20,7 +20,7 @@
 ///			7. Clear color to black and swap buffers.
 ///
 ////////////////////////////////////////////////////////////////
-
+#include "stdafx.h"
 #include "Engine.h"
 #include "Allocators/AllocatorGPU.h"
 #include "IO/Paths.h"

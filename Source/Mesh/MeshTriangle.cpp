@@ -7,6 +7,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "MeshTriangle.h"
 #include "Engine/Engine.h"
 #include "Engine/Builders/MaterialBuilder.h"

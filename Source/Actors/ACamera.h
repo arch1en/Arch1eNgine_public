@@ -8,8 +8,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include "AActor.h"
 #include "Components/CameraComponent.h"
 #include "Components/MovementComponent.h"

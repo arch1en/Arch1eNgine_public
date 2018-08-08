@@ -1,4 +1,4 @@
-
+#include "stdafx.h"
 #include "FactoryActor.h"
 
 #include "Actors\PrimitiveActors\ATriangle.h"

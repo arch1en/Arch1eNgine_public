@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include "Actors\AActor.h"
 
 class FactoryActor

@@ -7,7 +7,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
 #include "Actors/AMeshActor.h"
 
 class APlane : public AMeshActor

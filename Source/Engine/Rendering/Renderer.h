@@ -9,7 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
 #include <stack>
 
 #include "Components/MeshComponent.h"

@@ -1,4 +1,4 @@
-
+#include "stdafx.h"
 #include "MeshComponent.h"
 #include "Factories\FactoryMesh.h"
 

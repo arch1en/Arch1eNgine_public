@@ -2,7 +2,7 @@
 
 // *** SDL and OpenGL
 #include <SDL.h>
-#include <GL\glew.h>
+//#include <GL\glew.h>
 #include <SDL_opengl.h>
 #include <GL\GLU.h>
 
@@ -40,7 +40,9 @@ using glm::vec3;
 
 // *** PLATFORM DEFINES ***
 
-#define PLATFORM_WINDOWS
+#if defined(PLATFORM_WIN64) || defined(PLATFORM_WIN32)
+	#define PLATFORM_WINDOWS
+#endif
 //#define PLATFORM_UNIX
 //#define PLATFORM_MACOS
 //#define PLATROFM_ANDROID

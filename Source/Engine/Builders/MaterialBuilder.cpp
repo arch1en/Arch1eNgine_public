@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MaterialBuilder.h"
 
 #include "Math/Color.h"

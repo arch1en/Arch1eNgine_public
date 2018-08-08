@@ -9,8 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
-
 #include <vector>
 
 void Split(const char * InSentence, char InDelimiter, std::vector<std::string> & OutTokens);

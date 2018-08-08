@@ -6,6 +6,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
+#include "stdafx.h"
 #include "DebugTimer.h"
 
 DebugTimer& DebugTimer::GetInstance()

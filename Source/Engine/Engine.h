@@ -9,7 +9,6 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "stdafx.h"
 #include "Core/ModuleHandler.h"
 #include "Actors/ACamera.h"
 #include "Actors/AMeshActor.h"
