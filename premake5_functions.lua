@@ -68,6 +68,11 @@ end
 --end
 
 -- os.copyfile doesnt work for windows for some reason...
+function os.winSdkVersion()
+    local reg_arch = iif( os.is64bit(), "\\Wow6432Node\\", "\\")
+    local sdk_version = os.getWindowsRegistry( "HKLM:SOFTWARE" ..reg_arch.. "Microsoft\\Microsoft SDKs\\Windows\\v10.0\\ProductVersion")
+    if sdk_version ~= nil then return sdk_version end
+end
 
 -- PropertyIndex = 0 for Configuration, 1 for Platform
 function IsTokenInPropertyGroup(PropertyIndex, PropertyGroupName, Token)

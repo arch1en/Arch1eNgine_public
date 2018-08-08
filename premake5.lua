@@ -94,5 +94,6 @@ for i,v in pairs(Configurations) do
 end
 
 filter("action:vs*")
+systemversion(os.winSdkVersion() .. ".0")
 pchheader "stdafx.h"
 pchsource "stdafx.cpp"
