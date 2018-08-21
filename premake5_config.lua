@@ -87,6 +87,7 @@ Dependencies =
   {
     ["Name"] =                    "ASSIMP",
     ["IncludeDirs"] =             { "include" },
+    ["BuildIncludeDirs"] =        { "include" },
     ["RequiresGeneration"] =      true,
     ["RequiresBuilding"] =        true,
     ["ConfigurationProperties"] =
@@ -168,6 +169,12 @@ Dependencies =
             ["LinkFileNames"] = { "SDL2d", "SDL2maind" }
         }
     }
+  },
+  {
+      ["Name"] =                   "STB_Image",
+      ["IncludeDirs"] =             { "" },
+      ["RequiresGeneration"] =      false,
+      ["RequiresBuilding"] =        false
   }
 }
 

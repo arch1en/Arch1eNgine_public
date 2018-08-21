@@ -31,7 +31,7 @@ namespace an
 
 	// Dynamic Array
 	template <class T>
-	class DArray
+	class DArray : public Array
 	{
 	public:
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <IL/il.h>
+#include "stb_image.h"
 
 class TextureImporter final
 {
@@ -9,11 +9,10 @@ public:
 	TextureImporter();
 	virtual ~TextureImporter();
 
-	const unsigned char* LoadImageFromFile(const char* aFilePath);
 	int LoadTextureImage(std::string aPath, int& aOutWidth, int& aOutHeight, int& aOutNrChannels, unsigned char*& aOutImageData);
 
 private:
 
-	ILuint mImageID = 0;
+	int mImageID = 0;
 
 };

@@ -24,7 +24,7 @@
 #include "Engine.h"
 #include "Allocators/AllocatorGPU.h"
 #include "IO/Paths.h"
-#include "IL/il.h"
+#include "stb_image.h"
 
 #include "Builders/ActorBuilder.h"
 #include "Builders/MeshBuilder.h"
@@ -77,14 +77,15 @@ bool Engine::Init()
 	if (!GLContext)
 		g_sdldie("Unable to create OpenGL Context");
 
+	// [Deprecated] Now GLAD takes over GLEW responsibilities.
 	// Initialize GLEW
-	glewExperimental = GL_TRUE;
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK)
-	{
-		g_sdldie("Error initializing GLEW! %s\n");
-		printf("%s\n", glewGetErrorString(glewError));
-	}
+	//glewExperimental = GL_TRUE;
+	//GLenum glewError = glewInit();
+	//if (glewError != GLEW_OK)
+	//{
+	//	g_sdldie("Error initializing GLEW! %s\n");
+	//	printf("%s\n", glewGetErrorString(glewError));
+	//}
 		
 	// Initialize GLEW and Vertex data
 	if (!InitGL())											// InitGL
@@ -101,15 +102,15 @@ bool Engine::Init()
 	SDL_GL_SwapWindow(Window);
 
 	// Smooth the color
-	glShadeModel(GL_SMOOTH);
+	//glShadeModel(GL_SMOOTH);
 
 	// 2D rendering
-	glMatrixMode(GL_MODELVIEW);
+	//glMatrixMode(GL_MODELVIEW);
 
 	// Reset viewport position to the origin.
-	glLoadIdentity();
+	//glLoadIdentity();
 
-	gluPerspective(90.0, WINDOW_WIDTH/WINDOW_HEIGHT, 1.0, 500.0);
+	//gluPerspective(90.0, WINDOW_WIDTH/WINDOW_HEIGHT, 1.0, 500.0);
 
 	// Z-Buffer options.
 	glEnable(GL_CULL_FACE);
@@ -132,7 +133,7 @@ bool Engine::Init()
 bool Engine::InitGL()
 {
 
-	if (glewInit())
+	if (!gladLoadGL())
 	{
 		g_sdldie("Unable to initialize glew");
 		return false;

@@ -22,7 +22,7 @@ targetdir("Binaries/%{cfg.buildcfg}")
 location("Builds/%{prj.name}")
 
 -- Adding source files to the project...
-files({"Source/**.h", "Source/**.cpp"})
+files({"Source/**.h", "Source/**.cpp", "Source/**.inl"})
 -- use removefiles function to remove any unnescessary files.
 
 -- Including directories...

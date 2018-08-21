@@ -3,8 +3,9 @@
 // *** SDL and OpenGL
 #include <SDL.h>
 //#include <GL\glew.h>
-#include <SDL_opengl.h>
-#include <GL\GLU.h>
+//#include <SDL_opengl.h>
+#include <SDL_video.h>
+#include <glad/glad.h>
 
 // *** Mathematics ***
 #include "glm/glm.hpp"

@@ -9,14 +9,7 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "IL/il.h"
-
-enum ETextureType
-{
-	Ambient,
-	Specular,
-
-};
+#include "stb_image.h"
 
 enum ETextureWrappingMode
 {
@@ -42,6 +35,7 @@ enum ETextureMipmappingMode
 
 enum ETextureType
 {
+	Ambient,
 	Albedo,
 	Diffuse,
 	Specular,
