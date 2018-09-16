@@ -30,7 +30,7 @@ includedirs(WorkspaceDirectory.. "/Source")
 for i in pairs(Dependencies) do
     local Size = #Dependencies[i]["IncludeDirs"]
     for j=1,Size do
-        includedirs(DependencyDirs[Dependencies[i]["Name"]].. "/" ..Dependencies[i]["IncludeDirs"][j])
+        includedirs(AdaptDirSlashes(GetDependencySourceDir(Dependencies[i]["Name"]).. "/" ..Dependencies[i]["IncludeDirs"][j]))
     end
 end
 
@@ -63,7 +63,15 @@ filter {}
 -- Finding libraries...
 for i in pairs(Dependencies) do
     if Dependencies[i]["RequiresBuilding"] == true then
-        libdirs(BuildsDir.. "/Libraries/Dependencies/" ..Dependencies[i]["Name"])
+    local DependencyName = Dependencies[i]["Name"]
+        for _,c in pairs(Configurations) do
+            for _,p in pairs(Platforms) do
+                local LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c["Name"].. "/" ..p["Name"])
+                if os.isdir(LibraryDir) then
+                    libdirs(LibraryDir)
+                end
+            end
+        end
     end
 end
 
@@ -97,3 +105,4 @@ filter("action:vs*")
 systemversion(os.winSdkVersion() .. ".0")
 pchheader "stdafx.h"
 pchsource "stdafx.cpp"
+--flags { "/Ycstdafx.cpp" }

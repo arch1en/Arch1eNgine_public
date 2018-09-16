@@ -73,6 +73,10 @@ Configurations =
 Platforms =
 {
     {
+        ["Name"] = "Win32",
+        ["Defines"] = { "PLATFORM_WIN32" }
+    },
+    {
         ["Name"] = "Win64",
         ["Defines"] = { "PLATFORM_WIN64" }
     },
@@ -93,7 +97,7 @@ Dependencies =
     ["ConfigurationProperties"] =
     {
         {
-            ["Name"] = "Release",
+            ["Name"] = "Release",    
         },
         {
             ["Name"] = "Debug",
@@ -102,7 +106,7 @@ Dependencies =
     ["PlatformProperties"] =
     {
         {
-            ["Name"] = "Win64"
+            ["Name"] = "Win32",
         },
     },
     ["PropertyGroups"] =
@@ -155,18 +159,26 @@ Dependencies =
     ["PlatformProperties"] =
     {
         {
-            ["Name"] = "Win64"
+            ["Name"] = "Win32"
+        },
+        {
+            ["Name"] = "x64",
+            ["Mapping"] = "Win64"
         }
     },
     ["PropertyGroups"] =
     {
         {
-            ["Name"] = "Release|Win64",
+            ["Name"] = "Release|Win32",
             ["LinkFileNames"] = { "SDL2", "SDL2main" }
         },
         {
-            ["Name"] = "Debug|Win64",
+            ["Name"] = "Debug|Win32",
             ["LinkFileNames"] = { "SDL2d", "SDL2maind" }
+        },
+        {
+            ["Name"] = "Release|x64",
+            ["LinkFileNames"] = { "SDL2", "SDL2main" }
         }
     }
   },

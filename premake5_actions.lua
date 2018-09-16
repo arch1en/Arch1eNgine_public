@@ -79,7 +79,7 @@ newaction
       if _OPTIONS["dependency"] == "all" then
         OrganizeAllDependencies()
       else
-        OrganizeDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+        OrganizeDependency(FindDependencyByName{_OPTIONS["dependency"], true}, _OPTIONS["configuration"], _OPTIONS["platform"])
       end
     else
       print("Organize : Process failed.")
