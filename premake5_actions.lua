@@ -12,7 +12,7 @@ newaction
     if _OPTIONS["dependency"] == "all" then
       CleanAllDependencies()
     else
-      CleanDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      CleanDependency(_OPTIONS["dependency"])
     end
   end,
 
@@ -29,7 +29,7 @@ newaction
     if _OPTIONS["dependency"] == "all" then
       GenerateAllDependencies()
     else
-      GenerateDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      GenerateDependency(_OPTIONS["dependency"])
     end
   end,
 
@@ -47,7 +47,7 @@ newaction
     if _OPTIONS["dependency"] == "all" then
       BuildAllDependencies()
     else
-      BuildDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+      BuildDependency(_OPTIONS["dependency"])
     end
   end,
 
@@ -79,7 +79,7 @@ newaction
       if _OPTIONS["dependency"] == "all" then
         OrganizeAllDependencies()
       else
-        OrganizeDependency(FindDependencyByName{_OPTIONS["dependency"], true}, _OPTIONS["configuration"], _OPTIONS["platform"])
+        OrganizeDependency(_OPTIONS["dependency"], _OPTIONS["configuration"], _OPTIONS["platform"])
       end
     else
       print("Organize : Process failed.")

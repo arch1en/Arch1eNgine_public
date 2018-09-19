@@ -14,7 +14,7 @@ Paths::Paths()
 {
 	std::string Path = SDL_GetBasePath();
 	
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		std::size_t Found = Path.rfind("\\", Path.length() - 2);
 		if (Found != std::string::npos)

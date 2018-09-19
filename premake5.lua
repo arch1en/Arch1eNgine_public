@@ -3,22 +3,27 @@ require("premake5_functions")
 require("premake5_actions")
 require("premake5_options")
 
-
-Rebuilds = {}
-
 workspace("Arch1eNgine")
 local ConfigurationNames = {}
-for i,v in pairs(Configurations) do
-    ConfigurationNames[i] = v["Name"]
+local PlatformNames = {}
+for i,c in pairs(Configurations) do
+    ConfigurationNames[i] = c["Name"]
+    for j,p in pairs(Platforms) do
+        PlatformNames[j] = p["Name"]
+    end
 end
+
+filter{}
+
 configurations(ConfigurationNames)
-platforms({"Win32", "Win64", "Linux"})
+platforms(PlatformNames)
+
 location("Builds")
 
 project("Engine")
 kind("ConsoleApp")
 language("C++")
-targetdir("Binaries/%{cfg.buildcfg}")
+targetdir("Binaries/%{cfg.buildcfg}/%{cfg.platform}")
 location("Builds/%{prj.name}")
 
 -- Adding source files to the project...
@@ -30,7 +35,7 @@ includedirs(WorkspaceDirectory.. "/Source")
 for i in pairs(Dependencies) do
     local Size = #Dependencies[i]["IncludeDirs"]
     for j=1,Size do
-        includedirs(AdaptDirSlashes(GetDependencySourceDir(Dependencies[i]["Name"]).. "/" ..Dependencies[i]["IncludeDirs"][j]))
+        includedirs(AdaptDirSlashes(GetDependencyDir(Dependencies[i]["Name"]).. "/" ..Dependencies[i]["IncludeDirs"][j]))
     end
 end
 
@@ -105,4 +110,11 @@ filter("action:vs*")
 systemversion(os.winSdkVersion() .. ".0")
 pchheader "stdafx.h"
 pchsource "stdafx.cpp"
---flags { "/Ycstdafx.cpp" }
+
+filter{}
+
+for _,v in pairs(Dependencies) do
+    if v["PostPremakeCommand"] ~= nil then
+        v["PostPremakeCommand"]()
+    end
+end
