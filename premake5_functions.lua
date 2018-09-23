@@ -23,11 +23,9 @@ function CMakeGenerate(GenerateDir, CMakeListsDir, Generator, Platform)
     Command = Command.. "\" "
     Command = Command.. "\"" ..CMakeListsDir.. "\""
    
-   -- Command = Command.. " -DCMAKE_BINARY_DIR="..GetDependencyBuildDir("SDL2")
     print(Command)
     if os.target() == "windows" then
         log = io.popen(Command, 'r')
-        --log = io.popen("cd /d " ..GenerateDir.. " && " ..AdaptDirSlashes(CMakeExecutableDir.. "//cmake").. " -G \""..Generator.. " " ..Platform..  "\" " ..CMakeListsDir , 'r')
     else
         print("CMakeGenerate Error : Operational System target invalid or inoperable.")
         return
@@ -42,15 +40,10 @@ function CMakeBuild(BuildDir, GeneratedDir, Configuration)
         Configuration = ""
     end
 
---    CMakeRemoveCacheFile(GeneratedDir .. AdaptDirSlashes("/CMakeCache.txt"))
-
     local Command = ""
 
     if os.target() == "windows" then
---        log = io.popen("cd /d " ..BuildDir.. " && cmake -B. -H" ..GeneratedDir, 'r')
         Command = "cd /d " ..BuildDir.. " && cmake --build \"" ..GeneratedDir.. "\" --config \"" ..Configuration
---        log = io.popen("cd /d " .. BuildDir .. " && cmake --build \"" ..GeneratedDir.. "\" --config " ..Configuration.. " -DSDL2_BINARY_DIR=" ..BuildDir, 'r')
---        log = io.popen("cd /d " .. BuildDir .. " && cmake --build \"" ..GeneratedDir.. "\" --config " .. Configuration, 'r')
     else
         print("CMakeBuild Error : Operational System target invalid or inoperable.")
         return
@@ -90,8 +83,8 @@ function AdaptedDirSlash()
      return "/"
 end
 -- Initialization block
-BinariesDir = "Binaries"
 DependenciesDir = "Dependencies"
+ModulesDir = "Modules"
 BuildsDir = "Builds"
 LibrariesDir = "Libraries"
 PropertiesFileName = "Properties"
@@ -109,6 +102,8 @@ local LibrariesFolderName = "Libraries"
 function GetBinariesDir()
     return AdaptDirSlashes(WorkspaceDirectory.. "/" ..BinariesFolderName)
 end
+
+-- Dependencies
 
 function GetDependenciesDir()
     return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir)
@@ -135,43 +130,43 @@ function GetDependencyLibrariesDir(DependencyName)
 end
 
 function GetDependencyConfigurationNameFromMapping(ProjectConfiguration, Dependency)
-    for _,v in ipairs(Dependency["ConfigurationProperties"]) do
-        if v["Mapping"] ~= nil and v["Mapping"] == ProjectConfiguration then
-            return v["Name"]
-        elseif v["Name"] == ProjectConfiguration then
-            return v["Name"]
+    for _,v in ipairs(Dependency.ConfigurationProperties) do
+        if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then
+            return v.Name
+        elseif v.Name == ProjectConfiguration then
+            return v.Name
         end
     end
 
 end
 
 function GetDependencyPlatformNameFromMapping(ProjectConfiguration, Dependency)
-    for _,v in ipairs(Dependency["PlatformProperties"]) do
-        if v["Mapping"] ~= nil and v["Mapping"] == ProjectConfiguration then
-            return v["Name"]
-        elseif v["Name"] == ProjectConfiguration then
-            return v["Name"]
+    for _,v in ipairs(Dependency.PlatformProperties) do
+        if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then
+            return v.Name
+        elseif v.Name == ProjectConfiguration then
+            return v.Name
         end
     end
 
 end
 
 function MapDependencyConfigurationWithProject(ProjectConfiguration, Dependency)
-    for _,v in ipairs(Dependency["ConfigurationProperties"]) do
-        if v["Mapping"] ~= nil and v["Mapping"] == ProjectConfiguration then
-            return v["Mapping"]
-        elseif v["Name"] == ProjectConfiguration then
-            return v["Name"]
+    for _,v in ipairs(Dependency.ConfigurationProperties) do
+        if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then
+            return v.Mapping
+        elseif v.Name == ProjectConfiguration then
+            return v.Name
         end
     end
 end
 
 function MapDependencyPlatformWithProject(ProjectPlatform, Dependency)
-    for _,v in ipairs(Dependency["PlatformProperties"]) do
-        if v["Mapping"] ~= nil and v["Mapping"] == ProjectPlatform then
-            return v["Mapping"]
-        elseif v["Name"] == ProjectPlatform then
-            return v["Name"]
+    for _,v in ipairs(Dependency.PlatformProperties) do
+        if v.Mapping ~= nil and v.Mapping == ProjectPlatform then
+            return v.Mapping
+        elseif v.Name == ProjectPlatform then
+            return v.Name
         end
     end
 end
@@ -200,33 +195,199 @@ function GetListOfDependencyNames()
     return DependenciesList
 end
 
---for _,v in ipairs(Dependencies) do
---  for _,w in pairs(v["LinkDirs"]) do
---    w = DependencyDirs[v["Name"]].. "/" ..w
---  end
---print(v)
---end
+-- ~Dependencies
 
--- ~ Initialization block
+-- Modules
 
--- Reads cmd output one line by one.
---- Check if a file or directory exists in this path
---function FileExists(Path)
---   local ok, err, code = os.rename(file, file)
---   if not ok then
---      if code == 13 then
--- Permission denied, but it exists
---         return true
---      end
---   end
---   return ok, err
---end
+function GetModulesDir()
+	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir)
+end
 
---- Check if a directory exists in this path
---function IsDir(Path)
--- "/" works on both Unix and Windows
---   return FileExists(AdaptDirSlashes(Path.."/"))
---end
+function GetModuleBuildDir(ModuleName)
+	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir.. "/" ..ModuleName.. "/" ..BuildFolderName)
+end
+
+function GetModulePropertiesByName(Name)
+    local Result = dofileopt(AdaptDirSlashes(GetModulesDir().."/"..Name.."/"..PropertiesFileName..".lua"))
+    if Result == true then
+        return Properties
+    end
+
+    return nil
+end
+
+function GetListOfModuleNames()
+    local Paths = os.matchfiles(AdaptDirSlashes(GetModulesDir().."/**/"..PropertiesFileName..".lua"))
+    local DependenciesList = {}
+    for i,v in pairs(Paths) do
+        local Tokens = string.explode(v, "/")
+        local NumberOfTokens = #Tokens
+        local Name = Tokens[NumberOfTokens-1]
+        if Name ~= nil then
+            DependenciesList[i] = Name
+        end
+    end
+
+    return DependenciesList
+end
+
+function SetupModule(ModuleName)
+
+	local ModuleProperties = GetModulePropertiesByName(ModuleName)
+	if ModuleProperties == nil then
+		print("Module "..ModuleName.. " : Cannot setup module. Properties not found.")
+		return
+	end
+
+	if ModuleProperties.LinkageType == nil then
+		print("Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
+		return
+	end
+
+	print(CreateFolderIfDoesntExistEx(GetModuleBuildDir(ModuleName)))
+	
+	group("Modules")
+	project(ModuleName)
+	
+	targetdir(AdaptDirSlashes(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}"))
+    targetname(ModuleName)
+	location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
+	
+	if ModuleProperties.LinkageType == "Static" then
+		kind("StaticLib")
+	elseif ModuleProperties.LinkageType == "Dynamic" then
+		kind("SharedLib")
+		defines{"MODULE_API=__declspec(dllexport)"}
+	end
+
+	language("C++")
+
+	defines{"MODULE_IMPORT=__declspec(dllimport)"}
+
+    for _,v in pairs(Platforms) do
+        if #v.Defines ~= 0 then
+            filter{"platforms:"..v.Name}
+            local NewDefines = {}
+            for i,w in pairs(v.Defines) do
+                NewDefines[i] = w
+            end
+            defines(NewDefines)
+        end
+    end
+
+    filter{}
+
+    SetupModuleDependencies(ModuleProperties)
+    SetupForeignDependencies(ModuleProperties)
+
+    filter{"action:vs*"}
+    systemversion(os.winSdkVersion() .. ".0")
+
+    files({ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.h", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.cpp", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.inl"})
+
+    if ModulePropertiesPostPremakeCommand ~= nil then
+        ModulePropertiesPostPremakeCommand()
+    end
+
+end
+
+function SetupModuleDependencies(ModuleProperties)
+    if ModuleProperties == nil then
+        print("Module dependencies setting up failed. ModuleProperties are invalid.")
+        return
+    end
+
+    if ModuleProperties.ModuleDependencies == nil then
+        return
+    end
+
+    for _,v in pairs(ModuleProperties.ModuleDependencies) do
+        local ModuleDependencyProperties = GetModulePropertiesByName(v)
+        if ModuleDependencyProperties == nil then
+            includedirs(ModulesDir.."/"..v.."/"..SourceFolderName)
+        end
+    end
+end
+
+
+function SetupForeignDependencies(ModuleProperties)
+    if ModuleProperties == nil then
+        print("Module dependencies setting up failed. ModuleProperties are invalid.")
+        return
+    end
+
+    if ModuleProperties.ForeignDependencies == nil then
+        return
+    end
+
+    for _,v in pairs(ModuleProperties.ForeignDependencies) do
+        local ForeignDependencyProperties = GetDependencyPropertiesByName(v)
+        if ForeignDependencyProperties == nil then
+            print("SetupForeignDependencies failed. "..v.." dependency property file missing.")
+            break
+        end
+        for _,w in pairs(ForeignDependencyProperties.IncludeDirs) do
+            includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
+        end
+        
+        LinkForeignDependency(ForeignDependencyProperties)
+        AddForeignDependencyLibraryDirs(ForeignDependencyProperties)
+    end
+end
+
+function LinkForeignDependency(ForeignDependencyProperties)
+    if ForeignDependencyProperties == nil then
+        print("Linking failed. Foreign dependency properties missing.")
+        return
+    end
+
+    local PropertyGroups = ForeignDependencyProperties.PropertyGroups
+    if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
+        for _,v1 in ipairs(PropertyGroups) do
+            filter("configurations:" ..GetPropertyGroupConfigurationName(v1.Name))
+            if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
+                for _,v2 in ipairs(v1.LinkFileNames) do
+                    if v2 ~= "" then
+                        links(v2)
+                    end
+                end
+            end
+        end
+    end
+end
+
+function AddForeignDependencyLibraryDirs(ForeignDependencyProperties)
+	if ForeignDependencyProperties == nil then
+		print("Linking "..v.. " : Action failed. Properties not found.")
+		return
+	end
+	
+    if ForeignDependencyProperties.LinkageType ~= nil and ForeignDependencyProperties.LinkageType == "Dynamic" then
+    local DependencyName = ForeignDependencyProperties.Name
+        for _,c in pairs(Configurations) do
+            for _,p in pairs(Platforms) do
+                local LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
+                if os.isdir(LibraryDir) then
+                    libdirs(LibraryDir)
+                end
+            end
+        end
+    end
+end
+
+-- DEPRECATED
+function Module_SetImportLibraryDir(ModuleName)
+    local ModuleProperties = GetModulePropertiesByName(ModuleName)
+    if ModuleProperties == nil then
+        print("Module_SetImportLibraryDir "..ModuleName.. " : Cannot setup module. Properties not found.")
+        return
+    end
+    -- do dokończenia
+    implibdir(ModulesDir.."/"..ModuleName.."/"..Module)
+
+end
+
+-- ~Modules
 
 -- os.copyfile doesnt work for windows for some reason...
 function os.winSdkVersion()
@@ -264,11 +425,11 @@ function FindDependencyByName(Args)
     Args[2] or Args.Lowercase
     for i,v in pairs(Dependencies) do
         if Lowercase == true then
-            if v["Name"]:lower() == DependencyName:lower() then
+            if v.Name:lower() == DependencyName:lower() then
                 return i
             end
         else
-            if v["Name"] == DependencyName then
+            if v.Name == DependencyName then
                 return i
             end
         end
@@ -300,12 +461,12 @@ function FindDependencyLibraryFiles(DependencyProperties, ConfigurationName, Pla
         [1] = {},
         [2] = {}
     }
-    local DependencyName = DependencyProperties["Name"]
-    local PropertyGroups = DependencyProperties["PropertyGroups"]
+    local DependencyName = DependencyProperties.Name
+    local PropertyGroups = DependencyProperties.PropertyGroups
     local FoundFileNames = nil
     for i,v in pairs(PropertyGroups) do
-        if IsTokenInPropertyGroup(1, v["Name"], ConfigurationName) and IsTokenInPropertyGroup(2, v["Name"], PlatformName) then
-                FoundFileNames = v["LinkFileNames"] 
+        if IsTokenInPropertyGroup(1, v.Name, ConfigurationName) and IsTokenInPropertyGroup(2, v.Name, PlatformName) then
+                FoundFileNames = v.LinkFileNames 
         end
     end 
 
@@ -340,50 +501,6 @@ function FindDependencyLibraryFiles(DependencyProperties, ConfigurationName, Pla
     return FilePaths
 end
 
---[[
-function FindDependencyLibraryFiles(DependencyIndex)
-    local DynamicLibraryFileExtension = ""
-    local LinkerLibraryFileExtension = "lib"
-    if os.target() == "windows" then
-        DynamicLibraryFileExtension = "dll"
-    elseif os.target() == "linux" then
-        DynamicLibraryFileExtension = "a"
-    end
-
-    local FilePaths =
-    {
-        [1] = {},
-        [2] = {}
-    }
-    local DependencyName = Dependencies[DependencyIndex]["Name"]
-    for _,v0 in pairs(Dependencies[DependencyIndex]["PropertyGroups"]) do
-        for i,v1 in pairs(v0["LinkFileNames"]) do
-            local DynamicLibraryFileName = v1.. "." ..DynamicLibraryFileExtension
-            local LinkerLibraryFileName = v1.. "." ..LinkerLibraryFileExtension
-            local SearchRegex = GetDependencyGeneratedDir(DependencyName).. "/**"
-            local FoundFiles = os.matchfiles(SearchRegex..DynamicLibraryFileName)
-            if FoundFiles[1] ~= nil then
-                for j,vf in pairs(FoundFiles) do
-                    print(vf)
-                    table.insert(FilePaths[1], vf)
-                end
-            end
-
-            for i in pairs(FoundFiles) do FoundFiles[i] = nil end
-
-            FoundFiles = os.matchfiles(SearchRegex..LinkerLibraryFileName)
-            if FoundFiles[1] ~= nil then
-                for j,vf in pairs(FoundFiles) do
-                    print(vf)
-                    table.insert(FilePaths[2], vf)
-                end
-            end
-        end
-    end
-    return FilePaths
-end
---]]
-
 function CreateFolderIfDoesntExistEx(FolderPath)
     local Directory = FolderPath
     if os.isdir(Directory) == false then
@@ -403,15 +520,6 @@ function CreateFolderIfDoesntExist(FolderPath, FolderName)
         return FolderName.. " folder exists. Skipping creation..."
     end
 end
-
---function CreateDependencyBuildFolderIfDoesntExist(DependencyName)
---  if os.isdir(DependenciesBuildDirs[DependencyName]) == false then
---    os.mkdir(DependenciesBuildDirs[DependencyName])
---    return DependencyName .. " Build folder missing. Creating..."
---  else
---    return DependencyName .. " Build folder exists. Onward..."
---  end
---end
 
 -- [DEPRECATED] Returns directory where file resids, otherwise returns empty string.
 -- Yeah, ive discovered that premake5 already has a function for a file/folder search.
@@ -494,7 +602,7 @@ end
 
 function BuildAllDependencies()
     for _,v in ipairs(GetListOfDependencyNames()) do
-        BuildDependency(v)
+        BuildDependency(v,_OPTIONS["configuration"], _OPTIONS["platform"])
     end
 end
 
@@ -520,31 +628,31 @@ function CleanDependency(DependencyName)
         print("Clean : Error, cannot clean "..DependencyName.." dependency. Properties not found.")
         return
     end
-    local Dependency = Dependencies[DependencyIndex]["Name"]
-    if Dependency == "" then
-        print("Error : Cannot clean " ..Dependency.. " option.")
+
+    if DependencyName == "" then
+        print("Error : Cannot clean " ..DependencyName.. " option.")
         return
     end
 
-    if os.isdir(GetDependencyGeneratedDir(Dependency)) then
-        print("Clean : Cleaning " ..Dependency.. " removing " ..GeneratedFolderName.. " directory.")
-        os.rmdir(GetDependencyGeneratedDir(Dependency))
+    if os.isdir(GetDependencyGeneratedDir(DependencyName)) then
+        print("Clean : Cleaning " ..DependencyName.. " removing " ..GeneratedFolderName.. " directory.")
+        os.rmdir(GetDependencyGeneratedDir(DependencyName))
     else
-        print("Clean : " ..GeneratedFolderName.. " directory for " ..Dependency.. " inaccessible or cleaned already.")
+        print("Clean : " ..GeneratedFolderName.. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
     end
 
-    if os.isdir(GetDependencyBuildDir(Dependency)) then
-        print("Clean : Cleaning " ..Dependency.. " removing " ..BuildFolderName.. " directory.")
-        os.rmdir(GetDependencyBuildDir(Dependency))
+    if os.isdir(GetDependencyBuildDir(DependencyName)) then
+        print("Clean : Cleaning " ..DependencyName.. " removing " ..BuildFolderName.. " directory.")
+        os.rmdir(GetDependencyBuildDir(DependencyName))
     else
-        print("Clean : " ..BuildFolderName.. " directory for " ..Dependency.. " inaccessible or cleaned already.")
+        print("Clean : " ..BuildFolderName.. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
     end
 
-    if os.isdir(GetDependencyLibrariesDir(Dependency)) then
-        print("Clean : Cleaning " ..Dependency.. " removing " ..LibrariesFolderName.. " directory.")
-        os.rmdir(GetDependencyLibrariesDir(Dependency))
+    if os.isdir(GetDependencyLibrariesDir(DependencyName)) then
+        print("Clean : Cleaning " ..DependencyName.. " removing " ..LibrariesFolderName.. " directory.")
+        os.rmdir(GetDependencyLibrariesDir(DependencyName))
     else
-        print("Clean : " ..LibrariesFolderName.. " directory for " ..Dependency.. " inaccessible or cleaned already.")
+        print("Clean : " ..LibrariesFolderName.. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
     end
 end
 
@@ -555,12 +663,12 @@ function GenerateDependency(DependencyName)
         return
     end
 
-    if DependencyProperties["RequiresGeneration"] == false then
-        print("Generate : " ..DependencyProperties["Name"].. " doesn't require generation. Skipping...")
+    if DependencyProperties.RequiresGeneration == false then
+        print("Generate : " ..DependencyProperties.Name.. " doesn't require generation. Skipping...")
         return
     end
     local Dependency = DependencyProperties
-    local DependencyName = DependencyProperties["Name"]
+    local DependencyName = DependencyProperties.Name
     if DependencyName == "" then
         print("Error : Cannot generate option with index " ..DependencyIndex.. ".")
         return
@@ -583,29 +691,30 @@ function GenerateDependency(DependencyName)
     end
 end
 
-function BuildDependency(DependencyName)
+function BuildDependency(DependencyName, Configuration, Platform)
+
+    if DependencyName == nil then
+        print("Error : Cannot build " ..DependencyName.. " option.")
+        return
+    end
+
     local DependencyProperties = GetDependencyPropertiesByName(DependencyName)
     if DependencyProperties == nil then
         print("Build : Error, cannot build "..DependencyName.." dependency. Properties not found.")
         return
     end
 
-    if DependencyProperties["RequiresBuilding"] == false then
-        print("Build : " ..DependencyProperties["Name"].. " doesn't require building. Skipping...")
-        return
-    end
-    local DependencyName = DependencyProperties["Name"]
-    if DependencyName == "" then
-        print("Error : Cannot build " ..Dependency.. " option.")
+    if DependencyProperties.RequiresBuilding == false or DependencyProperties.ConfigurationProperties == nil then
+        print("Build : " ..DependencyName.. " doesn't require building. Skipping...")
         return
     end
 
     local BuildTool = DetermineDependencyBuildTool(DependencyName)
-    local MappedDependencyConfiguration = GetDependencyConfigurationNameFromMapping(_OPTIONS["configuration"], DependencyProperties)
-    local MappedDependencyPlatform = GetDependencyPlatformNameFromMapping(_OPTIONS["platform"], DependencyProperties)
+    local MappedDependencyConfiguration = GetDependencyConfigurationNameFromMapping(Configuration, DependencyProperties)
+    local MappedDependencyPlatform = GetDependencyPlatformNameFromMapping(Platform, DependencyProperties)
 
     if BuildTool == "cmake" then
-        for _,v in pairs(DependencyProperties["ConfigurationProperties"]) do
+        for _,v in pairs(DependencyProperties.ConfigurationProperties) do
             print("Build : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), BuildFolderName))
             CMakeBuild(GetDependencyBuildDir(DependencyName), GetDependencyGeneratedDir(DependencyName), MappedDependencyPlatform ,MappedDependencyConfiguration)
         end
@@ -619,7 +728,7 @@ end
 
 function IsOrganizeable()
     for _,v in pairs(Configurations) do
-        if v["Name"] then
+        if v.Name then
             return true
         end
     end
@@ -633,13 +742,13 @@ function OrganizeDependency(DependencyName, ConfigurationName, PlatformName)
         return
     end
 
-    if DependencyProperties["PropertyGroups"] == nil then
-        print("Organize : " ..DependencyProperties["Name"].. " has no property groups. Leaving...")
+    if DependencyProperties.PropertyGroups == nil then
+        print("Organize : " ..DependencyProperties.Name.. " has no property groups. Leaving...")
         return
     end
-    for _,v0 in pairs(DependencyProperties["PropertyGroups"]) do
-        if #v0["LinkFileNames"] == 0 then
-            print("Organize : " ..DependencyProperties["Name"].. " in " ..v0["Name"].. " configuration have no files to link.")
+    for _,v0 in pairs(DependencyProperties.PropertyGroups) do
+        if #v0.LinkFileNames == 0 then
+            print("Organize : " ..DependencyProperties.Name.. " in " ..v0.Name.. " configuration have no files to link.")
             break
         end
     end
@@ -648,11 +757,11 @@ function OrganizeDependency(DependencyName, ConfigurationName, PlatformName)
 
     --Move library files to the Builds/Libraries folder, and Dynamic Libraries to the Binaries folder.
     if FoundFiles == nil or #FoundFiles[1] == 0 or #FoundFiles[2] == 0 then
-        print(DependencyProperties["Name"].. " Organize : Error, no libraries found.")
+        print(DependencyProperties.Name.. " Organize : Error, no libraries found.")
         return
     end
 
-    local DependencyName = DependencyProperties["Name"]
+    local DependencyName = DependencyProperties.Name
     print("Organize : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), LibrariesFolderName))
 
     -- Copy dynamic link files (dll and a) to respective folder.
@@ -687,5 +796,5 @@ function build_glew(BuildDir)
     --  io.popen("gcc -shared -Wl,-soname,libglew32mx.dll -Wl, --out-implib,lib/libglew32mx.dll.a -o lib/glew32mx.dll src/glew.mx.o -L/mingw/lib -lglu32 -lopengl32 -lgdi32 -luser32 -lkernel32; " .. BuildDir)
     --  io.popen("ar cr lib/libglew32mx.a src/glew.mx.o")
     --end
-    --cmake_build(DependencyDirs["GLEW"])
+    --cmake_build(DependencyDirsGLEW)
 end

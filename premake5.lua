@@ -7,9 +7,9 @@ workspace("Arch1eNgine")
 local ConfigurationNames = {}
 local PlatformNames = {}
 for i,c in pairs(Configurations) do
-    ConfigurationNames[i] = c["Name"]
+    ConfigurationNames[i] = c.Name
     for j,p in pairs(Platforms) do
-        PlatformNames[j] = p["Name"]
+        PlatformNames[j] = p.Name
     end
 end
 
@@ -17,73 +17,45 @@ filter{}
 
 configurations(ConfigurationNames)
 platforms(PlatformNames)
+location("Application")
 
-location("Builds")
-
-project("Engine")
+project("Application")
 kind("ConsoleApp")
 language("C++")
-targetdir("Binaries/%{cfg.buildcfg}/%{cfg.platform}")
-location("Builds/%{prj.name}")
+targetdir(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}")
+location("Application/%{prj.name}")
 
 -- Adding source files to the project...
-files({"Source/**.h", "Source/**.cpp", "Source/**.inl"})
+files({"%{prj.name}/Source/**.h", "%{prj.name}/Source/**.cpp", "%{prj.name}/Source/**.inl"})
 -- use removefiles function to remove any unnescessary files.
 
 -- Including directories...
 includedirs(WorkspaceDirectory.. "/Source") 
-for i in pairs(Dependencies) do
-    local Size = #Dependencies[i]["IncludeDirs"]
+for _,v in pairs(GetListOfDependencyNames()) do
+
+	local DependencyProperties = GetDependencyPropertiesByName(v)
+	if DependencyProperties == nil then
+		print("Including "..v.. " directories : Action failed. Properties not found.")
+		return
+	end
+	local Size = #DependencyProperties.IncludeDirs
     for j=1,Size do
-        includedirs(AdaptDirSlashes(GetDependencyDir(Dependencies[i]["Name"]).. "/" ..Dependencies[i]["IncludeDirs"][j]))
+        includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
     end
 end
 
 -- Linking libraries...
-for _,v0 in pairs(Dependencies) do
-
-    local PropertyGroups = v0["PropertyGroups"]
-    if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
-        for _,v1 in ipairs(PropertyGroups) do
-            filter("configurations:" ..GetPropertyGroupConfigurationName(v1["Name"]))
-            if v1["LinkFileNames"] ~= nil and #v1["LinkFileNames"] ~= 0 then
-                for _,v2 in ipairs(v1["LinkFileNames"]) do
-                    if v2 ~= "" then
-                        links(v2)
-                    end
-                end
-            else
-                print("Linking libraries : " ..v1["Name"].. " property group in " ..v0["Name"].. " dependency has no files to link")
-            end
-
-        end
-
-    else
-        print("Linking libraries : "..v0["Name"].. " dependency has no property groups")
-    end
-
+for _,v0 in pairs(GetListOfDependencyNames()) do
+    LinkForeignDependency(GetDependencyPropertiesByName(v0))
 end
 
 filter {}
 -- Finding libraries...
-for i in pairs(Dependencies) do
-    if Dependencies[i]["RequiresBuilding"] == true then
-    local DependencyName = Dependencies[i]["Name"]
-        for _,c in pairs(Configurations) do
-            for _,p in pairs(Platforms) do
-                local LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c["Name"].. "/" ..p["Name"])
-                if os.isdir(LibraryDir) then
-                    libdirs(LibraryDir)
-                end
-            end
-        end
-    end
+for _,v in pairs(GetListOfDependencyNames()) do
+    AddForeignDependencyLibraryDirs(GetDependencyPropertiesByName(v))
 end
 
 configuration("windows")
---postbuildcommands {
---	"cmake --build " .. BuildDirs[CurrentProjectConfigName]
---}
 
 filter("system:windows")
 links({"OpenGL32"})
@@ -91,29 +63,60 @@ links({"OpenGL32"})
 filter("system:not windows")
 links({"GL"})
 
+filter {}
+
+-- Adding configuration defines
 for i,v in pairs(Configurations) do
-    filter("configurations:" .. v["Name"])
-    if #v["Defines"] ~= 0 then
+    filter("configurations:" .. v.Name)
+    if #v.Defines ~= 0 then
         local DefinesNames = {}
-        for j,w in pairs(v["Defines"]) do
+        for j,w in pairs(v.Defines) do
             DefinesNames[j] = w
         end
         defines(DefinesNames)
     end
 
-    symbols(v["Symbols"])
-    optimize(v["Optimize"])
+    symbols(v.Symbols)
+    optimize(v.Optimize)
 
 end
 
-filter("action:vs*")
+filter{}
+
+for _,v in pairs(Platforms) do
+    if #v.Defines ~= 0 then
+        filter{"platforms:"..v.Name}
+        local NewDefines = {}
+        for i,w in pairs(v.Defines) do
+            NewDefines[i] = w
+        end
+        defines(NewDefines)
+    end
+end
+
+filter{}
+
+filter{"action:vs*"}
 systemversion(os.winSdkVersion() .. ".0")
 pchheader "stdafx.h"
 pchsource "stdafx.cpp"
 
 filter{}
 
-for _,v in pairs(Dependencies) do
+-- Add module projects
+
+for _,v in pairs(GetListOfModuleNames()) do
+	SetupModule(v)
+end
+
+for _,v in pairs(GetListOfDependencyNames()) do
+
+	local DependencyProperties = GetDependencyPropertiesByName(v)
+	if DependencyProperties == nil then
+		print("PostPremakeCommand "..v0.. " : Action failed. Properties not found.")
+		return
+	end
+	
     if v["PostPremakeCommand"] ~= nil then
         v["PostPremakeCommand"]()
     end

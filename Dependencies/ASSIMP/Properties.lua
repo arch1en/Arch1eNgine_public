@@ -1,32 +1,33 @@
 Properties =  
 {
-    ["Name"] =                    "ASSIMP",
-    ["IncludeDirs"] =             { "Source/include", "Generated/include" },
-    ["RequiresGeneration"] =      true,
-    ["RequiresBuilding"] =        true,
-    ["ConfigurationProperties"] =
+    Name =                    "ASSIMP",
+    IncludeDirs =             { "Source/include", "Generated/include" },
+    RequiresGeneration =      true,
+    RequiresBuilding =        true,
+	LinkageType	=			  "Dynamic",
+    ConfigurationProperties =
     {
         {
-            ["Name"] = "Release",    
+            Name = "Release",    
         },
         {
-            ["Name"] = "Debug",
+            Name = "Debug",
         }
     },
-    ["PlatformProperties"] =
+    PlatformProperties =
     {
         {
-            ["Name"] = "Win32",
+            Name = "Win32",
         },
     },
-    ["PropertyGroups"] =
+    PropertyGroups =
     {
         {
-            ["Name"] = "Debug|Win32",
-            ["LinkFileNames"] = { "assimp-vc140-mt" }
+            Name = "Debug|Win32",
+            LinkFileNames = { "assimp-vc140-mt" }
         }
     },
-    ["CustomBuildCommand"] = function()
+    CustomBuildCommand = function()
         includedirs(GetDependencyGeneratedDir("ASSIMP"))
     end
 }

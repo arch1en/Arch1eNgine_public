@@ -57,31 +57,31 @@ AutotoolsExecutableDir = ""
 Configurations =
 {
   {
-    ["Name"] = "Release",
-    ["Defines"] = {},
-    ["Symbols"] = "Off",
-    ["Optimize"] = "On"
+    Name = "Release",
+    Defines = {},
+    Symbols = "Off",
+    Optimize = "On"
   },
   {
-    ["Name"] = "Debug",
-    ["Defines"] = { "DEBUG" },
-    ["Symbols"] = "On",
-    ["Optimize"] = "Off"
+    Name = "Debug",
+    Defines = { "DEBUG" },
+    Symbols = "On",
+    Optimize = "Off"
   }
 }
 
 Platforms =
 {
     {
-        ["Name"] = "Win32",
-        ["Defines"] = { "PLATFORM_WIN32" }
+        Name = "Win32",
+        Defines = { "PLATFORM_WIN32" }
     },
     {
-        ["Name"] = "Win64",
-        ["Defines"] = { "PLATFORM_WIN64" }
+        Name = "Win64",
+        Defines = { "PLATFORM_WIN64" }
     },
     {
-        ["Name"] = "Linux",
-        ["Defines"] = { "PLATFORM_LINUX" }
+        Name = "Linux",
+        Defines = { "PLATFORM_LINUX" }
     }
 }

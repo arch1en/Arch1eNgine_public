@@ -43,12 +43,20 @@ newaction
   trigger = "build",
   description = "Build dependency that is currently set.",
   onStart = function()
-    print("Build : Starting process")
-    if _OPTIONS["dependency"] == "all" then
-      BuildAllDependencies()
-    else
-      BuildDependency(_OPTIONS["dependency"])
-    end
+      print("Build : Starting process")
+      if _OPTIONS["dependency"] ~= nil then
+          if _OPTIONS["dependency"] == "all" then
+              BuildAllDependencies()
+          else
+              BuildDependency(_OPTIONS["dependency"])
+          end
+      elseif _OPTIONS["module"] ~= nil then
+        if _OPTIONS["module"] == "all" then
+            BuildAllModules()
+        else
+            BuildModule(_OPTIONS["module"])
+        end
+      end
   end,
 
   --onWorkspace = function(wks)
@@ -64,53 +72,53 @@ newaction
   --end,
 
   onEnd = function()
-    print("Build : Finished")
+      print("Build : Finished")
   end
 
 }
 
 newaction
 {
-  trigger = "organize",
-  description = "Organize libraries of the dependency that is currently set.",
-  onStart = function()
-    if IsOrganizeable() then
-      print("Organize : Starting process")
-      if _OPTIONS["dependency"] == "all" then
-        OrganizeAllDependencies()
-      else
-        OrganizeDependency(_OPTIONS["dependency"], _OPTIONS["configuration"], _OPTIONS["platform"])
-      end
-    else
-      print("Organize : Process failed.")
-    end
-  end,
+    trigger = "organize",
+    description = "Organize libraries of the dependency that is currently set.",
+    onStart = function()
+        if IsOrganizeable() then
+            print("Organize : Starting process")
+            if _OPTIONS["dependency"] == "all" then
+                OrganizeAllDependencies()
+            else
+                OrganizeDependency(_OPTIONS["dependency"], _OPTIONS["configuration"], _OPTIONS["platform"])
+            end
+        else
+            print("Organize : Process failed.")
+        end
+    end,
 
-  onEnd = function()
-    print("Organize : Finished")
-  end
+    onEnd = function()
+        print("Organize : Finished")
+    end
 }
 
 newaction
 {
-  trigger = "rebuild",
-  description = "Rebuild dependency that is currently set.",
-  onStart = function()
-    print("Rebuild : Starting process")
-    if _OPTIONS["dependency"] == "all" then
-      CleanAllDependencies()
-      GenerateAllDependencies()
-      BuildAllDependencies()
-    else
-      CleanDependency(FindDependencyByName{_OPTIONS["dependency"], true})
-      GenerateDependency(FindDependencyByName{_OPTIONS["dependency"], true})
-      BuildDependency(FindDependencyByName{_OPTIONS["dependency"], true})
-    end
-  end,
+    trigger = "rebuild",
+    description = "Rebuild dependency that is currently set.",
+    onStart = function()
+        print("Rebuild : Starting process")
+        if _OPTIONS["dependency"] == "all" then
+            CleanAllDependencies()
+            GenerateAllDependencies()
+            BuildAllDependencies()
+        else
+            CleanDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+            GenerateDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+            BuildDependency(FindDependencyByName{_OPTIONS["dependency"], true})
+        end
+    end,
 
-  onEnd = function()
-    print("Rebuild : Finished")
-  end,
+    onEnd = function()
+        print("Rebuild : Finished")
+    end,
 }
 
 

@@ -4,8 +4,8 @@ local DependencyAllowed = {}
 
 DependencyAllowed [1] = { "all", "All libraries will be taken into action."}
 
-for i, v in ipairs(Dependencies) do
-  DependencyAllowed[i+1] = { v["Name"]:lower(), "Only " ..v["Name"].. " library will be taken into action." }
+for i, v in ipairs(GetListOfDependencyNames()) do
+	DependencyAllowed[i+1] = { v:lower(), "Only " ..v.. " library will be taken into action." }
 end
 
 newoption {
@@ -18,7 +18,7 @@ newoption {
 local ConfigurationsAllowed = {}
 
 for i,v in ipairs(Configurations) do
-    ConfigurationsAllowed[i] = { v["Name"], "Build dependency in " ..v["Name"].. " configuration." }
+    ConfigurationsAllowed[i] = { v.Name, "Build dependency in " ..v.Name.. " configuration." }
 end
 
 newoption {
@@ -31,7 +31,7 @@ newoption {
 local PlatformsAllowed = {}
 
 for i,v in ipairs(Platforms) do
-    PlatformsAllowed[i] = { v["Name"], "Build dependency on " ..v["Name"].. " platform." }
+    PlatformsAllowed[i] = { v.Name, "Build dependency on " ..v.Name.. " platform." }
 end
 
 newoption {

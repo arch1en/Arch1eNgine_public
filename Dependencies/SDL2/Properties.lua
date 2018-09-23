@@ -1,41 +1,42 @@
 Properties =
 {
-    ["Name"] =                  "SDL2",
-    ["IncludeDirs"] =           { "Source/include" },
-    ["RequiresGeneration"] =    true,
-    ["RequiresBuilding"] =      true,
-    ["ConfigurationProperties"] =
+    Name =                  "SDL2",
+    IncludeDirs =           { "Source/include" },
+    RequiresGeneration =    true,
+    RequiresBuilding =      true,
+	LinkageType	=			"Dynamic",
+    ConfigurationProperties =
     { 
         {
-            ["Name"] = "Release",
+            Name = "Release",
         },
         { 
-            ["Name"] = "Debug",
+            Name = "Debug",
         }
     },
-    ["PlatformProperties"] =
+    PlatformProperties =
     {
         {
-            ["Name"] = "Win32"
+            Name = "Win32"
         },
         {
-            ["Name"] = "x64",
-            ["Mapping"] = "Win64"
+            Name = "x64",
+            Mapping = "Win64"
         }
     },
-    ["PropertyGroups"] =
+    PropertyGroups =
     {
         {
-            ["Name"] = "Release|Win32",
-            ["LinkFileNames"] = { "SDL2", "SDL2main" }
+            Name = "Release|Win32",
+            LinkFileNames = { "SDL2", "SDL2main" }
         },
         {
-            ["Name"] = "Debug|Win32",
-            ["LinkFileNames"] = { "SDL2d", "SDL2maind" }
+            Name = "Debug|Win32",
+            LinkFileNames = { "SDL2d", "SDL2maind" }
         },
         {
-            ["Name"] = "Release|x64",
-            ["LinkFileNames"] = { "SDL2", "SDL2main" }
+            Name = "Release|x64",
+            LinkFileNames = { "SDL2", "SDL2main" }
         }
     }
 }
