@@ -10,11 +10,12 @@
 ////////////////////////////////////////
 #pragma once
 
+#include "BaseComponent.h"
+
+#include <Input.h>
+
 #include <memory>
 #include <functional>
-
-#include "BaseComponent.h"
-#include "Modules\InputModule.h"
 
 class Class;
 

@@ -1,4 +1,6 @@
 Properties = 
 {
-	LinkageType = "Dynamic"
+	LinkageType = "Dynamic",
+	ModuleDependencies = {"Logger", "Input", "Renderer.Base"},
+	ForeignDependencies = {"SDL2", "GLM"}
 }

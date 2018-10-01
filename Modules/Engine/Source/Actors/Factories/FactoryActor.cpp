@@ -4,6 +4,8 @@
 #include "Actors\PrimitiveActors\ATriangle.h"
 #include "Actors\PrimitiveActors\ACube.h"
 
+#include <Logger.h>
+
 std::shared_ptr<AActor> FactoryActor::NewActor(std::string aActorType)
 {
 	std::shared_ptr<AActor> Actor = nullptr;

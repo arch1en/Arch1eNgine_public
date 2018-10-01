@@ -9,6 +9,8 @@
 //#include "stdafx.h"
 #include "AActor.h"
 
+#include <Logger.h>
+
 #include "Components/BaseComponent.h"
 #include "Components/ActorComponent.h"
 

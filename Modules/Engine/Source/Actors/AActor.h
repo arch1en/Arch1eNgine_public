@@ -8,7 +8,10 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "Engine/Core/Class.h"
+#include "Core/Class.h"
+
+#include <memory>
+#include <vector>
 #include <glm/gtc/quaternion.hpp>
 
 class BaseComponent;

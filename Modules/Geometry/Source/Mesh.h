@@ -10,9 +10,9 @@
 #pragma once
 
 #include <memory>
-#include <Math/Math.h>
+#include <Math.h>
 
-#include "Engine/Rendering/Material.h"
+#include "Material.h"
 
 struct Face
 {
@@ -35,17 +35,17 @@ struct PolygonData
 
 	unsigned int NumElements;
 
-	std::vector<Vector3<GLfloat>>	Vertices;
-	std::vector<Vector3<GLfloat>>	VertexNormals;
+	std::vector<Vector3<float>>	Vertices;
+	std::vector<Vector3<float>>	VertexNormals;
 	std::vector<Face>				Faces;
-	std::vector<Vector2<GLfloat>>	TextureCoordinates;
+	std::vector<Vector2<float>>	TextureCoordinates;
 	std::vector<std::shared_ptr<Material>>	Materials;
 
 	void ReCalculateNumberOfIndexElements();
 
 };
 
-class Mesh
+class MODULE_API Mesh
 {
 
 public:
@@ -61,9 +61,9 @@ protected:
 
 private:
 
-	std::shared_ptr<GLuint> mRefVAO;
-	std::shared_ptr<GLuint> mRefVBO;
-	std::shared_ptr<GLuint> mRefEBO;
-	std::shared_ptr<GLuint> mRefTBO;
+	std::shared_ptr<unsigned int> mRefVAO;
+	std::shared_ptr<unsigned int> mRefVBO;
+	std::shared_ptr<unsigned int> mRefEBO;
+	std::shared_ptr<unsigned int> mRefTBO;
 
 };

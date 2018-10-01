@@ -8,7 +8,7 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "Engine/Core/Class.h"
+#include "Core/Class.h"
 #include "Actors/AActor.h"
 
 class BaseComponent : public Class

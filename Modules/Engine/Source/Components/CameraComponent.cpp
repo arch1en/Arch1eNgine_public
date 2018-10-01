@@ -9,6 +9,8 @@
 //#include "stdafx.h"
 #include "CameraComponent.h"
 
+#include <glm/glm.hpp>
+
 CameraComponent::CameraComponent(AActor* aOwner)
 	: ActorComponent{aOwner}
 	, mViewMatrix()

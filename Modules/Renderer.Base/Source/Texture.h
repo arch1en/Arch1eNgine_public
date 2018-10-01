@@ -9,28 +9,29 @@
 ////////////////////////////////////////
 #pragma once
 
+#include <vector>
 #include "stb_image.h"
 
-enum ETextureWrappingMode
+enum class ETextureWrappingMode
 {
-	Repeat = GL_REPEAT,
-	MirroredRepeat = GL_MIRRORED_REPEAT,
-	ClampToEdge = GL_CLAMP_TO_EDGE,
-	ClampToBorder = GL_CLAMP_TO_BORDER
+	Repeat,
+	MirroredRepeat,
+	ClampToEdge,
+	ClampToBorder
 };
 
-enum ETextureFilteringMode
+enum class ETextureFilteringMode
 {
-	Nearest = GL_NEAREST,
-	Linear = GL_LINEAR
+	Nearest,
+	Linear
 };
 
-enum ETextureMipmappingMode
+enum class ETextureMipmappingMode
 {
-	NearestMipmapNearest = GL_NEAREST_MIPMAP_NEAREST,
-	NearestMipmapLinear = GL_NEAREST_MIPMAP_LINEAR,
-	LinearMipmapNearest = GL_LINEAR_MIPMAP_NEAREST,
-	LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR
+	NearestMipmapNearest,
+	NearestMipmapLinear,
+	LinearMipmapNearest,
+	LinearMipmapLinear
 };
 
 enum ETextureType
@@ -44,13 +45,13 @@ enum ETextureType
 
 struct TextureData
 {
-	std::vector<GLfloat> Coordinates;
-	std::vector<GLfloat> BorderColor;
+	std::vector<float> Coordinates;
+	std::vector<float> BorderColor;
 
-	GLenum Wrap_S;
-	GLenum Wrap_T;
-	GLenum Filter_Min;
-	GLenum Filter_Mag;
+	ETextureWrappingMode Wrap_S;
+	ETextureWrappingMode Wrap_T;
+	ETextureFilteringMode Filter_Min;
+	ETextureFilteringMode Filter_Mag;
 
 	TextureData() {}
 	TextureData(
@@ -72,12 +73,12 @@ public:
 	//void Initiate(std::string aPath, TextureData aTextureData);
 	const TextureData* GetData() const;
 
-	GLuint GetTextureID() const;
+	unsigned int GetTextureID() const;
 	//bool IsInitiated() const;
 
 private:
 
-	GLuint			mTextureID;
+	unsigned int	mTextureID;
 	TextureData		mData;
 
 	int Width = 0;

@@ -63,20 +63,21 @@ end
 -- ~CMake Functions
 
 function AdaptDirSlashes(String)
-    if os.istarget("windows") then
-        return String:gsub("/",AdaptedDirSlash())
-    elseif os.istarget("linux") then
-        return String:gsub("\\",AdaptedDirSlash())
+	local Result = String
+    if os.target() == "windows" then
+        Result = string.gsub(String, "/",AdaptedDirSlash())
+    elseif os.target() == "linux" then
+        Result = string.gsub(String, "\\",AdaptedDirSlash())
     else
-        return String:gsub("\\",AdaptedDirSlash())
+        Result = string.gsub(String, "\\",AdaptedDirSlash())
     end
-    return String
+    return Result
 end
 
 function AdaptedDirSlash()
-    if os.istarget("windows") then
+    if os.target() == "windows" then
         return "\\"
-    elseif os.istarget("linux") then
+    elseif os.target() == "linux"  then
         return "/"
     end
 
@@ -243,7 +244,12 @@ function SetupModule(ModuleName)
 		print("Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
 		return
 	end
-
+	
+	if ModuleProperties.LinkageType == "None" then
+		print("Module "..ModuleName.. " : Module without LinkageType, skipping...")
+		return
+	end
+	
 	print(CreateFolderIfDoesntExistEx(GetModuleBuildDir(ModuleName)))
 	
 	group("Modules")
@@ -252,6 +258,7 @@ function SetupModule(ModuleName)
 	targetdir(AdaptDirSlashes(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}"))
     targetname(ModuleName)
 	location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
+	includedirs(ModulesDir.."/"..ModuleName.."/"..SourceFolderName)
 	
 	if ModuleProperties.LinkageType == "Static" then
 		kind("StaticLib")
@@ -289,6 +296,7 @@ function SetupModule(ModuleName)
         ModulePropertiesPostPremakeCommand()
     end
 
+	filter{}
 end
 
 function SetupModuleDependencies(ModuleProperties)
@@ -303,8 +311,8 @@ function SetupModuleDependencies(ModuleProperties)
 
     for _,v in pairs(ModuleProperties.ModuleDependencies) do
         local ModuleDependencyProperties = GetModulePropertiesByName(v)
-        if ModuleDependencyProperties == nil then
-            includedirs(ModulesDir.."/"..v.."/"..SourceFolderName)
+        if ModuleDependencyProperties ~= nil then
+            includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
         end
     end
 end
@@ -326,8 +334,8 @@ function SetupForeignDependencies(ModuleProperties)
             print("SetupForeignDependencies failed. "..v.." dependency property file missing.")
             break
         end
-        for _,w in pairs(ForeignDependencyProperties.IncludeDirs) do
-            includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
+        for _,w in ipairs(ForeignDependencyProperties.IncludeDirs) do
+			includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
         end
         
         LinkForeignDependency(ForeignDependencyProperties)

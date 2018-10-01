@@ -13,6 +13,8 @@
 #include "Actors/ACamera.h"
 #include "Actors/AMeshActor.h"
 
+#include <SDL.h>
+
 class ActorBuilder;
 class MeshBuilder;
 class MaterialBuilder;
@@ -71,12 +73,12 @@ private:
 
 	bool mRenderingFailed = false;
 
-	Uint64	mDeltaTimeNow;
-	Uint64	mDeltaTimeLast;
+	unsigned int	mDeltaTimeNow;
+	unsigned int	mDeltaTimeLast;
 
 	SDL_Window *	Window;
 	SDL_GLContext	GLContext;
-	Uint32			Start;
+	unsigned int			Start;
 	bool			Running;
 	SDL_Event		Event;
 	ModuleHandler	mModuleHandler;

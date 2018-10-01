@@ -1,0 +1,6 @@
+# All files from local history plugin
+.localhistory/*
+# All files from visual studio
+.vs/*
+# All logs
+*.log

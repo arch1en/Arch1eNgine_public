@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Actors\AActor.h"
-#include "Debuggers\Assertions.h"
 
 class ActorBuilder
 {

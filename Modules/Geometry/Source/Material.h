@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Texture.h"
-#include "Math/Color.h"
+#include "Color.h"
+
+#include <vector>
+#include <memory>
 
 class MODULE_API Material
 {

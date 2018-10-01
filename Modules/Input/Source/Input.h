@@ -13,7 +13,7 @@
 ////////////////////////////////////////
 #pragma once
 
-#include "IO/InputLayer.h"
+#include <InputLayer.h>
 
 #include <unordered_map>
 

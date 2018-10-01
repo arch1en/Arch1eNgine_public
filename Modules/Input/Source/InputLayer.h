@@ -11,6 +11,7 @@
 
 #include <string>
 #include <map>
+#include <SDL_keycode.h>
 
 class InputComponent;
 
