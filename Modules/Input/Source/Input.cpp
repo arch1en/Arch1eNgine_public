@@ -8,20 +8,21 @@
 //
 ////////////////////////////////////////
 //#include "stdafx.h"
-#include "InputModule.h"
+#include "Input.h"
 #include "IO/ConfigLoader.h"
+#include "Logger.h"
 
-InputModule::InputModule()
+Input::Input()
 {
 	InitializeLayers();
 }
 
-InputModule::~InputModule()
+Input::~Input()
 {
 
 }
 
-void InputModule::InitializeLayers()
+void Input::InitializeLayers()
 {
 	std::string LayerCategory = "Input.Scene";
 
@@ -31,7 +32,7 @@ void InputModule::InitializeLayers()
 	mActiveLayers.insert({ LayerCategory, Layer });
 }
 
-void InputModule::Update(SDL_Event& aEvent)
+void Input::Update(SDL_Event& aEvent)
 {
 
 	if (aEvent.type == SDL_KEYDOWN || 
@@ -54,7 +55,7 @@ void InputModule::Update(SDL_Event& aEvent)
 	}
 }
 
-void InputModule::Update()
+void Input::Update()
 {
 	const Uint8*	KeyArray = SDL_GetKeyboardState(NULL);
 
@@ -75,7 +76,7 @@ void InputModule::Update()
 	}
 }
 
-bool	InputModule::RegisterToLayer(InputComponent* aInputComponent, std::string aLayerCategory)
+bool	Input::RegisterToLayer(InputComponent* aInputComponent, std::string aLayerCategory)
 {
 	auto Result = mInputLayers.find(aLayerCategory);
 
@@ -94,7 +95,7 @@ bool	InputModule::RegisterToLayer(InputComponent* aInputComponent, std::string a
 }
 
 // TODO : Decide what to do with this.
-std::shared_ptr<InputLayer>	InputModule::EnsuredRegisterToLayer(InputComponent* aInputComponent, std::string aLayerCategory)
+std::shared_ptr<InputLayer>	Input::EnsuredRegisterToLayer(InputComponent* aInputComponent, std::string aLayerCategory)
 {
 	try
 	{
@@ -112,7 +113,7 @@ std::shared_ptr<InputLayer>	InputModule::EnsuredRegisterToLayer(InputComponent* 
 	return nullptr;
 }
 
-void InputModule::UnregisterFromLayer(InputComponent* aInputComponent, std::string aLayerCategory)
+void Input::UnregisterFromLayer(InputComponent* aInputComponent, std::string aLayerCategory)
 {
 	auto Result = mInputLayers.find(aLayerCategory);
 
@@ -125,7 +126,7 @@ void InputModule::UnregisterFromLayer(InputComponent* aInputComponent, std::stri
 	mInputLayers.at(aLayerCategory)->UnbindComponent(aInputComponent);
 }
 
-std::shared_ptr<InputLayer> InputModule::CreateInputLayer(const std::string& aLayerCategory)
+std::shared_ptr<InputLayer> Input::CreateInputLayer(const std::string& aLayerCategory)
 {
 
 	if (IsLayerCreated(aLayerCategory) == false)
@@ -148,12 +149,12 @@ std::shared_ptr<InputLayer> InputModule::CreateInputLayer(const std::string& aLa
 	return nullptr;
 }
 
-void InputModule::DestroyInputLayer(const std::string& aLayerCategory)
+void Input::DestroyInputLayer(const std::string& aLayerCategory)
 {
 	const int ErasedLayers = mInputLayers.erase(aLayerCategory);
 }
 
-bool InputModule::IsLayerCreated(const std::string& aLayerCategory)
+bool Input::IsLayerCreated(const std::string& aLayerCategory)
 {
 	auto Result = mInputLayers.find(aLayerCategory);
 

@@ -20,3 +20,13 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 #endif
+
+class RendererOpenGL : class RendererBase
+{
+	explicit RendererOpenGL();
+	~RendererOpenGL();
+
+	bool Initialize();
+
+	void Update(float DeltaTime);
+};

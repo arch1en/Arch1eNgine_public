@@ -15,7 +15,7 @@
 
 class InputComponent;
 
-struct MouseData
+struct MODULE_API MouseData
 {
 	int	MouseX;
 	int MouseY;
@@ -23,13 +23,15 @@ struct MouseData
 	int DirectionY;
 };
 
-struct KeyData
+struct MODULE_API KeyData
 {
 	char Key;
 	std::string Command;
 };
 
-class InputLayer
+typedef int ArrayIndex;
+
+class MODULE_API InputLayer
 {
 public:
 	InputLayer(const std::string& InLayerCategory);

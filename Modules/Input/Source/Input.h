@@ -14,33 +14,35 @@
 #pragma once
 
 #include <InputLayer.h>
+#include <SDL.h>
 
 #include <unordered_map>
+#include <memory>
 
-class InputComponent;
+class InputHandler;
 
-class InputModule
+class MODULE_API Input
 {
 friend class ModuleHandler;
 
 public:
-	InputModule();
-	InputModule(const InputModule&) = delete;
-	InputModule operator= (const InputModule& RHS) = delete;
-	~InputModule();
+	Input();
+	Input(const Input&) = delete;
+	Input operator= (const Input& RHS) = delete;
+	~Input();
 
-	static InputModule& GetInstance()
+	static Input& GetInstance()
 	{
-		static InputModule Module;
+		static Input Module;
 		return Module;
 	}
 
-	bool	RegisterToLayer(InputComponent* aInputComponent, std::string aLayerCategory);
-	void	UnregisterFromLayer(InputComponent* aInputComponent, std::string aLayerCategory);
+	bool	RegisterToLayer(InputHandler* aInputHandler, std::string aLayerCategory);
+	void	UnregisterFromLayer(InputHandler* aInputHandler, std::string aLayerCategory);
 
 private:
 
-	std::shared_ptr<InputLayer>			EnsuredRegisterToLayer(InputComponent* aInputComponent, std::string aLayerCategory);
+	std::shared_ptr<InputLayer>			EnsuredRegisterToLayer(InputHandler* aInputHandler, std::string aLayerCategory);
 
 	std::unordered_map<std::string, std::shared_ptr<InputLayer>>	mActiveLayers;
 	std::unordered_map<std::string, std::shared_ptr<InputLayer>>	mInputLayers;

@@ -34,19 +34,19 @@ function CMakeGenerate(GenerateDir, CMakeListsDir, Generator, Platform)
 end
 
 function CMakeBuild(BuildDir, GeneratedDir, Configuration)
-    local log = ""
-
-    if Configuration == "Win32" then
-        Configuration = ""
-    end
-
-    local Command = ""
-
-    if os.target() == "windows" then
-        Command = "cd /d " ..BuildDir.. " && cmake --build \"" ..GeneratedDir.. "\" --config \"" ..Configuration
+    
+	local log = ""
+	local Command = ""
+	
+	if os.target() == "windows" then
+        Command = Command.. "cd /d " ..BuildDir.. " && cmake --build \"" ..GeneratedDir
     else
         print("CMakeBuild Error : Operational System target invalid or inoperable.")
         return
+    end
+
+    if Configuration ~= nil or Configuration ~= '' then
+        Command = Command.. "\" --config \"" ..Configuration
     end
 
     print(Command)
@@ -724,7 +724,7 @@ function BuildDependency(DependencyName, Configuration, Platform)
     if BuildTool == "cmake" then
         for _,v in pairs(DependencyProperties.ConfigurationProperties) do
             print("Build : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), BuildFolderName))
-            CMakeBuild(GetDependencyBuildDir(DependencyName), GetDependencyGeneratedDir(DependencyName), MappedDependencyPlatform ,MappedDependencyConfiguration)
+            CMakeBuild(GetDependencyBuildDir(DependencyName), GetDependencyGeneratedDir(DependencyName), MappedDependencyConfiguration)
         end
     elseif BuildTool == "make" then
         -- @todo Makefile build needs to be implemented.

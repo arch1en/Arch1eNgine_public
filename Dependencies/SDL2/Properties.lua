@@ -8,10 +8,10 @@ Properties =
     ConfigurationProperties =
     { 
         {
-            Name = "Release",
+            Name = "Release"
         },
         { 
-            Name = "Debug",
+            Name = "Debug"
         }
     },
     PlatformProperties =
@@ -37,6 +37,10 @@ Properties =
         {
             Name = "Release|x64",
             LinkFileNames = { "SDL2", "SDL2main" }
+        },
+		{
+            Name = "Debug|x64",
+            LinkFileNames = { "SDL2d", "SDL2maind" }
         }
     }
 }

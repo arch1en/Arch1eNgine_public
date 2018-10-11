@@ -46,10 +46,10 @@ Disclaimer :
 --]]
 
 -- Directory where cmake executable resides.
-CMakeExecutableDir = "E:/_Tools/CMake/bin"
+CMakeExecutableDir = "D:/_Tools/CMake/bin"
 
 -- Directory where makefile or mingw32-make executable resides.
-MakefileExecutableDir = "E:/_Tools/MinGW/bin"
+MakefileExecutableDir = "D:/_Tools/MinGW/bin"
 
 -- [TODO] Directory where autotools executable resides.
 AutotoolsExecutableDir = ""

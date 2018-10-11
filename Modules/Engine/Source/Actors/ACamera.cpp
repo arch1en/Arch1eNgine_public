@@ -72,8 +72,8 @@ void ACamera::MouseMotionListener(const MouseData& aMouseData)
 {
 	const glm::vec2& LastMousePosition = mInputComponent->GetLastMousePosition();
 	
-	auto OffsetX = GLfloat(aMouseData.DirectionX);
-	auto OffsetY = GLfloat(-aMouseData.DirectionY);
+	auto OffsetX = float(aMouseData.DirectionX);
+	auto OffsetY = float(-aMouseData.DirectionY);
 
 	OffsetX *= mInputComponent->GetMouseSensitivity();
 	OffsetY *= mInputComponent->GetMouseSensitivity();
