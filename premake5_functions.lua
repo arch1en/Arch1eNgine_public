@@ -95,10 +95,15 @@ DependencyLibrariesDir = AdaptDirSlashes(BuildsDir.. "/" ..LibrariesDir.. "/" ..
 WorkspaceDirectory = AdaptDirSlashes(io.popen("cd"):read('*l')) -- ugly hack, because premake tokens doesnt work -.-
 
 local GeneratedFolderName = "Generated"
+local ApplicationFolderName = "Application"
 local SourceFolderName = "Source"
 local BuildFolderName = "Build"
 local BinariesFolderName = "Binaries"
 local LibrariesFolderName = "Libraries"
+
+function GetApplicationDir()
+	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ApplicationFolderName)
+end
 
 function GetBinariesDir()
     return AdaptDirSlashes(WorkspaceDirectory.. "/" ..BinariesFolderName)
@@ -208,6 +213,15 @@ function GetModuleBuildDir(ModuleName)
 	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir.. "/" ..ModuleName.. "/" ..BuildFolderName)
 end
 
+function GetApplicationProperties()
+    local Result = dofileopt(AdaptDirSlashes(GetApplicationDir().."/"..PropertiesFileName..".lua"))
+    if Result == true then
+        return Properties
+    end
+
+    return nil
+end
+
 function GetModulePropertiesByName(Name)
     local Result = dofileopt(AdaptDirSlashes(GetModulesDir().."/"..Name.."/"..PropertiesFileName..".lua"))
     if Result == true then
@@ -232,20 +246,125 @@ function GetListOfModuleNames()
     return DependenciesList
 end
 
+function SetupApplication()
+
+    filter{}
+
+    configurations(ConfigurationNames)
+    platforms(PlatformNames)
+    location("Application")
+
+    project("Application")
+    kind("ConsoleApp")
+    language("C++")
+    targetdir(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}")
+    location("Application/%{prj.name}")
+
+    -- Adding source files to the project...
+    files({"%{prj.name}/Source/**.h", "%{prj.name}/Source/**.cpp", "%{prj.name}/Source/**.inl"})
+    -- use removefiles function to remove any unnescessary files.
+
+    -- Including directories...
+    -- includedirs(WorkspaceDirectory.. "/Source") 
+    
+    local ApplicationProperties = GetApplicationProperties()
+    if ApplicationProperties == nil then
+        print("Error configuring application. Properties.lua not found !")
+        return 
+    end
+
+    SetupModuleDependencies(ApplicationProperties)
+    SetupForeignDependencies(ApplicationProperties)
+
+    --for _,v in pairs(GetListOfDependencyNames()) do
+
+      --  local DependencyProperties = GetDependencyPropertiesByName(v)
+        --if DependencyProperties == nil then
+        --    print("Including "..v.. " directories : Action failed. Properties not found.")
+        --    return
+        --end
+        --local Size = #DependencyProperties.IncludeDirs
+        --for j=1,Size do
+        --    includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
+        --end
+    --end
+
+    -- Linking libraries...
+    --for _,v0 in pairs(GetListOfDependencyNames()) do
+    --    LinkForeignDependency(GetDependencyPropertiesByName(v0))
+    --end
+
+    --filter {}
+    -- Finding libraries...
+    --for _,v in pairs(GetListOfDependencyNames()) do
+    --    AddForeignDependencyLibraryDirs(GetDependencyPropertiesByName(v))
+    --end
+
+    configuration("windows")
+
+    filter("system:windows")
+    links({"OpenGL32"})
+
+    filter("system:not windows")
+    links({"GL"})
+
+    filter {}
+
+    -- Adding configuration defines
+    for i,v in pairs(Configurations) do
+        filter("configurations:" .. v.Name)
+        if #v.Defines ~= 0 then
+            local DefinesNames = {}
+            for j,w in pairs(v.Defines) do
+                DefinesNames[j] = w
+            end
+            defines(DefinesNames)
+        end
+
+        symbols(v.Symbols)
+        optimize(v.Optimize)
+
+    end
+
+    filter{}
+
+    for _,v in pairs(Platforms) do
+        if #v.Defines ~= 0 then
+            filter{"platforms:"..v.Name}
+            local NewDefines = {}
+            for i,w in pairs(v.Defines) do
+                NewDefines[i] = w
+            end
+            defines(NewDefines)
+        end
+    end
+
+    filter{}
+
+    filter{"action:vs*"}
+    systemversion(os.winSdkVersion() .. ".0")
+    --pchheader "stdafx.h"
+	--pchsource "stdafx.cpp"
+
+    filter{}
+
+end
+
 function SetupModule(ModuleName)
 
-	local ModuleProperties = GetModulePropertiesByName(ModuleName)
-	if ModuleProperties == nil then
-		print("Module "..ModuleName.. " : Cannot setup module. Properties not found.")
-		return
-	end
+    local ModuleProperties = GetModulePropertiesByName(ModuleName)
+    if ModuleProperties == nil then
+        print("Module "..ModuleName.. " : Cannot setup module. Properties not found.")
+        return
+    end
 
-	if ModuleProperties.LinkageType == nil then
+    if ModuleProperties.LinkageType == nil then
 		print("Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
 		return
 	end
 	
 	if ModuleProperties.LinkageType == "None" then
+	SetupModuleDependencies(ModuleProperties)
 		print("Module "..ModuleName.. " : Module without LinkageType, skipping...")
 		return
 	end

@@ -1,4 +1,6 @@
 Properties = 
 {
-	LinkageType = "Dynamic"
+	LinkageType = "Dynamic",
+	ForeignDependencies = {"IMGUI"},
+	ModuleDependencies = {"Renderer.Base"}
 }

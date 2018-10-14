@@ -10,7 +10,7 @@
 
 #define Log(DebugType, Message, ...) Debugger::GetInstance().Log_( __FILE__, __LINE__, DebugType, Message, __VA_ARGS__);
 
-enum class DebugType : uint8_t
+enum class DebugType : unsigned char
 {
 	EDT_Notice,
 	EDT_Warning,

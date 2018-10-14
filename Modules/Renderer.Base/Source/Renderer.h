@@ -11,24 +11,35 @@
 
 #include <stack>
 
-#include "Components/MeshComponent.h"
-#include "Engine/Rendering/ShaderProgram.h"
+//#include "Components/MeshComponent.h"
+#include "ShaderProgram.h"
+#include "glm/glm.hpp"
+#include "Utilities/RendererUtilities.h"
+#include "Mesh.h"
+
+struct DrawData
+{
+	const int VAOIndex;
+	const glm::mat4& ViewMatrix;
+};
 
 class Renderer
 {
 public:
-	Renderer() {}
+	Renderer(RendererType aRendererType);
 	~Renderer();
 
-	void Initialize();
+	virtual bool Initialize() = 0;
+	virtual void CreateContext() = 0;
+	virtual void AttachToWindow(SDL_Window* Window) = 0;
 
 	/**
 	*   Draws meshes that are on RenderingStack.
 	*/
-	void DrawMeshes(const GLsizei aVAOIndex, 
-		const glm::mat4& aViewMatrix);
+	virtual void DrawMeshes(DrawData aDrawData) = 0;
 
-	void AddMeshToDraw(std::shared_ptr<MeshComponent> InMesh);
+	void AddMeshToDraw(std::shared_ptr<Mesh> InMesh);
+
 private:
 
 	GLenum	DrawingMode;
@@ -42,6 +53,6 @@ private:
 	GLint mColorUniformLocation = -1;
 
 	// Keeps all objects that needs to be rendered on the scene.
-	std::vector<std::shared_ptr<MeshComponent>> Meshes;
+	std::vector<std::shared_ptr<Mesh>> Meshes;
 
 };

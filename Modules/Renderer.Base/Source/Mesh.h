@@ -10,10 +10,9 @@
 #pragma once
 
 #include <memory>
-#include <Engine/Rendering/Textures/Texture.h>
-#include <Math/Math.h>
+#include <Texture.h>
 
-#include "Engine/Rendering/Material.h"
+#include "Material.h"
 
 struct Face
 {

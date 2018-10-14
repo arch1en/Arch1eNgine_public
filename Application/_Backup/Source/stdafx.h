@@ -10,7 +10,7 @@
 // *** Mathematics ***
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "Math/Math.h"
+//#include "Math/Math.h"
 
 // *** Standard Template Libraries ***
 #include <stdio.h>
@@ -19,8 +19,8 @@
 #include <memory>		// Smart pointers, smaller datatypes (uint8_t)
 
 // *** Project Classes ***
-#include "Debuggers/DebugTimer.h"
-#include "Debuggers/Debugger.h"
+//#include "Debuggers/DebugTimer.h"
+//#include "Debuggers/Debugger.h"
 
 using glm::mat4;
 using glm::vec3;

@@ -9,14 +9,14 @@
 
 #pragma once
 
-#include "Mesh/Mesh.h"
+#include "Mesh.h"
 #include <vector>
 
 struct MeshData
 {
-	GLuint VAO;
-	GLuint VBO;
-	GLuint EBO;
+	unsigned int VAO;
+	unsigned int VBO;
+	unsigned int EBO;
 };
 
 class AllocatorGPU
@@ -30,16 +30,16 @@ public:
 	bool AllocateStaticMesh(Mesh* aMesh);
 	void AllocateTextureData(Mesh* aMesh);
 
-	GLuint GetActiveVAO() const;
+	unsigned int GetActiveVAO() const;
 
 private:
 
-	GLuint mActiveVAO;
+	unsigned int mActiveVAO;
 
-	std::vector<GLuint>		mVAOs;	// Vertex Array Object
-	std::vector<GLuint>		mVBOs;	// Vertex Buffer Object
-	std::vector<GLuint>		mTBOs;	// Texture Buffer Object
-	std::vector<GLuint>		mEBOs;	// Element Buffer OBject
+	std::vector<unsigned int>		mVAOs;	// Vertex Array Object
+	std::vector<unsigned int>		mVBOs;	// Vertex Buffer Object
+	std::vector<unsigned int>		mTBOs;	// Texture Buffer Object
+	std::vector<unsigned int>		mEBOs;	// Element Buffer OBject
 
-	void SetActiveVAO(GLuint aValue);
+	void SetActiveVAO(unsigned int aValue);
 };

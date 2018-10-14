@@ -11,9 +11,6 @@
 
 //#include "stdafx.h"
 
-
-
-#pragma region Vector2
 template<class T = float>
 struct MODULE_API Vector2
 {
@@ -79,9 +76,7 @@ public:
 	}
 
 };
-#pragma endregion
 
-#pragma region Vector3
 template<class T>
 struct MODULE_API Vector3
 {
@@ -153,7 +148,6 @@ public:
 	}
 
 };
-#pragma endregion
 
 template<class T>
 bool MODULE_API IsPowerOfTwo(T InParam)

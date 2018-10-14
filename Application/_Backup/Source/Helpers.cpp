@@ -10,7 +10,7 @@
 
 #include "Helpers.h"
 
-#include "stdafx.h"
+//#include "stdafx.h"
 #include <string>
 #include <sstream>
 

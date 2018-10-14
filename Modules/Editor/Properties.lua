@@ -1,4 +1,5 @@
 Properties = 
 {
-	LinkageType = "Dynamic"
+	LinkageType = "Dynamic",
+	ModuleDependencies = {"UI.Editor"}
 }

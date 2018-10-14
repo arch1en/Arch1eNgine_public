@@ -9,6 +9,8 @@
 ////////////////////////////////////////
 #pragma once
 
+#include "Utilities/RendererUtilities.h"
+
 class ShaderProgram
 {
 
@@ -17,21 +19,21 @@ public:
 	ShaderProgram();
 
 	void	Init();
-	bool	LoadShader(const char * path, GLenum type);
+	bool	LoadShader(const char * path, ShaderType type);
 	void	LinkProgram();
 	void	Bind();
 	void	Unbind();
 	void	PrintInfo();
-	GLuint	getProgramID() const;
+	unsigned int	GetProgramID() const;
 
 	bool		CheckProgramStatus();
-	bool		CheckShaderStatus(GLuint shaderID);
+	bool		CheckShaderStatus(unsigned int shaderID);
 
 	int			GetUniformLocation(const char* aName) const;
 
 private:
 
-	GLuint		m_program;
-	GLuint		m_vertexShader;
-	GLuint		m_fragmentShader;
+	unsigned int		mProgramID;
+	unsigned int		m_vertexShader;
+	unsigned int		m_fragmentShader;
 };

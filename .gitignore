@@ -1,5 +1,7 @@
 # All files from local history plugin
-.localhistory/*
+*/.localhistory/*
+*/Generated/*
+*/Build/*
 # All files from visual studio
 .vs/*
 # All logs

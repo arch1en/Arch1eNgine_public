@@ -8,12 +8,13 @@
 ////////////////////////////////////////
 //#include "stdafx.h"
 #include "AllocatorGPU.h"
+#include "glad/glad.h"
 
-#include "Debuggers/Debugger.h"
+#include "Logger.h"
 
 void AllocatorGPU::Initialize()
 {
-	GLuint NewVAO;
+	unsigned int NewVAO;
 	glGenVertexArrays(1, &NewVAO);
 	glBindVertexArray(NewVAO);
 	mVAOs.push_back(NewVAO);
@@ -39,9 +40,9 @@ AllocatorGPU::~AllocatorGPU()
 
 bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 {
-	GLuint NewVBO;
-	GLuint NewEBO;
-	GLuint NewTBO;
+	unsigned int NewVBO;
+	unsigned int NewEBO;
+	unsigned int NewTBO;
 
 	GLsizeiptr IndicesBufferSize = sizeof(aMesh->mPolygonData.Vertices[0]) * aMesh->mPolygonData.Vertices.size();
 	//GLsizeiptr ColorBufferSize = sizeof(aMesh->mPolygonData.Materials[0]->GetDiffuseColor()->r) * aMesh->mPolygonData.Color.size();
@@ -127,12 +128,12 @@ bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 	return true;
 }
 
-void AllocatorGPU::SetActiveVAO(GLuint aValue)
+void AllocatorGPU::SetActiveVAO(unsigned int aValue)
 {
 	mActiveVAO = aValue;
 }
 
-GLuint AllocatorGPU::GetActiveVAO() const
+unsigned int AllocatorGPU::GetActiveVAO() const
 {
 	return mActiveVAO;
 }

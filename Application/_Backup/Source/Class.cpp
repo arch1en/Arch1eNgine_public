@@ -6,7 +6,7 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "Class.h"
 
 Class::Class()
