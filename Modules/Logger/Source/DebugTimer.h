@@ -11,7 +11,7 @@
 
 #include <ctime>
 
-class DebugTimer
+class MODULE_API DebugTimer
 {
 public:
 

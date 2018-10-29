@@ -1,14 +1,14 @@
 ////////////////////////////////////////
 //
 //  @project    : Arch1eN Engine
-//  @name       : Renderer
+//  @name       : Base
 //  @author     : Artur Ostrowski
 //  @usage      : Base class responsible for rendering tasks.
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
 #include "stdafx.h"
-#include "Renderer.h"
+#include "Base.h"
 #include "Mesh/Mesh.h"
 #include "IO/Paths.h"
 
@@ -18,17 +18,10 @@ struct Color;
 #include "Engine/Rendering/Material.h"
 // ~TEMP
 
-Renderer::Renderer(RendererType aRendererType)
-{
-	switch (aRendererType)
-	{
+Renderer::Base::Renderer::Base()
+{}
 
-	}
-
-	mRendererType = aRendererType;
-}
-
-void Renderer::Initialize()
+void Renderer::Base::Initialize()
 {
 	DrawingMode = GL_TRIANGLES;
 
@@ -52,17 +45,17 @@ void Renderer::Initialize()
 	mShaderProgram.Bind();
 }
 
-void Renderer::AttachContextToWindow(SDL_Window* Window)
+void Renderer::Base::AttachContextToWindow(SDL_Window* Window)
 {
 
 }
 
-Renderer::~Renderer()
+Renderer::Base::~Renderer::Base()
 {
 
 }
 
-void Renderer::AddMeshToDraw(std::shared_ptr<Mesh> InMesh)
+void Renderer::Base::AddMeshToDraw(std::shared_ptr<Mesh> InMesh)
 {
 	Meshes.push_back(InMesh);
 }

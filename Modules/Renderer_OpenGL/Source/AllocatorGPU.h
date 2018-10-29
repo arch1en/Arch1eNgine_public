@@ -6,10 +6,11 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-
-#pragma once
+#ifndef ALLOCATORGPU_H
+#define ALLOCATORGPU_H
 
 #include "Mesh.h"
+
 #include <vector>
 
 struct MeshData
@@ -43,3 +44,5 @@ private:
 
 	void SetActiveVAO(unsigned int aValue);
 };
+
+#endif

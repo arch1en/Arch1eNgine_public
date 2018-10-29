@@ -4,8 +4,7 @@
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
 
-#include "Math/Math.h"
-#include "Mesh/Mesh.h"
+#include "Mathematics.inl"
 
 #include <iostream>
 

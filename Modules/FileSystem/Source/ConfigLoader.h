@@ -9,18 +9,19 @@
 #pragma once
 
 #include <map>
+#include "Logger.h"
 
-class ConfigLoader
+class MODULE_API ConfigLoader
 {
 public:
 	int LoadConfigData(const std::string& InFileName, const std::string& InCategory, std::map<std::string, std::string>& OutResult);
 	int LoadInputData(const std::string& InFileName, const std::string& InCategory, std::map<char, std::string>& OutResult);
 	
-	static inline ConfigLoader& GetInstance()
-	{
-		static ConfigLoader Instance;
-		return Instance;
-	}
+	//static inline ConfigLoader& GetInstance()
+	//{
+	//	static ConfigLoader Instance;
+	//	return Instance;
+	//}
 
 	// TODO : Implement
 	void ReloadConfigData(); 

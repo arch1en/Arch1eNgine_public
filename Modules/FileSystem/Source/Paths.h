@@ -9,7 +9,9 @@
 ////////////////////////////////////////
 #pragma once
 
-class Paths
+#include <string>
+
+class MODULE_API Paths
 {
 
 public:

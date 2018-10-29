@@ -1,4 +1,0 @@
-Properties = 
-{
-	LinkageType = "Dynamic"
-}

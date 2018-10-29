@@ -1,6 +1,7 @@
 Properties = 
 {
+	Name = "UI.Editor",
 	LinkageType = "Dynamic",
 	ForeignDependencies = {"IMGUI"},
-	ModuleDependencies = {"Renderer.Base"}
+	ModuleDependencies = {"Renderer_Base"}
 }

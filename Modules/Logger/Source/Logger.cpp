@@ -8,53 +8,54 @@
 ////////////////////////////////////////
 //#include "stdafx.h"
 
-#include "Debugger.h"
+#include "Logger.h"
 
 #include <string>
+#include <cstdarg>
 
-Debugger::Debugger()
+Logger::Logger()
 {
 #ifdef PLATFORM_WINDOWS
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
 }
 
-Debugger& Debugger::GetInstance()
+Logger& Logger::GetInstance()
 {
-	static Debugger Singleton;
+	static Logger Singleton;
 	return Singleton;
 }
 
-void Debugger::Log_(const char* InFilePath, int InLineNumber, DebugType InDebugType, const char* InMessage, ...)
+void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InLogType, const char* InMessage, ...)
 {
 	va_list Arguments;
 	va_start(Arguments, InMessage);
 
-	const char* DebugTypeString;
+	const char* LogTypeString;
 
-	if (InDebugType == DebugType::EDT_Notice)
+	if (InLogType == LogType::Notice)
 	{
 		SetMessageColor();
-		DebugTypeString = "Notice";
+		LogTypeString = "Notice";
 	}
-	else if (InDebugType == DebugType::EDT_Warning)
+	else if (InLogType == LogType::Warning)
 	{
 		SetMessageColor(14);
-		DebugTypeString = "Warning";
+		LogTypeString = "Warning";
 	}
-	else if (InDebugType == DebugType::EDT_Error)
+	else if (InLogType == LogType::Error)
 	{
 		SetMessageColor(12);
-		DebugTypeString = "Error";
+		LogTypeString = "Error";
 	}
-	else if (InDebugType == DebugType::EDT_Fatal)
+	else if (InLogType == LogType::Fatal)
 	{
 		SetMessageColor(12);
-		DebugTypeString = "Fatal";
+		LogTypeString = "Fatal";
 	}
 	else
 	{
-		DebugTypeString = "Undefined";
+		LogTypeString = "Undefined";
 	}
 
 	std::string String;
@@ -95,32 +96,32 @@ void Debugger::Log_(const char* InFilePath, int InLineNumber, DebugType InDebugT
 
 	}
 
-	if (InDebugType < DebugType::EDT_Error)
+	if (InLogType < LogType::Error)
 	{
-		printf("%s : %s\n", DebugTypeString, String.c_str());
+		printf("%s : %s\n", LogTypeString, String.c_str());
 	}
 	else
 	{
-		printf("%s : %s | In %s Line (%i)\n", DebugTypeString, String.c_str(), InFilePath, InLineNumber);
+		printf("%s : %s | In %s Line (%i)\n", LogTypeString, String.c_str(), InFilePath, InLineNumber);
 	}
 	
-	if (InDebugType > DebugType::EDT_Notice)
+	if (InLogType > LogType::Notice)
 	{
 		SetMessageColor();
 	}
 }
 
-void Debugger::CreateLogFile()
+void Logger::CreateLogFile()
 {
 	// TODO : Implement log file creating according to DebuggingProperties.ini file.
 }
 
-void Debugger::SaveLogToFile()
+void Logger::SaveLogToFile()
 {
 	// TODO : Implement log file creating according to DebuggingProperties.ini file.
 }
 
-void Debugger::SetMessageColor(int InForeground, int InBackground)
+void Logger::SetMessageColor(int InForeground, int InBackground)
 {
 #ifdef PLATFORM_WINDOWS
 	int Color = InForeground + InBackground * 16;

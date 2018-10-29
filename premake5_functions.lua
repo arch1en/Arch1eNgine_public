@@ -135,26 +135,53 @@ function GetDependencyLibrariesDir(DependencyName)
     return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..DependencyName.. "/" ..LibrariesFolderName)
 end
 
-function GetDependencyConfigurationNameFromMapping(ProjectConfiguration, Dependency)
-    for _,v in ipairs(Dependency.ConfigurationProperties) do
-        if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then
-            return v.Name
-        elseif v.Name == ProjectConfiguration then
-            return v.Name
-        end
-    end
-
+function GetModuleDependencyLibrariesDir(ModuleName)
+	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir.. "/" ..ModuleName.. "/" ..LibrariesFolderName)
 end
 
-function GetDependencyPlatformNameFromMapping(ProjectConfiguration, Dependency)
-    for _,v in ipairs(Dependency.PlatformProperties) do
+-- @todo Isn't it too excessive ?
+function GetDependencyConfigurationMappingFromName(DependencyConfigurationName, DependencyProperties)
+	for _,v in ipairs(DependencyProperties.ConfigurationProperties) do
+        if v.Mapping ~= nil and v.Name == DependencyConfigurationName then
+            return v.Mapping
+        elseif v.Name == DependencyConfigurationName then
+            return DependencyConfigurationName
+        end
+    end
+	
+	return DependencyConfigurationName
+end
+
+function GetDependencyPlatformMappingFromName(DependencyPlatformName, DependencyProperties)
+	for _,v in ipairs(DependencyProperties.PlatformProperties) do
+        if v.Mapping ~= nil and v.Name == DependencyPlatformName then
+            return v.Mapping
+        elseif v.Name == DependencyPlatformName then
+            return DependencyPlatformName
+        end
+    end
+	
+	return DependencyPlatformName
+end
+
+function GetDependencyConfigurationNameFromMapping(ProjectConfiguration, DependencyProperties)
+    for _,v in ipairs(DependencyProperties.ConfigurationProperties) do
         if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then
             return v.Name
         elseif v.Name == ProjectConfiguration then
             return v.Name
         end
     end
+end
 
+function GetDependencyPlatformNameFromMapping(ProjectConfiguration, DependencyProperties)
+    for _,v in ipairs(DependencyProperties.PlatformProperties) do
+        if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then
+            return v.Name
+        elseif v.Name == ProjectConfiguration then
+            return v.Name
+        end
+    end
 end
 
 function MapDependencyConfigurationWithProject(ProjectConfiguration, Dependency)
@@ -364,7 +391,8 @@ function SetupModule(ModuleName)
 	end
 	
 	if ModuleProperties.LinkageType == "None" then
-	SetupModuleDependencies(ModuleProperties)
+		-- @todo Is this really nescessary ?
+		SetupModuleDependencies(ModuleProperties)
 		print("Module "..ModuleName.. " : Module without LinkageType, skipping...")
 		return
 	end
@@ -379,11 +407,19 @@ function SetupModule(ModuleName)
 	location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
 	includedirs(ModulesDir.."/"..ModuleName.."/"..SourceFolderName)
 	
+	
 	if ModuleProperties.LinkageType == "Static" then
 		kind("StaticLib")
 	elseif ModuleProperties.LinkageType == "Dynamic" then
 		kind("SharedLib")
 		defines{"MODULE_API=__declspec(dllexport)"}
+		for _,c in pairs(Configurations) do
+			for _,p in pairs(Platforms) do
+				filter{"configurations:"..c.Name,"platforms:"..p.Name}
+				implibdir(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..LibrariesDir.."/"..c.Name.."/"..p.Name))
+			end
+		end
+		
 	end
 
 	language("C++")
@@ -430,9 +466,17 @@ function SetupModuleDependencies(ModuleProperties)
 
     for _,v in pairs(ModuleProperties.ModuleDependencies) do
         local ModuleDependencyProperties = GetModulePropertiesByName(v)
-        if ModuleDependencyProperties ~= nil then
-            includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
-        end
+		if ModuleDependencyProperties == nil then
+			print("Error : Cannot setup "..v.." module. Properties not found.")
+			return
+		end
+
+        includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
+		
+		if ModuleDependencyProperties.LinkageType == "Dynamic" then
+			LinkDependency("Module", ModuleDependencyProperties)
+			AddDependencyLibraryDirs("Module", ModuleDependencyProperties)
+		end
     end
 end
 
@@ -457,49 +501,78 @@ function SetupForeignDependencies(ModuleProperties)
 			includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
         end
         
-        LinkForeignDependency(ForeignDependencyProperties)
-        AddForeignDependencyLibraryDirs(ForeignDependencyProperties)
+		if ForeignDependencyProperties.LinkageType == "Dynamic" then
+			LinkDependency("Foreign", ForeignDependencyProperties)
+			AddDependencyLibraryDirs("Foreign", ForeignDependencyProperties)
+		end
     end
 end
 
-function LinkForeignDependency(ForeignDependencyProperties)
-    if ForeignDependencyProperties == nil then
-        print("Linking failed. Foreign dependency properties missing.")
+function LinkDependency(DependencyType, DependencyProperties)
+    if DependencyProperties == nil then
+        print("Linking failed. "..DependencyType.. " dependency properties missing.")
         return
     end
 
-    local PropertyGroups = ForeignDependencyProperties.PropertyGroups
-    if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
-        for _,v1 in ipairs(PropertyGroups) do
-            filter("configurations:" ..GetPropertyGroupConfigurationName(v1.Name))
-            if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
-                for _,v2 in ipairs(v1.LinkFileNames) do
-                    if v2 ~= "" then
-                        links(v2)
-                    end
-                end
-            end
-        end
-    end
+	if DependencyType == "Foreign" then
+		local PropertyGroups = DependencyProperties.PropertyGroups
+		if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
+			for _,v1 in ipairs(PropertyGroups) do
+				local ConfigurationName = GetDependencyConfigurationMappingFromName(GetPropertyGroupConfigurationName(v1.Name), DependencyProperties)
+				local PlatformName = GetDependencyPlatformMappingFromName(GetPropertyGroupPlatformName(v1.Name), DependencyProperties)
+
+				filter{"configurations:"..ConfigurationName,"platforms:"..PlatformName}
+				
+				if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
+					for _,v2 in ipairs(v1.LinkFileNames) do
+						if v2 ~= "" then
+							links{v2}
+						end
+					end
+				end
+			end
+		end
+	elseif DependencyType == "Module" then
+		for _,c in pairs(Configurations) do
+			for _,p in pairs(Platforms) do
+				filter{"configurations:"..c.Name,"platforms:"..p.Name}
+				links{DependencyProperties.Name}
+			end
+		end
+	else
+		print("Linking failed. DependencyType invalid.")
+	end
+	filter{}
 end
 
-function AddForeignDependencyLibraryDirs(ForeignDependencyProperties)
-	if ForeignDependencyProperties == nil then
-		print("Linking "..v.. " : Action failed. Properties not found.")
+function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
+	if DependencyProperties == nil then
+		print("Linking : Action failed. Properties not found.")
 		return
 	end
 	
-    if ForeignDependencyProperties.LinkageType ~= nil and ForeignDependencyProperties.LinkageType == "Dynamic" then
-    local DependencyName = ForeignDependencyProperties.Name
-        for _,c in pairs(Configurations) do
-            for _,p in pairs(Platforms) do
-                local LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
-                if os.isdir(LibraryDir) then
-                    libdirs(LibraryDir)
-                end
-            end
-        end
+    if DependencyProperties.LinkageType ~= nil and DependencyProperties.LinkageType == "Dynamic" then
+	
+		local DependencyName = DependencyProperties.Name
+		for _,c in pairs(Configurations) do
+			for _,p in pairs(Platforms) do
+				filter("configurations:"..c.Name,"platforms:" ..p.Name)
+				local LibraryDir
+				if DependencyType == "Foreign" then
+					LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
+				elseif DependencyType == "Module" then
+					LibraryDir = AdaptDirSlashes(GetModuleDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
+				else
+					print("Linking "..DependencyName.." failed. DependencyType invalid.")
+				end
+
+				if os.isdir(LibraryDir) then
+					libdirs(LibraryDir)
+				end
+			end
+		end
     end
+	filter{}
 end
 
 -- DEPRECATED

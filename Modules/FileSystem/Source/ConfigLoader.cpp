@@ -10,10 +10,12 @@
 #include "ConfigLoader.h"
 
 #include "Paths.h"
-#include "Helpers.h"
+#include "Utilities.h"
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
+#include <vector>
 
 // TODO_1 : This will definitely need some optimization.
 int ConfigLoader::LoadConfigData(const std::string& InFileName, const std::string& InCategory, std::map<std::string, std::string>& OutResult)
@@ -53,7 +55,7 @@ int ConfigLoader::LoadConfigData(const std::string& InFileName, const std::strin
 
 				if (Tokens.size() != 2)
 				{
-					Log(DebugType::EDT_Error, "%s file parsing error. Check if file data is valid.", InFileName.c_str());
+					Log(LogType::Error, "%s file parsing error. Check if file data is valid.", InFileName.c_str());
 					return 1;
 				}
 
@@ -75,14 +77,14 @@ int ConfigLoader::LoadConfigData(const std::string& InFileName, const std::strin
 
 		if (FoundCategory == false)
 		{
-			Log(DebugType::EDT_Warning, "Category \"%s\" in property file \"%s\" was not found.", InCategory.c_str(), InFileName.c_str());
+			Log(LogType::Warning, "Category \"%s\" in property file \"%s\" was not found.", InCategory.c_str(), InFileName.c_str());
 			return 2;
 		}
 
 	}
 	else
 	{
-		Log(DebugType::EDT_Error, "Config file \"%s\" could not be open.", InFileName.c_str());
+		Log(LogType::Error, "Config file \"%s\" could not be open.", InFileName.c_str());
 		return 3;
 	}
 
@@ -127,7 +129,7 @@ int ConfigLoader::LoadInputData(const std::string& InFileName, const std::string
 
 				if (Tokens.size() != 2)
 				{
-					Log(DebugType::EDT_Error, "%s file parsing error. Check if file data is valid.", InFileName.c_str());
+					Log(LogType::Error, "%s file parsing error. Check if file data is valid.", InFileName.c_str());
 					return 1;
 				}
 
@@ -157,14 +159,14 @@ int ConfigLoader::LoadInputData(const std::string& InFileName, const std::string
 
 		if (FoundCategory == false)
 		{
-			Log(DebugType::EDT_Warning, "Category \"%s\" in property file \"%s\" was not found.", InCategory.c_str(), InFileName.c_str());
+			Log(LogType::Warning, "Category \"%s\" in property file \"%s\" was not found.", InCategory.c_str(), InFileName.c_str());
 			return 2;
 		}
 
 	}
 	else
 	{
-		Log(DebugType::EDT_Error, "Config file \"%s\" could not be open.", InFileName.c_str());
+		Log(LogType::Error, "Config file \"%s\" could not be open.", InFileName.c_str());
 		return 3;
 	}
 

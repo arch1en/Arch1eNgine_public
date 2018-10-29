@@ -10,6 +10,9 @@
 //#include "stdafx.h"
 #include "Paths.h"
 
+#include <SDL_filesystem.h>
+#include "Logger.h"
+
 Paths::Paths()
 {
 	std::string Path = SDL_GetBasePath();
@@ -23,7 +26,7 @@ Paths::Paths()
 		}
 		else
 		{
-			Log(DebugType::EDT_Error, "Failed to trim the basic path string. Investigate !");
+			Log(LogType::Error, "Failed to trim the basic path string. Investigate !");
 			return;
 		}
 	}

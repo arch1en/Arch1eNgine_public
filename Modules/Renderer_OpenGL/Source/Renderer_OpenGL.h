@@ -12,25 +12,25 @@
 
 #include <stack>
 
-#include "Renderer.h"
+#include "Renderer_Base.h"
 
-#include "MeshComponent.h"
+//#include "MeshComponent.h"
 #include "ShaderProgram.h"
 #include "Utilities/RendererUtilities.h"
 
 namespace Renderer
 {
-	class OpenGL : public Renderer
+	class MODULE_API OpenGL : public Renderer::Base
 	{
 	public:
-		OpenGL(RendererType aRendererType);
+		OpenGL();
 		~OpenGL();
 
 		virtual bool Initialize() override;
 		// Renderer must be attached to the window, before creating context
 		virtual void CreateContext() override;
 		virtual void AttachToWindow(SDL_Window* Window);
-
+		void AttachContextToWindow(SDL_Window* Window);
 		/**
 		*   Draws meshes that are on RenderingStack.
 		*/
@@ -38,17 +38,7 @@ namespace Renderer
 
 	private:
 
-		SDL_GLContext * Context;
-
-		GLenum	DrawingMode;
-		GLsizei	ParametersInOneVector;
-
-		ShaderProgram	mShaderProgram;
-
-		GLint mModelUniformLocation = -1;
-		GLint mViewUniformLocation = -1;
-		GLint mProjectionUniformLocation = -1;
-		GLint mColorUniformLocation = -1;
+		std::unique_ptr<SDL_GLContext> Context;
 
 		SDL_Window* mApplicationWindow;
 

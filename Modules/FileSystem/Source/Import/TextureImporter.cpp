@@ -1,11 +1,13 @@
 //#include "stdafx.h"
 #include "TextureImporter.h"
 
-#include "Helpers.h"
+#include "Utilities.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <algorithm>
+#include <fstream>
+#include "Logger.h"
 
 TextureImporter::TextureImporter()
 {
@@ -21,7 +23,7 @@ int TextureImporter::LoadTextureImage(std::string aPath, int& aOutWidth, int& aO
 
 	if (!file.good())
 	{
-		Log(DebugType::EDT_Error, "Sampler : cannot open file");
+		Log(LogType::Error, "Sampler : cannot open file");
 		file.close();
 		return 1;
 	}
@@ -32,7 +34,7 @@ int TextureImporter::LoadTextureImage(std::string aPath, int& aOutWidth, int& aO
 
 	if (!aOutImageData)
 	{
-		Log(DebugType::EDT_Error, "Cannot load image under path : %s", aPath.c_str());
+		Log(LogType::Error, "Cannot load image under path : %s", aPath.c_str());
 		file.close();
 		return 3;
 	}

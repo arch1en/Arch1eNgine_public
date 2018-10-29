@@ -8,6 +8,7 @@
 ////////////////////////////////////////
 //#include "stdafx.h"
 #include "DebugTimer.h"
+#include "Logger.h"
 
 DebugTimer& DebugTimer::GetInstance()
 {
@@ -41,10 +42,11 @@ void DebugTimer::ShowResult()
 	double Difference = Check();
 	if (Difference > 0.0)
 	{
-		printf("Time Difference : %f ms", Check());
+		Log(LogType::Notice, "Time Difference : %f ms", Check());
 	}
 	else
 	{
-		printf("Cannot read time difference.");
+		Log(LogType::Notice, "Time Difference : %f ms", Check());
+
 	}
 }

@@ -13,7 +13,7 @@ enum class RendererType
 enum class ShaderType
 {
 	Vertex,
-	Pixel,
+	Fragment,
 	Geometry,
 	Tesselation,
 	TOTAL,

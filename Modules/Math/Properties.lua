@@ -1,4 +1,5 @@
 Properties = 
 {
-	LinkageType = "Dynamic"
+	Name = "Math",
+	LinkageType = "None"
 }

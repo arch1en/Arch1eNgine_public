@@ -8,6 +8,7 @@
 ////////////////////////////////////////
 //#include "stdafx.h"
 #include "AllocatorGPU.h"
+
 #include "glad/glad.h"
 
 #include "Logger.h"
@@ -35,7 +36,7 @@ AllocatorGPU::~AllocatorGPU()
 	{
 		glDeleteVertexArrays(mVAOs.size(), &mVAOs[0]);
 	}
-	Log(DebugType::EDT_Notice, "AllocatorGPU::Dtor - All buffers are destroyed.");
+	Log(LogType::Notice, "AllocatorGPU::Dtor - All buffers are destroyed.");
 }
 
 bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
@@ -53,23 +54,23 @@ bool AllocatorGPU::AllocateStaticMesh(Mesh* aMesh)
 
 	if (IndicesBufferSize == 0)
 	{
-		Log(DebugType::EDT_Error, "Index Buffer is empty.");
+		Log(LogType::Error, "Index Buffer is empty.");
 		return false;
 	}
 	//if (ColorBufferSize == 0)
 	//{
-	//	Log(DebugType::EDT_Warning, "Color Buffer is empty.");
+	//	Log(LogType::Warning, "Color Buffer is empty.");
 	//	return false;
 	//}
 	if (ElementBufferSize == 0)
 	{
-		Log(DebugType::EDT_Error, "Element Buffer is empty.");
+		Log(LogType::Error, "Element Buffer is empty.");
 		return false;
 	}
 
 	if (TextureBufferSize == 0)
 	{
-		Log(DebugType::EDT_Notice, "Texture Buffer is empty.");
+		Log(LogType::Notice, "Texture Buffer is empty.");
 	}
 
 	glGenBuffers(1, &NewVBO);

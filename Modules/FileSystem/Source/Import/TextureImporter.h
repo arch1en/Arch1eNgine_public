@@ -1,8 +1,8 @@
 #pragma once
 
-#include "stb_image.h"
+#include <string>
 
-class TextureImporter final
+class MODULE_API TextureImporter final
 {
 public:
 

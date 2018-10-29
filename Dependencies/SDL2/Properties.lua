@@ -9,15 +9,18 @@ Properties =
     { 
         {
             Name = "Release",
+			Mapping = "Release"
         },
         { 
             Name = "Debug",
+			Mapping = "Debug"
         }
     },
     PlatformProperties =
     {
         {
-            Name = "Win32"
+            Name = "Win32",
+			Mapping = "Win32"
         },
         {
             Name = "x64",

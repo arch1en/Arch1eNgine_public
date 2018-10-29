@@ -8,30 +8,30 @@
 ////////////////////////////////////////
 #pragma once
 
-#define Log(DebugType, Message, ...) Debugger::GetInstance().Log_( __FILE__, __LINE__, DebugType, Message, __VA_ARGS__);
+#define Log(LogType, Message, ...) Logger::GetInstance().Log_( __FILE__, __LINE__, LogType, Message, __VA_ARGS__);
 
-enum class DebugType : unsigned char
+enum class LogType : unsigned char
 {
-	EDT_Notice,
-	EDT_Warning,
-	EDT_Error,
-	EDT_Fatal,
-	EDT_Assertion,
-	EDT_Total		// U can't touch this ! (HAMMER TIME)
+	Notice,
+	Warning,
+	Error,
+	Fatal,
+	Assertion,
+	Total		// U can't touch this ! (HAMMER TIME)
 };
 
-class Debugger
+class MODULE_API Logger
 {
 public:
-	Debugger();
+	Logger();
 
 	// "= delete" - C++11. Prevents compiler from generating these functions.
-	Debugger(const Debugger&) = delete;
-	Debugger& operator=(const Debugger&) = delete;
+	Logger(const Logger&) = delete;
+	Logger& operator=(const Logger&) = delete;
 	
-	static Debugger& GetInstance();
+	static Logger& GetInstance();
 
-	void Debugger::Log_(const char* InFilePath, int InLineNumber, DebugType InDebugType, const char* InMessage, ...);
+	void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InMessage, ...);
 
 private:
 
