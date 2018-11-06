@@ -9,7 +9,7 @@
 ////////////////////////////////////////
 #pragma once
 
-//#include "stdafx.h"
+// -=- VECTOR2 -=-
 
 template<class T = float>
 struct MODULE_API Vector2
@@ -77,7 +77,11 @@ public:
 
 };
 
-template<class T>
+// ~=~ VECTOR2 ~=~
+
+// -=- VECTOR3 -=-
+
+template<class T = float>
 struct MODULE_API Vector3
 {
 public:
@@ -105,13 +109,11 @@ public:
 
 	Vector3<T> Vector3<T>::operator+(const Vector3<T>& RHS)
 	{
-		Vector3<T> NewVector;
+		x = x + RHS.x;
+		y = y + RHS.y;
+		z = z + RHS.z;
 
-		NewVector.x = this.x + RHS.x;
-		NewVector.y = this.y + RHS.y;
-		NewVector.z = this.z + RHS.z;
-
-		return NewVector;
+		return *this;
 	}
 
 	Vector3<T> Vector3<T>::operator-(const Vector3<T>& RHS)
@@ -149,9 +151,65 @@ public:
 
 };
 
+// ~=~ VECTOR3 ~=~
+
+template<unsigned int X, unsigned int Y>
+struct MODULE_API Matrix
+{
+	Matrix()
+	{
+
+	}
+
+	// Rule of Five
+
+	// copy constructor
+	explicit Matrix(const Matrix& aMatrix)
+	{
+		MatrixBody = aMatrix.MatrixBody;
+	}
+
+	// move constructor
+	explicit Matrix(Matrix&& aMatrix)
+	{
+		this = aMatrix;
+	}
+
+	Matrix& operator=(const Matrix& RHS)
+	{
+		MatrixBody = RHS.MatrixBody;
+		return *this;
+	}
+
+	Matrix& operator=(Matrix&& RHS)
+	{
+		MatrixBody = RHS.MatrixBody;
+		return *this;
+	}
+
+	// destructor
+	~Matrix()
+	{
+
+	}
+
+	explicit Matrix(Vector3<> aVector)
+	{
+
+	}
+
+	int MatrixBody[X][Y];
+
+	//decltype(X) MatrixBody[X][Y];
+};
+
+Matrix<4,4> Translate(const Matrix<4,4>& aMatrix, const Vector3<>& aVector)
+{
+	return Matrix<4,4>();
+}
+
 template<class T>
 bool MODULE_API IsPowerOfTwo(T InParam)
 {
 	return (InParam & (InParam - 1) == 0);
 }
-

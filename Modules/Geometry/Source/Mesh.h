@@ -66,4 +66,5 @@ private:
 	std::shared_ptr<unsigned int> mRefEBO;
 	std::shared_ptr<unsigned int> mRefTBO;
 
+	Vector3 VertexOffset;
 };

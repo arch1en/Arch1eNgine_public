@@ -52,3 +52,13 @@ void Mesh::AddMaterial(std::shared_ptr<Material> NewMaterial)
 {
 	mPolygonData.Materials.push_back(NewMaterial);
 }
+
+const Vector3<>& Mesh::GetVertexOffset()  const
+{
+	return VertexOffset;
+}
+
+const glm::vec3& Mesh::GetVertexOffset() const
+{
+	return glm::vec3(VertexOffset.x, VertexOffset.y, VertexOffset.z);
+}

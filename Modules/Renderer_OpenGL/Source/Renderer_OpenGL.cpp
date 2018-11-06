@@ -15,7 +15,7 @@ struct Color;
 
 // TEMP
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "Material.h"
 #include "Utilities/RendererUtilities.h"
 #include "Assertions.inl"
@@ -23,7 +23,6 @@ struct Color;
 
 namespace Renderer
 {
-
 
 	OpenGL::OpenGL()
 	{
@@ -81,30 +80,36 @@ namespace Renderer
 		for (auto& iter : Meshes)
 		{
 			assert(iter != nullptr);
-			//glDrawArrays(DrawingMode, 0, 3);
-			glm::mat4 ModelMatrix;
-			ModelMatrix = glm::translate(ModelMatrix, iter->GetOwner()->GetWorldPosition());
+
+			Matrix<4, 4> ModelMatrix;
+			//glm::mat4 ModelMatrix;
+			ModelMatrix = Translate(ModelMatrix, iter->GetVertexOffset());//glm::translate(ModelMatrix, iter->GetVertexOffset());
 			glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &ModelMatrix[0][0]);
 
 			glUniformMatrix4fv(mViewUniformLocation, 1, GL_FALSE, &aDrawData.ViewMatrix[0][0]);
 
 			glm::mat4 ProjectionMatrix;
-			ProjectionMatrix = glm::perspective(glm::radians(45.f), (GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+			int WindowWidth = 0;
+			int WindowHeight = 0;
+			SDL_GetWindowSize(mApplicationWindow, &WindowWidth, &WindowHeight);
+
+			ProjectionMatrix = glm::perspective(glm::radians(45.f), (GLfloat)WindowWidth / (GLfloat)WindowHeight, 0.1f, 100.0f);
 			glUniformMatrix4fv(mProjectionUniformLocation, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 
-			const Color DiffuseColor = iter()->mPolygonData.Materials[0]->GetDiffuseColor();
+			const Color DiffuseColor = iter->mPolygonData.Materials[0]->GetDiffuseColor();
 
 			glUniform4f(mColorUniformLocation, DiffuseColor.R, DiffuseColor.G, DiffuseColor.B, DiffuseColor.A);
 
-			if (iter()->mPolygonData.Materials[0]->HasTextures())
+			if (iter->mPolygonData.Materials[0]->HasTextures())
 			{
-				glBindTexture(GL_TEXTURE_2D, iter()->mPolygonData.Materials[0]->GetTextures()->at(0)->GetTextureID());
+				glBindTexture(GL_TEXTURE_2D, iter->mPolygonData.Materials[0]->GetTextures()->at(0)->GetTextureID());
 			}
 
-			glDrawElements(DrawingMode, iter()->mPolygonData.NumElements, GL_UNSIGNED_INT, 0);// &iter->mPolygonData.Elements[0]);
+			glDrawElements(DrawingMode, iter->mPolygonData.NumElements, GL_UNSIGNED_INT, 0);// &iter->mPolygonData.Elements[0]);
 																									   // TODO [High] : Handle VAO Binding !
 
-			if (iter()->mPolygonData.Materials[0]->HasTextures())
+			if (iter->mPolygonData.Materials[0]->HasTextures())
 			{
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}

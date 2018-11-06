@@ -56,6 +56,8 @@ public:
 	
 	void AddMaterial(std::shared_ptr<Material> NewMaterial);
 
+	const Vector3<>& GetVertexOffset() const;
+
 protected:
 
 	const char*					MeshTag;
@@ -67,4 +69,5 @@ private:
 	std::shared_ptr<unsigned int> mRefEBO;
 	std::shared_ptr<unsigned int> mRefTBO;
 
+	Vector3<> VertexOffset;
 };
