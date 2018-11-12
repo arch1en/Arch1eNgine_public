@@ -2,5 +2,5 @@ Properties =
 {
 	LinkageType = "Dynamic",
 	ForeignDependencies = {"SDL2"},
-	ModuleDependencies = {"Logger", "Renderer.OpenGL", "Renderer.Vulkan"}
+	ModuleDependencies = {"Logger", "Renderer_OpenGL", "Renderer_Vulkan"}
 }

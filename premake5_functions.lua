@@ -305,15 +305,15 @@ function SetupApplication()
 
     --for _,v in pairs(GetListOfDependencyNames()) do
 
-      --  local DependencyProperties = GetDependencyPropertiesByName(v)
-        --if DependencyProperties == nil then
-        --    print("Including "..v.. " directories : Action failed. Properties not found.")
-        --    return
-        --end
-        --local Size = #DependencyProperties.IncludeDirs
-        --for j=1,Size do
-        --    includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
-        --end
+    --  local DependencyProperties = GetDependencyPropertiesByName(v)
+    --if DependencyProperties == nil then
+    --    print("Including "..v.. " directories : Action failed. Properties not found.")
+    --    return
+    --end
+    --local Size = #DependencyProperties.IncludeDirs
+    --for j=1,Size do
+    --    includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
+    --end
     --end
 
     -- Linking libraries...
@@ -371,7 +371,7 @@ function SetupApplication()
     filter{"action:vs*"}
     systemversion(os.winSdkVersion() .. ".0")
     --pchheader "stdafx.h"
-	--pchsource "stdafx.cpp"
+    --pchsource "stdafx.cpp"
 
     filter{}
 
@@ -380,51 +380,50 @@ end
 function SetupModule(ModuleName)
 
     local ModuleProperties = GetModulePropertiesByName(ModuleName)
+    local ModuleData
     if ModuleProperties == nil then
         print("Module "..ModuleName.. " : Cannot setup module. Properties not found.")
         return
     end
 
     if ModuleProperties.LinkageType == nil then
-		print("Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
-		return
-	end
-	
-	if ModuleProperties.LinkageType == "None" then
-		-- @todo Is this really nescessary ?
-		SetupModuleDependencies(ModuleProperties)
-		print("Module "..ModuleName.. " : Module without LinkageType, skipping...")
-		return
-	end
-	
-	print(CreateFolderIfDoesntExistEx(GetModuleBuildDir(ModuleName)))
-	
-	group("Modules")
-	project(ModuleName)
-	
-	targetdir(AdaptDirSlashes(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}"))
+        print("Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
+        return
+    end
+
+    if ModuleProperties.LinkageType == "None" then
+        -- @todo Is this really nescessary ?
+        --SetupModuleDependencies(ModuleProperties)
+        print("Module "..ModuleName.. " : Module without LinkageType, skipping...")
+        return
+    end
+
+    print(CreateFolderIfDoesntExistEx(GetModuleBuildDir(ModuleName)))
+
+    group("Modules")
+    project(ModuleName)
+
+    targetdir(AdaptDirSlashes(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}"))
     targetname(ModuleName)
-	location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
-	includedirs(ModulesDir.."/"..ModuleName.."/"..SourceFolderName)
-	
-	
-	if ModuleProperties.LinkageType == "Static" then
-		kind("StaticLib")
-	elseif ModuleProperties.LinkageType == "Dynamic" then
-		kind("SharedLib")
-		defines{"MODULE_API=__declspec(dllexport)"}
-		for _,c in pairs(Configurations) do
-			for _,p in pairs(Platforms) do
-				filter{"configurations:"..c.Name,"platforms:"..p.Name}
-				implibdir(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..LibrariesDir.."/"..c.Name.."/"..p.Name))
-			end
-		end
-		
-	end
+    location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
+    includedirs(ModulesDir.."/"..ModuleName.."/"..SourceFolderName)
+    if ModuleProperties.LinkageType == "Static" then
+        kind("StaticLib")
+    elseif ModuleProperties.LinkageType == "Dynamic" then
+        kind("SharedLib")
+        defines{"MODULE_API=__declspec(dllexport)"}
+        for _,c in pairs(Configurations) do
+            for _,p in pairs(Platforms) do
+                filter{"configurations:"..c.Name,"platforms:"..p.Name}
+                implibdir(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..LibrariesDir.."/"..c.Name.."/"..p.Name))
+            end
+        end
 
-	language("C++")
+    end
 
-	defines{"MODULE_IMPORT=__declspec(dllimport)"}
+    language("C++")
+
+    defines{"MODULE_IMPORT=__declspec(dllimport)"}
 
     for _,v in pairs(Platforms) do
         if #v.Defines ~= 0 then
@@ -439,8 +438,10 @@ function SetupModule(ModuleName)
 
     filter{}
 
-    SetupModuleDependencies(ModuleProperties)
-    SetupForeignDependencies(ModuleProperties)
+    local ModuleData
+
+    SetupDependencies("Module", ModuleProperties)
+    SetupDependencies("Foreign", ModuleProperties)
 
     filter{"action:vs*"}
     systemversion(os.winSdkVersion() .. ".0")
@@ -451,10 +452,65 @@ function SetupModule(ModuleName)
         ModulePropertiesPostPremakeCommand()
     end
 
-	filter{}
+    filter{}
 end
 
-function SetupModuleDependencies(ModuleProperties)
+function SetupDependencies(DependencyType, ModuleProperties)
+    if ModuleProperties == nil then
+        print("Module dependencies setting up failed. ModuleProperties are invalid.")
+        return
+    end
+
+    if ModuleProperties.ModuleDependencies == nil or ModuleProperties.ForeignDependencies == nil then
+        return
+    end
+
+    local DependencyProperties
+
+    if DependencyType == "Foreign" then
+        DependencyProperties = ModuleProperties.ForeignDependencies
+    elseif DependencyType == "Module" then
+        DependencyProperties = ModuleProperties.ModuleDependencies
+    end
+
+    for _,v in pairs(DependencyProperties) do
+        local ModuleDependencyProperties
+
+        Log(2, v.. " dependency.")
+
+        if DependencyType == "Foreign" then
+            ModuleDependencyProperties = GetDependencyPropertiesByName(v)
+            Log(2, "Foreign Dependency Properties : " ..v)
+            for _,w in ipairs(ModuleDependencyProperties.IncludeDirs) do
+                includedirs(AdaptDirSlashes(GetDependencyDir(ModuleDependencyProperties.Name).."/"..w))
+            end
+        elseif DependencyType == "Module" then
+            ModuleDependencyProperties = GetModulePropertiesByName(v)
+            Log(2, "Module Dependency Properties : " ..v)
+            includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
+        end
+
+        if ModuleDependencyProperties == nil then
+            Log(0, "Error : Cannot setup "..v.." module. Properties not found.")
+            return
+        end
+
+        local LinkageType = ModuleDependencyProperties.LinkageType
+
+        if LinkageType == "Dynamic" then
+            local Result = LinkDependency(DependencyType, ModuleDependencyProperties)
+            if(Result[1] == false) then
+                Log(0, Result[2])
+            end
+            Result = AddDependencyLibraryDirs(DependencyType, ModuleDependencyProperties)
+            if Result[1] == false then
+                Log(0, Result[2])
+            end
+        end
+    end
+end
+
+function SetupModuleDependencies(ModuleProperties, ModuleData)
     if ModuleProperties == nil then
         print("Module dependencies setting up failed. ModuleProperties are invalid.")
         return
@@ -466,17 +522,18 @@ function SetupModuleDependencies(ModuleProperties)
 
     for _,v in pairs(ModuleProperties.ModuleDependencies) do
         local ModuleDependencyProperties = GetModulePropertiesByName(v)
-		if ModuleDependencyProperties == nil then
-			print("Error : Cannot setup "..v.." module. Properties not found.")
-			return
-		end
+        if ModuleDependencyProperties == nil then
+            print("Error : Cannot setup "..v.." module. Properties not found.")
+            return
+        end
 
+        --table.insert(ModuleData.IncludedModules, v)
         includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
-		
-		if ModuleDependencyProperties.LinkageType == "Dynamic" then
-			LinkDependency("Module", ModuleDependencyProperties)
-			AddDependencyLibraryDirs("Module", ModuleDependencyProperties)
-		end
+
+        if ModuleDependencyProperties.LinkageType == "Dynamic" then
+            LinkDependency("Module", ModuleDependencyProperties)
+            AddDependencyLibraryDirs("Module", ModuleDependencyProperties)
+        end
     end
 end
 
@@ -498,57 +555,64 @@ function SetupForeignDependencies(ModuleProperties)
             break
         end
         for _,w in ipairs(ForeignDependencyProperties.IncludeDirs) do
-			includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
+            includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
         end
-        
-		if ForeignDependencyProperties.LinkageType == "Dynamic" then
-			LinkDependency("Foreign", ForeignDependencyProperties)
-			AddDependencyLibraryDirs("Foreign", ForeignDependencyProperties)
-		end
+
+        if ForeignDependencyProperties.LinkageType == "Dynamic" then
+            local Result = LinkDependency("Foreign", ForeignDependencyProperties)
+            if Result[1] == false then
+                Log(0, Result[2])
+            end
+            Result = AddDependencyLibraryDirs("Foreign", ForeignDependencyProperties)
+            if Result[1] == false then
+                Log(0, Result[2])
+            end
+        end
     end
+
+    return { true }
 end
 
 function LinkDependency(DependencyType, DependencyProperties)
     if DependencyProperties == nil then
-        print("Linking failed. "..DependencyType.. " dependency properties missing.")
-        return
+        return { false, "Linking failed. "..DependencyType.. " dependency properties missing." }
     end
 
-	if DependencyType == "Foreign" then
-		local PropertyGroups = DependencyProperties.PropertyGroups
-		if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
-			for _,v1 in ipairs(PropertyGroups) do
-				local ConfigurationName = GetDependencyConfigurationMappingFromName(GetPropertyGroupConfigurationName(v1.Name), DependencyProperties)
-				local PlatformName = GetDependencyPlatformMappingFromName(GetPropertyGroupPlatformName(v1.Name), DependencyProperties)
+    if DependencyType == "Foreign" then
+        local PropertyGroups = DependencyProperties.PropertyGroups
+        if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
+            for _,v1 in ipairs(PropertyGroups) do
+                local ConfigurationName = GetDependencyConfigurationMappingFromName(GetPropertyGroupConfigurationName(v1.Name), DependencyProperties)
+                local PlatformName = GetDependencyPlatformMappingFromName(GetPropertyGroupPlatformName(v1.Name), DependencyProperties)
 
-				filter{"configurations:"..ConfigurationName,"platforms:"..PlatformName}
-				
-				if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
-					for _,v2 in ipairs(v1.LinkFileNames) do
-						if v2 ~= "" then
-							links{v2}
-						end
-					end
-				end
-			end
-		end
-	elseif DependencyType == "Module" then
-		for _,c in pairs(Configurations) do
-			for _,p in pairs(Platforms) do
-				filter{"configurations:"..c.Name,"platforms:"..p.Name}
-				links{DependencyProperties.Name}
-			end
-		end
-	else
-		print("Linking failed. DependencyType invalid.")
-	end
-	filter{}
+                filter{"configurations:"..ConfigurationName,"platforms:"..PlatformName}
+
+                if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
+                    for _,v2 in ipairs(v1.LinkFileNames) do
+                        if v2 ~= "" then
+                            links{v2}
+                        end
+                    end
+                end
+            end
+        end
+    elseif DependencyType == "Module" then
+        for _,c in pairs(Configurations) do
+            for _,p in pairs(Platforms) do
+                filter{"configurations:"..c.Name,"platforms:"..p.Name}
+                links{DependencyProperties.Name}
+            end
+        end
+    else
+        return { false, "Linking failed. DependencyType invalid." } 
+    end
+    filter{}
+    return { true }
 end
 
 function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 	if DependencyProperties == nil then
-		print("Linking : Action failed. Properties not found.")
-		return
+		return { false, "Linking : Action failed. Properties not found." }
 	end
 	
     if DependencyProperties.LinkageType ~= nil and DependencyProperties.LinkageType == "Dynamic" then
@@ -563,7 +627,7 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 				elseif DependencyType == "Module" then
 					LibraryDir = AdaptDirSlashes(GetModuleDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
 				else
-					print("Linking "..DependencyName.." failed. DependencyType invalid.")
+                    return { false, "Linking "..DependencyName.." failed. DependencyType invalid." }
 				end
 
 				if os.isdir(LibraryDir) then
@@ -573,6 +637,7 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 		end
     end
 	filter{}
+    return { true }
 end
 
 -- DEPRECATED
@@ -978,23 +1043,4 @@ function OrganizeDependency(DependencyName, ConfigurationName, PlatformName)
         CopyFile(AdaptDirSlashes(v), DependencyLibraryFolderName)
         --print(os.copyfile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency)))
     end
-end
-
--- GLEW Functions
-
-function build_glew(BuildDir)
-    print("Build : Building GLEW")
-    --if os.target() == "windows" then
-    --  os.mkdir(BuildDir .. "/lib")
-    --  os.mkdir(BuildDir .. "/bin")
-
-    --  io.popen("gcc -DGLEW_NO_GLU -O2 -Wall -W Iinclude -DGLEW_BUILD -o src/glew.o -c src/glew.c; " .. BuildDir)
-    --  io.popen("gcc -shared -Wl,-soname,libglew32.dll -Wl, --out-implib,lib/libglew32.dll.a -o lib/glew32.dll src/glew.o -L/mingw/lib -lglu32 -lopengl32 -lgdi32 -luser32 -lkernel32; " .. BuildDir)
-    --  io.popen("ar cr lib/libglew32.a src/glew.o; " .. BuildDir)
-
-    --  io.popen("gcc -DGLEW_NO_GLU -DGLEW_MX -O2 -Wall -W -Iinclude -DGLEW_BUILD -o src/glew.mx.o -c src/glew.c; " .. BuildDir)
-    --  io.popen("gcc -shared -Wl,-soname,libglew32mx.dll -Wl, --out-implib,lib/libglew32mx.dll.a -o lib/glew32mx.dll src/glew.mx.o -L/mingw/lib -lglu32 -lopengl32 -lgdi32 -luser32 -lkernel32; " .. BuildDir)
-    --  io.popen("ar cr lib/libglew32mx.a src/glew.mx.o")
-    --end
-    --cmake_build(DependencyDirsGLEW)
 end

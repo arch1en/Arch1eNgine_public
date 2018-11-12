@@ -2,7 +2,7 @@ Properties =
 {
     Name =                  "GLAD",
     LinkFileNames =         {},
-    IncludeDirs =           { "Source/include" },
+    IncludeDirs =           { "Source/include", "Source/src" },
     RequiresGeneration =    false,
     RequiresBuilding =      false,
     PostPremakeCommand = function()

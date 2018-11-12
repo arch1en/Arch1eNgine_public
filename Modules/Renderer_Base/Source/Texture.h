@@ -43,7 +43,7 @@ enum ETextureType
 	Normal
 };
 
-struct TextureData
+struct MODULE_API TextureData
 {
 	std::vector<float> Coordinates;
 	std::vector<float> BorderColor;
@@ -63,7 +63,7 @@ struct TextureData
 	TextureData(const TextureData &aData);
 };
 
-class Texture
+class MODULE_API Texture
 {
 	friend class TextureBuilder;
 

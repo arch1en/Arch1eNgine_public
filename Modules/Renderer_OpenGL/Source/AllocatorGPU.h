@@ -9,7 +9,7 @@
 #ifndef ALLOCATORGPU_H
 #define ALLOCATORGPU_H
 
-#include "Mesh.h"
+class Mesh;
 
 #include <vector>
 
@@ -29,7 +29,7 @@ public:
 	void Initialize();
 
 	bool AllocateStaticMesh(Mesh* aMesh);
-	void AllocateTextureData(Mesh* aMesh);
+	//void AllocateTextureData(Mesh* aMesh);
 
 	unsigned int GetActiveVAO() const;
 

@@ -15,8 +15,7 @@
 #include "Renderer_Base.h"
 
 //#include "MeshComponent.h"
-#include "ShaderProgram.h"
-#include "Utilities/RendererUtilities.h"
+//#include "Utilities/RendererUtilities.h"
 
 namespace Renderer
 {
@@ -29,8 +28,7 @@ namespace Renderer
 		virtual bool Initialize() override;
 		// Renderer must be attached to the window, before creating context
 		virtual void CreateContext() override;
-		virtual void AttachToWindow(SDL_Window* Window);
-		void AttachContextToWindow(SDL_Window* Window);
+		virtual void AttachContextToWindow(SDL_Window* Window);
 		/**
 		*   Draws meshes that are on RenderingStack.
 		*/

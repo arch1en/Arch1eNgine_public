@@ -40,3 +40,14 @@ newoption {
     default = "Win64",
     allowed = PlatformsAllowed
 }
+
+newoption {
+    trigger = "logverbosity",
+    description = "How verbose should logging system be.",
+    default = "0",
+    allowed = { 
+        {"0", "Least Verbose" },
+        {"1", "Verbose"},
+        {"2", "Very Verbose"}
+   }
+}

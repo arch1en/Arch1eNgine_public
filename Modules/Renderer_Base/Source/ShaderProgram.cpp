@@ -7,12 +7,11 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-#include "stdafx.h"
 #include "ShaderProgram.h"
 
 
 ShaderProgram::ShaderProgram()
-	: mProgramIDm(0)
+	: mProgramID(0)
 	, m_vertexShader(0)
 	, m_fragmentShader(0)
 {
@@ -21,7 +20,7 @@ ShaderProgram::ShaderProgram()
 
 void ShaderProgram::Init()
 {
-	mProgramIDm = glCreateProgram();
+	mProgramID = glCreateProgram();
 }
 
 bool ShaderProgram::LoadShader(const char * path, ShaderType type)
@@ -65,19 +64,19 @@ bool ShaderProgram::LoadShader(const char * path, ShaderType type)
 void ShaderProgram::LinkProgram()
 {
 	GLint programSuccess = GL_FALSE;
-	if (mProgramIDm <= 0 || m_vertexShader <= 0 || m_fragmentShader <= 0)
+	if (mProgramID <= 0 || m_vertexShader <= 0 || m_fragmentShader <= 0)
 	{
-		printf("Error, cannot link program : \n\nmProgramIDm : %u\nm_vertexShader : %u\nm_fragmentShader : %u", mProgramIDm, m_vertexShader, m_fragmentShader);
+		printf("Error, cannot link program : \n\nmProgramIDm : %u\nm_vertexShader : %u\nm_fragmentShader : %u", mProgramID, m_vertexShader, m_fragmentShader);
 	}
-	glAttachShader(mProgramIDm, m_vertexShader);
-	glAttachShader(mProgramIDm, m_fragmentShader);
-	glLinkProgram(mProgramIDm);
-	glGetProgramiv(mProgramIDm, GL_LINK_STATUS, &programSuccess);
+	glAttachShader(mProgramID, m_vertexShader);
+	glAttachShader(mProgramID, m_fragmentShader);
+	glLinkProgram(mProgramID);
+	glGetProgramiv(mProgramID, GL_LINK_STATUS, &programSuccess);
 }
 
 void ShaderProgram::Bind()
 {
-	glUseProgram(mProgramIDm);
+	glUseProgram(mProgramID);
 
 	GLenum error = glGetError();
 	if (error != GL_NO_ERROR)
@@ -101,9 +100,9 @@ void ShaderProgram::PrintInfo()
 {
 	GLint maxLength, nAttribs;
 	// Query for the number of active attributes
-	glGetProgramiv(mProgramIDm, GL_ACTIVE_ATTRIBUTES, &nAttribs);
+	glGetProgramiv(mProgramID, GL_ACTIVE_ATTRIBUTES, &nAttribs);
 	// Query for length of the longest attribute name.
-	glGetProgramiv(mProgramIDm, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
+	glGetProgramiv(mProgramID, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
 
 	GLchar * name = (GLchar *)malloc(maxLength);
 
@@ -115,9 +114,9 @@ void ShaderProgram::PrintInfo()
 	// Loop over each index and retrieve information about each attribute.
 	for (int i = 0; i < nAttribs; i++)
 	{
-		glGetActiveAttrib(mProgramIDm, i, maxLength, &written,
+		glGetActiveAttrib(mProgramID, i, maxLength, &written,
 			&size, &type, name);
-		location = glGetAttribLocation(mProgramIDm, name);
+		location = glGetAttribLocation(mProgramID, name);
 		printf(" %-5d | %s\n", location, name);
 	}
 	free(name);
@@ -158,14 +157,14 @@ bool ShaderProgram::CheckShaderStatus(unsigned int shaderID)
 bool ShaderProgram::CheckProgramStatus()
 {
 	GLint programSuccess;
-	glGetProgramiv(mProgramIDm, GL_LINK_STATUS, &programSuccess);
+	glGetProgramiv(mProgramID, GL_LINK_STATUS, &programSuccess);
 	if (programSuccess != GL_TRUE)
 	{
 		GLint logLength;
-		glGetProgramiv(mProgramIDm, GL_INFO_LOG_LENGTH, &logLength);
+		glGetProgramiv(mProgramID, GL_INFO_LOG_LENGTH, &logLength);
 		GLchar * buffer = new GLchar[logLength];
 		GLsizei bufferSize;
-		glGetProgramInfoLog(mProgramIDm, logLength, &bufferSize, buffer);
+		glGetProgramInfoLog(mProgramID, logLength, &bufferSize, buffer);
 
 		printf("Program Link Log: \n\n%s\n", buffer);
 		SDL_LogMessage(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_WARN, "Error, cannot compile fragment shader : %d\n", m_fragmentShader);
@@ -181,12 +180,12 @@ bool ShaderProgram::CheckProgramStatus()
 
 int ShaderProgram::GetUniformLocation(const char* aName) const
 {
-	if (mProgramIDm == 0)
+	if (mProgramID == 0)
 	{
 		Log(DebugType::EDT_Error, "Getting %s uniform location failed. Shared program invalid.", aName);
 		return -1;
 	}
 
-	return glGetUniformLocation(mProgramIDm, aName);
+	return glGetUniformLocation(mProgramID, aName);
 
 }

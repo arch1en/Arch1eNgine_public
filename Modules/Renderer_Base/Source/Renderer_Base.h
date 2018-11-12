@@ -25,7 +25,7 @@ struct DrawData
 
 namespace Renderer
 {
-	class Base
+	class MODULE_API Base
 	{
 	public:
 		Base();
@@ -33,7 +33,7 @@ namespace Renderer
 
 		virtual bool Initialize() = 0;
 		virtual void CreateContext() = 0;
-		virtual void AttachToWindow(SDL_Window* Window) = 0;
+		virtual void AttachContextToWindow(SDL_Window* Window) = 0;
 
 		/**
 		*   Draws meshes that are on RenderingStack.

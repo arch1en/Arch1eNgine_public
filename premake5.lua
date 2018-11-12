@@ -1,4 +1,5 @@
 require("premake5_config")
+require("premake5_log")
 require("premake5_functions")
 require("premake5_actions")
 require("premake5_options")

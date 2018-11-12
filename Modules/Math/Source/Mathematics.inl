@@ -153,20 +153,20 @@ public:
 
 // ~=~ VECTOR3 ~=~
 
-template<unsigned int X, unsigned int Y>
+template<unsigned int X, unsigned int Y, class T = float>
 struct MODULE_API Matrix
 {
-	Matrix()
+	explicit Matrix()
 	{
-
+		MatrixBody = new T[X * Y];
 	}
 
 	// Rule of Five
 
 	// copy constructor
-	explicit Matrix(const Matrix& aMatrix)
+	Matrix(const Matrix& aMatrix)
 	{
-		MatrixBody = aMatrix.MatrixBody;
+		this = aMatrix;
 	}
 
 	// move constructor
@@ -190,7 +190,7 @@ struct MODULE_API Matrix
 	// destructor
 	~Matrix()
 	{
-
+		delete[] MatrixBody;
 	}
 
 	explicit Matrix(Vector3<> aVector)
@@ -198,15 +198,18 @@ struct MODULE_API Matrix
 
 	}
 
-	int MatrixBody[X][Y];
+	T& operator[](int Index) 
+	{
+
+		return MatrixBody[Index];
+	}
+
+private:
+
+	T* MatrixBody;
 
 	//decltype(X) MatrixBody[X][Y];
 };
-
-Matrix<4,4> Translate(const Matrix<4,4>& aMatrix, const Vector3<>& aVector)
-{
-	return Matrix<4,4>();
-}
 
 template<class T>
 bool MODULE_API IsPowerOfTwo(T InParam)

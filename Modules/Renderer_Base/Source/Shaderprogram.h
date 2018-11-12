@@ -7,11 +7,12 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-#pragma once
+#ifndef SHADERPROGRAM_H
+#define SHADERPROGRAM_H
 
 #include "Utilities/RendererUtilities.h"
 
-class ShaderProgram
+class MODULE_API ShaderProgram
 {
 
 public:
@@ -37,3 +38,5 @@ private:
 	unsigned int		m_vertexShader;
 	unsigned int		m_fragmentShader;
 };
+
+#endif

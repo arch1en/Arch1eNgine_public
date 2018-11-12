@@ -6,11 +6,12 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-//#include "stdafx.h"
 #include "AllocatorGPU.h"
 
 #include "glad/glad.h"
 
+#include "Mesh.h"
+#include "ShaderProgram.h"
 #include "Logger.h"
 
 void AllocatorGPU::Initialize()

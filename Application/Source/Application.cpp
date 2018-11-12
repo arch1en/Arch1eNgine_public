@@ -1,8 +1,8 @@
 
 #include "Application.h"
 
-#include "SDL.h"
-#include "Renderer.OpenGL.h"
+#include "SDL2.h"
+#include "Renderer_OpenGL.h"
 
 static const std::string ApplicationName = "Arch1eNgine";
 

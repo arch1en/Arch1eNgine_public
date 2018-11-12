@@ -15,8 +15,9 @@ struct Color;
 
 // TEMP
 #include <glad/glad.h>
+#include <glad.c>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Material.h"
+#include "ShaderProgram.h"
 #include "Utilities/RendererUtilities.h"
 #include "Assertions.inl"
 // ~TEMP
@@ -81,9 +82,10 @@ namespace Renderer
 		{
 			assert(iter != nullptr);
 
-			Matrix<4, 4> ModelMatrix;
+			glm::mat4 ModelMatrix;
 			//glm::mat4 ModelMatrix;
-			ModelMatrix = Translate(ModelMatrix, iter->GetVertexOffset());//glm::translate(ModelMatrix, iter->GetVertexOffset());
+			glm::vec3 VertexOffset(iter->GetVertexOffset().x, iter->GetVertexOffset().y, iter->GetVertexOffset().z);
+			ModelMatrix = glm::translate(ModelMatrix, VertexOffset);
 			glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &ModelMatrix[0][0]);
 
 			glUniformMatrix4fv(mViewUniformLocation, 1, GL_FALSE, &aDrawData.ViewMatrix[0][0]);
