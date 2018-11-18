@@ -382,19 +382,19 @@ function SetupModule(ModuleName)
     local ModuleProperties = GetModulePropertiesByName(ModuleName)
     local ModuleData
     if ModuleProperties == nil then
-        print("Module "..ModuleName.. " : Cannot setup module. Properties not found.")
+        Log(0, "Module "..ModuleName.. " : Cannot setup module. Properties not found.")
         return
     end
 
     if ModuleProperties.LinkageType == nil then
-        print("Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
+        Log(0, "Module "..ModuleName.. " : Cannot setup module. LinkageType invalid.")
         return
     end
 
     if ModuleProperties.LinkageType == "None" then
         -- @todo Is this really nescessary ?
         --SetupModuleDependencies(ModuleProperties)
-        print("Module "..ModuleName.. " : Module without LinkageType, skipping...")
+        Log(1, "Module "..ModuleName.. " : Module without LinkageType, skipping...")
         return
     end
 
@@ -461,17 +461,16 @@ function SetupDependencies(DependencyType, ModuleProperties)
         return
     end
 
-    if ModuleProperties.ModuleDependencies == nil or ModuleProperties.ForeignDependencies == nil then
-        return
-    end
-
     local DependencyProperties
 
-    if DependencyType == "Foreign" then
+    if DependencyType == "Foreign" and ModuleProperties.ForeignDependencies ~= nil then
         DependencyProperties = ModuleProperties.ForeignDependencies
-    elseif DependencyType == "Module" then
+    elseif DependencyType == "Module" and ModuleProperties.ModuleDependencies ~= nil then
         DependencyProperties = ModuleProperties.ModuleDependencies
-    end
+    else
+		Log(1, "No "..DependencyType.." dependencies.")
+		return
+	end
 
     for _,v in pairs(DependencyProperties) do
         local ModuleDependencyProperties
