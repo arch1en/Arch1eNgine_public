@@ -1,7 +1,11 @@
 # All files from local history plugin
 */.localhistory/*
-*/Generated/*
-*/Build/*
+# All automatically generated files
+Dependencies/*/Generated/*
+Dependencies/*/Build/*
+Dependencies/*/Libraries/*
+Modules/*/Build/*
+Modules/*/Libraries/*
 # All files from visual studio
 .vs/*
 # All logs
