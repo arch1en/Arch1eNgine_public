@@ -12,31 +12,36 @@
 
 #include "Utilities/RendererUtilities.h"
 
-class MODULE_API ShaderProgram
+namespace Renderer
 {
+	class MODULE_API ShaderProgram
+	{
 
-public:
+	public:
 
-	ShaderProgram();
+		ShaderProgram();
 
-	void	Init();
-	bool	LoadShader(const char * path, ShaderType type);
-	void	LinkProgram();
-	void	Bind();
-	void	Unbind();
-	void	PrintInfo();
-	unsigned int	GetProgramID() const;
+		void	Init();
+		bool	LoadShader(const char * path, ShaderType type);
+		void	LinkProgram();
+		void	Bind();
+		void	Unbind();
+		void	PrintInfo();
+		unsigned int	GetProgramID() const;
 
-	bool		CheckProgramStatus();
-	bool		CheckShaderStatus(unsigned int shaderID);
+		bool		CheckProgramStatus();
+		bool		CheckShaderStatus(unsigned int shaderID);
 
-	int			GetUniformLocation(const char* aName) const;
+		int			GetUniformLocation(const char* aName) const;
 
-private:
+	private:
 
-	unsigned int		mProgramID;
-	unsigned int		m_vertexShader;
-	unsigned int		m_fragmentShader;
-};
+		unsigned int		mProgramID;
+		unsigned int		m_vertexShader;
+		unsigned int		m_fragmentShader;
+	};
+
+}
+
 
 #endif

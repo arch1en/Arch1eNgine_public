@@ -1,15 +1,29 @@
-#ifndef EDITOR_H
-#define EDITOR_H
+#ifndef EDITOR_EDITOR_H
+#define EDITOR_EDITOR_H
 
-class Editor
+class UI::Editor;
+class Renderer::Base;
+
+namespace Editor
 {
+	class Editor
+	{
 
 
-public:
+	public:
 
-	bool InitiateWindow();
-	bool InitiateRenderer();
+		Editor() = default;
+		void Initiate();
+		bool InitiateRenderer();
 
-};
+		UI::Editor* EditorUI;
+		Renderer::Base* Renderer;
+
+	private:
+
+		SDL_Window* Window;
+	};
+}
+
 
 #endif

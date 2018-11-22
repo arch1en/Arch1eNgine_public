@@ -2,5 +2,6 @@ Properties =
 {
 	Name = "Editor",
 	LinkageType = "Dynamic",
-	ModuleDependencies = {"UI.Editor"}
+	ForeignDependencies = {"SDL2", "GLM", "STB_Image"},
+	ModuleDependencies = {"UI_Editor", "Renderer_Base", "Math", "Logger"}
 }

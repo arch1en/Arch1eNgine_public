@@ -13,36 +13,41 @@ class Mesh;
 
 #include <vector>
 
-struct MeshData
+namespace Renderer
 {
-	unsigned int VAO;
-	unsigned int VBO;
-	unsigned int EBO;
-};
 
-class AllocatorGPU
-{
-public:
-	AllocatorGPU() {}
-	~AllocatorGPU();
+	struct MeshData
+	{
+		unsigned int VAO;
+		unsigned int VBO;
+		unsigned int EBO;
+	};
 
-	void Initialize();
+	class AllocatorGPU
+	{
+	public:
+		AllocatorGPU() {}
+		~AllocatorGPU();
 
-	bool AllocateStaticMesh(Mesh* aMesh);
-	//void AllocateTextureData(Mesh* aMesh);
+		void Initialize();
 
-	unsigned int GetActiveVAO() const;
+		bool AllocateStaticMesh(Mesh* aMesh);
+		//void AllocateTextureData(Mesh* aMesh);
 
-private:
+		unsigned int GetActiveVAO() const;
 
-	unsigned int mActiveVAO;
+	private:
 
-	std::vector<unsigned int>		mVAOs;	// Vertex Array Object
-	std::vector<unsigned int>		mVBOs;	// Vertex Buffer Object
-	std::vector<unsigned int>		mTBOs;	// Texture Buffer Object
-	std::vector<unsigned int>		mEBOs;	// Element Buffer OBject
+		unsigned int mActiveVAO;
 
-	void SetActiveVAO(unsigned int aValue);
-};
+		std::vector<unsigned int>		mVAOs;	// Vertex Array Object
+		std::vector<unsigned int>		mVBOs;	// Vertex Buffer Object
+		std::vector<unsigned int>		mTBOs;	// Texture Buffer Object
+		std::vector<unsigned int>		mEBOs;	// Element Buffer OBject
+
+		void SetActiveVAO(unsigned int aValue);
+	};
+
+}
 
 #endif

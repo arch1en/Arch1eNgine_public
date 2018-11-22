@@ -10,9 +10,9 @@ class MODULE_API Material
 {
 public:
 
-	void AddTexture(std::shared_ptr<Texture> NewTexture);
+	void AddTexture(std::shared_ptr<Renderer::Texture> NewTexture);
 	const bool HasTextures() const;
-	const std::vector<std::shared_ptr<Texture>>*	GetTextures() const;
+	const std::vector<std::shared_ptr<Renderer::Texture>>*	GetTextures() const;
 
 	void SetDiffuseColor (const Color& aColor);
 	void SetSpecularColor(const Color& aColor);
@@ -24,6 +24,6 @@ private:
 
 	Color														mDiffuseColor;
 	Color														mSpecularColor;
-	std::vector<std::shared_ptr<Texture>>						mTextures;
+	std::vector<std::shared_ptr<Renderer::Texture>>						mTextures;
 
 };

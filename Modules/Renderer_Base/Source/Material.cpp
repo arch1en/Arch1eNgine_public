@@ -1,7 +1,7 @@
 //#include "stdafx.h"
 #include "Material.h"
 
-void Material::AddTexture(std::shared_ptr<Texture> NewTexture)
+void Material::AddTexture(std::shared_ptr<Renderer::Texture> NewTexture)
 {
 	mTextures.push_back(NewTexture);
 }
@@ -11,7 +11,7 @@ const bool Material::HasTextures() const
 	return mTextures.size() > 0;
 }
 
-const std::vector<std::shared_ptr<Texture>>*	Material::GetTextures() const
+const std::vector<std::shared_ptr<Renderer::Texture>>*	Material::GetTextures() const
 {
 	return &mTextures;
 }

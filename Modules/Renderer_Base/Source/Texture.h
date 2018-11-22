@@ -7,82 +7,91 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-#pragma once
+#ifndef TEXTURE_H
+#define TEXTURE_H
 
 #include <vector>
 #include "stb_image.h"
 
-enum class ETextureWrappingMode
+namespace Renderer
 {
-	Repeat,
-	MirroredRepeat,
-	ClampToEdge,
-	ClampToBorder
-};
 
-enum class ETextureFilteringMode
-{
-	Nearest,
-	Linear
-};
+	enum class ETextureWrappingMode
+	{
+		Repeat,
+		MirroredRepeat,
+		ClampToEdge,
+		ClampToBorder
+	};
 
-enum class ETextureMipmappingMode
-{
-	NearestMipmapNearest,
-	NearestMipmapLinear,
-	LinearMipmapNearest,
-	LinearMipmapLinear
-};
+	enum class ETextureFilteringMode
+	{
+		Nearest,
+		Linear
+	};
 
-enum ETextureType
-{
-	Ambient,
-	Albedo,
-	Diffuse,
-	Specular,
-	Normal
-};
+	enum class ETextureMipmappingMode
+	{
+		NearestMipmapNearest,
+		NearestMipmapLinear,
+		LinearMipmapNearest,
+		LinearMipmapLinear
+	};
 
-struct MODULE_API TextureData
-{
-	std::vector<float> Coordinates;
-	std::vector<float> BorderColor;
+	enum ETextureType
+	{
+		Ambient,
+		Albedo,
+		Diffuse,
+		Specular,
+		Normal
+	};
 
-	ETextureWrappingMode Wrap_S;
-	ETextureWrappingMode Wrap_T;
-	ETextureFilteringMode Filter_Min;
-	ETextureFilteringMode Filter_Mag;
+	struct MODULE_API TextureData
+	{
+		std::vector<float> Coordinates;
+		std::vector<float> BorderColor;
 
-	TextureData() {}
-	TextureData(
-		ETextureWrappingMode aWrap_S,
-		ETextureWrappingMode aWrap_T,
-		ETextureFilteringMode aFilter_Min,
-		ETextureFilteringMode aFilter_Mag);
+		ETextureWrappingMode Wrap_S;
+		ETextureWrappingMode Wrap_T;
+		ETextureFilteringMode Filter_Min;
+		ETextureFilteringMode Filter_Mag;
 
-	TextureData(const TextureData &aData);
-};
+		TextureData() = default;
 
-class MODULE_API Texture
-{
-	friend class TextureBuilder;
+		TextureData(
+			ETextureWrappingMode aWrap_S,
+			ETextureWrappingMode aWrap_T,
+			ETextureFilteringMode aFilter_Min,
+			ETextureFilteringMode aFilter_Mag);
 
-public:
+		TextureData(const TextureData &aData);
+	};
 
-	Texture();
-	//void Initiate(std::string aPath, TextureData aTextureData);
-	const TextureData* GetData() const;
+	class MODULE_API Texture
+	{
+		friend class TextureBuilder;
 
-	unsigned int GetTextureID() const;
-	//bool IsInitiated() const;
+	public:
 
-private:
+		Texture() = default;
+		Texture(Texture&& Texture) = delete;
+		//void Initiate(std::string aPath, TextureData aTextureData);
+		const TextureData* GetData() const;
 
-	unsigned int	mTextureID;
-	TextureData		mData;
+		unsigned int GetTextureID() const;
+		//bool IsInitiated() const;
 
-	int Width = 0;
-	int Height = 0;
+	private:
 
-};
+		unsigned int	mTextureID;
+		TextureData		mData;
 
+		int Width = 0;
+		int Height = 0;
+
+	};
+
+}
+
+#endif
