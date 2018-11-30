@@ -8,7 +8,7 @@ newaction
   trigger = "clean",
   description = "Clean dependency that is currently set.",
   onStart = function()
-    print("Clean : Starting process")
+    Log(0,"Clean : Starting process")
     if _OPTIONS["dependency"] == "all" then
       CleanAllDependencies()
     else
@@ -83,7 +83,7 @@ newaction
     description = "Organize libraries of the dependency that is currently set.",
     onStart = function()
         if IsOrganizeable() then
-            print("Organize : Starting process")
+            Log(0,"Organize : Starting process")
             if _OPTIONS["dependency"] == "all" then
                 OrganizeAllDependencies()
             else
@@ -104,7 +104,7 @@ newaction
     trigger = "rebuild",
     description = "Rebuild dependency that is currently set.",
     onStart = function()
-        print("Rebuild : Starting process")
+        Log(0,"Rebuild : Starting process")
         if _OPTIONS["dependency"] == "all" then
             CleanAllDependencies()
             GenerateAllDependencies()
@@ -117,7 +117,7 @@ newaction
     end,
 
     onEnd = function()
-        print("Rebuild : Finished")
+        Log(0,"Rebuild : Finished")
     end,
 }
 
