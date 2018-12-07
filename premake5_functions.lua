@@ -273,9 +273,6 @@ function SetupApplication()
     -- Adding source files to the project...
     files({"%{prj.name}/Source/**.h", "%{prj.name}/Source/**.cpp", "%{prj.name}/Source/**.inl"})
     -- use removefiles function to remove any unnescessary files.
-
-    -- Including directories...
-    -- includedirs(WorkspaceDirectory.. "/Source") 
     
     local ApplicationProperties = GetApplicationProperties()
     if ApplicationProperties == nil then
@@ -285,30 +282,6 @@ function SetupApplication()
 
     SetupModuleDependencies(ApplicationProperties)
     SetupForeignDependencies(ApplicationProperties)
-
-    --for _,v in pairs(GetListOfDependencyNames()) do
-
-    --  local DependencyProperties = GetDependencyPropertiesByName(v)
-    --if DependencyProperties == nil then
-    --    Log(0,"Including "..v.. " directories : Action failed. Properties not found.")
-    --    return
-    --end
-    --local Size = #DependencyProperties.IncludeDirs
-    --for j=1,Size do
-    --    includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
-    --end
-    --end
-
-    -- Linking libraries...
-    --for _,v0 in pairs(GetListOfDependencyNames()) do
-    --    LinkForeignDependency(GetDependencyPropertiesByName(v0))
-    --end
-
-    --filter {}
-    -- Finding libraries...
-    --for _,v in pairs(GetListOfDependencyNames()) do
-    --    AddForeignDependencyLibraryDirs(GetDependencyPropertiesByName(v))
-    --end
 
     configuration("windows")
 
@@ -353,8 +326,6 @@ function SetupApplication()
 
     filter{"action:vs*"}
     systemversion(os.winSdkVersion() .. ".0")
-    --pchheader "stdafx.h"
-    --pchsource "stdafx.cpp"
 
     filter{}
 
@@ -375,8 +346,6 @@ function SetupModule(ModuleName)
     end
 
     if ModuleProperties.LinkageType == "None" then
-        -- @todo Is this really nescessary ?
-        --SetupModuleDependencies(ModuleProperties)
         Log(1, "Module "..ModuleName.. " : Module without LinkageType, skipping...")
         return
     end
@@ -431,10 +400,6 @@ function SetupModule(ModuleName)
 
     files({ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.h", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.cpp", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.inl"})
 
-    if ModulePropertiesPostPremakeCommand ~= nil then
-        ModulePropertiesPostPremakeCommand()
-    end
-
     filter{}
 end
 
@@ -458,13 +423,15 @@ function SetupDependencies(DependencyType, ModuleProperties)
     for _,v in pairs(DependencyProperties) do
         local ModuleDependencyProperties
 
-        Log(2, v.. " dependency.")
+        Log(1, v.. " dependency.")
 
         if DependencyType == "Foreign" then
             ModuleDependencyProperties = GetDependencyPropertiesByName(v)
             Log(2, "Foreign Dependency Properties : " ..v)
             for _,w in ipairs(ModuleDependencyProperties.IncludeDirs) do
-                includedirs(AdaptDirSlashes(GetDependencyDir(ModuleDependencyProperties.Name).."/"..w))
+				local IncludeDirectory = AdaptDirSlashes(GetDependencyDir(ModuleDependencyProperties.Name).."/"..w)
+				Log(3, "Including directory : "..IncludeDirectory)
+                includedirs(IncludeDirectory)
             end
         elseif DependencyType == "Module" then
             ModuleDependencyProperties = GetModulePropertiesByName(v)
@@ -481,7 +448,7 @@ function SetupDependencies(DependencyType, ModuleProperties)
 
         if LinkageType == "Dynamic" then
             local Result = LinkDependency(DependencyType, ModuleDependencyProperties)
-            if(Result[1] == false) then
+            if Result[1] == false then
                 Log(0, Result[2])
             end
             Result = AddDependencyLibraryDirs(DependencyType, ModuleDependencyProperties)
@@ -489,6 +456,11 @@ function SetupDependencies(DependencyType, ModuleProperties)
                 Log(0, Result[2])
             end
         end
+		
+		if ModuleDependencyProperties.PostPremakeCommand ~= nil then
+			ModuleDependencyProperties.PostPremakeCommand()
+			filter{}
+		end
     end
 end
 
@@ -509,7 +481,6 @@ function SetupModuleDependencies(ModuleProperties, ModuleData)
             return
         end
 
-        --table.insert(ModuleData.IncludedModules, v)
         includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
 
         if ModuleDependencyProperties.LinkageType == "Dynamic" then
@@ -790,16 +761,16 @@ function GetFilePath(InitialDirectory, FileName, Recursive)
     local result = io.popen(command)
     for file in result:lines() do
         if file:match('(' ..FileName.. ')') ~= nil then -- File found
-            --Log(0,"Found : " ..file:match('%w+%.%w+'))
+            Log(3,"Found : " ..file:match('%w+%.%w+'))
             result:close()
             return InitialDirectory
         elseif file:match('^[^.]*$') ~= nil then  -- We have a directory
-            --Log(0,"Dir : " ..file:match('.+[^%.$w+]'))
+            Log(3,"Dir : " ..file:match('.+[^%.$w+]'))
 
             if Recursive == true then
                 local FilePath = GetFilePath(AdaptDirSlashes(InitialDirectory.. "/" ..file), FileName, true)
                 if FilePath ~= "" then
-                    --Log(0,"Recursion Found : " ..FileName.. " in " ..FilePath)
+                    Log(3,"Recursion Found : " ..FileName.. " in " ..FilePath)
                     result:close()
                     return FilePath
                 end
