@@ -4,7 +4,7 @@
 
 #include <utility>
 
-struct MODULE_API Color
+struct Color
 {
 	float R;
 	float G;

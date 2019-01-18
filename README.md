@@ -2,8 +2,6 @@
 
 ### Description
 
-
-
 |	Name	|	Explanation	|
 |	-----	|	-----	|
 |	Author	|	Artur "Arch1eN" Ostrowski	|
@@ -41,3 +39,7 @@ Apart from the standard option and action set of premake5, there are also custom
 |	configuration	|	Option	|	 Which type of configuration should the dependency be built on. Default = "all"		|
 |	platform	|	Option	|	 Which type of platform should the dependency be built on. Default = "all"	|
 |	dependency	|	Action	|	 Which dependency should be taken into action. Default = "all"		|
+
+### Coding Conventions
+
+https://github.com/lefticus/cppbestpractices/blob/master/00-Table_of_Contents.md

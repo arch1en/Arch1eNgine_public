@@ -26,29 +26,29 @@ Logger& Logger::GetInstance()
 	return Singleton;
 }
 
-void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InLogType, const char* InMessage, ...)
+void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...)
 {
 	va_list Arguments;
 	va_start(Arguments, InMessage);
 
 	const char* LogTypeString;
 
-	if (InLogType == LogType::Notice)
+	if (InDebugType == LogType::Notice)
 	{
 		SetMessageColor();
 		LogTypeString = "Notice";
 	}
-	else if (InLogType == LogType::Warning)
+	else if (InDebugType == LogType::Warning)
 	{
 		SetMessageColor(14);
 		LogTypeString = "Warning";
 	}
-	else if (InLogType == LogType::Error)
+	else if (InDebugType == LogType::Error)
 	{
 		SetMessageColor(12);
 		LogTypeString = "Error";
 	}
-	else if (InLogType == LogType::Fatal)
+	else if (InDebugType == LogType::Fatal)
 	{
 		SetMessageColor(12);
 		LogTypeString = "Fatal";
@@ -96,18 +96,13 @@ void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InLogType, c
 
 	}
 
-	if (InLogType < LogType::Error)
+	if (InDebugType < LogType::Error)
 	{
 		printf("%s : %s\n", LogTypeString, String.c_str());
 	}
 	else
 	{
 		printf("%s : %s | In %s Line (%i)\n", LogTypeString, String.c_str(), InFilePath, InLineNumber);
-	}
-	
-	if (InLogType > LogType::Notice)
-	{
-		SetMessageColor();
 	}
 }
 

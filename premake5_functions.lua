@@ -273,6 +273,9 @@ function SetupApplication()
     -- Adding source files to the project...
     files({"%{prj.name}/Source/**.h", "%{prj.name}/Source/**.cpp", "%{prj.name}/Source/**.inl"})
     -- use removefiles function to remove any unnescessary files.
+
+    -- Including directories...
+    -- includedirs(WorkspaceDirectory.. "/Source") 
     
     local ApplicationProperties = GetApplicationProperties()
     if ApplicationProperties == nil then
@@ -280,9 +283,38 @@ function SetupApplication()
         return 
     end
 
-    SetupModuleDependencies(ApplicationProperties)
-    SetupForeignDependencies(ApplicationProperties)
+    --SetupModuleDependencies(ApplicationProperties)
+    --SetupForeignDependencies(ApplicationProperties)
+	
+	SetupDependencies("Module", ApplicationProperties)
+	SetupDependencies("Foreign", ApplicationProperties)
+	
+    --for _,v in pairs(GetListOfDependencyNames()) do
 
+    --  local DependencyProperties = GetDependencyPropertiesByName(v)
+    --if DependencyProperties == nil then
+    --    Log(0,"Including "..v.. " directories : Action failed. Properties not found.")
+    --    return
+    --end
+    --local Size = #DependencyProperties.IncludeDirs
+    --for j=1,Size do
+    --    includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
+    --end
+    --end
+
+    -- Linking libraries...
+    --for _,v0 in pairs(GetListOfDependencyNames()) do
+    --    LinkForeignDependency(GetDependencyPropertiesByName(v0))
+    --end
+
+    --filter {}
+    -- Finding libraries...
+    --for _,v in pairs(GetListOfDependencyNames()) do
+    --    AddForeignDependencyLibraryDirs(GetDependencyPropertiesByName(v))
+    --end
+
+	defines{"MODULE_API=__declspec(dllimport)"}
+	
     configuration("windows")
 
     filter("system:windows")
@@ -326,6 +358,8 @@ function SetupApplication()
 
     filter{"action:vs*"}
     systemversion(os.winSdkVersion() .. ".0")
+    --pchheader "stdafx.h"
+    --pchsource "stdafx.cpp"
 
     filter{}
 
@@ -335,6 +369,9 @@ function SetupModule(ModuleName)
 
     local ModuleProperties = GetModulePropertiesByName(ModuleName)
     local ModuleData
+	local IncludeDir = ModulesDir.."/"..ModuleName.."/"..SourceFolderName
+	local FilesToAdd = {ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.h", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.cpp", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.inl"}
+	
     if ModuleProperties == nil then
         Log(0, "Module "..ModuleName.. " : Cannot setup module. Properties not found.")
         return
@@ -345,21 +382,29 @@ function SetupModule(ModuleName)
         return
     end
 
+	group("Modules")
+	
     if ModuleProperties.LinkageType == "None" then
+        -- @todo Is this really nescessary ?
+        --SetupModuleDependencies(ModuleProperties)
         Log(1, "Module "..ModuleName.. " : Module without LinkageType, skipping...")
         return
-    end
-
+    elseif ModuleProperties.LinkageType == "Include" then
+		files(FilesToAdd)
+		return
+	end
+	
     Log(0,CreateFolderIfDoesntExistEx(GetModuleBuildDir(ModuleName)))
 
-    group("Modules")
+    
     project(ModuleName)
 
     targetdir(AdaptDirSlashes(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}"))
     targetname(ModuleName)
     location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
-    includedirs(ModulesDir.."/"..ModuleName.."/"..SourceFolderName)
-    if ModuleProperties.LinkageType == "Static" then
+    includedirs(IncludeDir)
+	
+	if ModuleProperties.LinkageType == "Static" then
         kind("StaticLib")
     elseif ModuleProperties.LinkageType == "Dynamic" then
         kind("SharedLib")
@@ -371,11 +416,11 @@ function SetupModule(ModuleName)
             end
         end
 
+	else
+		defines{"MODULE_API=__declspec(dllimport)"}
     end
 
     language("C++")
-
-    defines{"MODULE_IMPORT=__declspec(dllimport)"}
 
     for _,v in pairs(Platforms) do
         if #v.Defines ~= 0 then
@@ -423,15 +468,13 @@ function SetupDependencies(DependencyType, ModuleProperties)
     for _,v in pairs(DependencyProperties) do
         local ModuleDependencyProperties
 
-        Log(1, v.. " dependency.")
+        Log(2, v.. " dependency.")
 
         if DependencyType == "Foreign" then
             ModuleDependencyProperties = GetDependencyPropertiesByName(v)
             Log(2, "Foreign Dependency Properties : " ..v)
             for _,w in ipairs(ModuleDependencyProperties.IncludeDirs) do
-				local IncludeDirectory = AdaptDirSlashes(GetDependencyDir(ModuleDependencyProperties.Name).."/"..w)
-				Log(3, "Including directory : "..IncludeDirectory)
-                includedirs(IncludeDirectory)
+                includedirs(AdaptDirSlashes(GetDependencyDir(ModuleDependencyProperties.Name).."/"..w))
             end
         elseif DependencyType == "Module" then
             ModuleDependencyProperties = GetModulePropertiesByName(v)
@@ -481,9 +524,12 @@ function SetupModuleDependencies(ModuleProperties, ModuleData)
             return
         end
 
+        --table.insert(ModuleData.IncludedModules, v)
         includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
-
-        if ModuleDependencyProperties.LinkageType == "Dynamic" then
+		
+		if ModuleDependencyProperties.LinkageType == "Include" then
+			
+		elseif ModuleDependencyProperties.LinkageType == "Dynamic" then
             LinkDependency("Module", ModuleDependencyProperties)
             AddDependencyLibraryDirs("Module", ModuleDependencyProperties)
         end

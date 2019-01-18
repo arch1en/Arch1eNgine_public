@@ -1,5 +1,5 @@
 Properties = 
 {
-	Name = "Logger",
+	Name = "WUL",
 	LinkageType = "Include"
 }

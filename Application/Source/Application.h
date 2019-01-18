@@ -7,8 +7,11 @@
 #include <string>
 #include <memory>
 
+#include "WindowSystem\WindowSystem.h"
+#include "RenderingSystem\RenderingSystem.h"
+#include "RenderingSystem\RenderingSystemUtilities.h"
+
 struct SDL_Window;
-class Renderer;
 
 class Application
 {
@@ -19,19 +22,16 @@ public:
 
 	bool Initiate();
 	void CreateApplicationWindow();
-	void CreateRenderer(std::string RendererType);
-	void Loop();
-
-	std::string GetRendererType() const;
+	void CreateRenderer();
 
 private:
 
-	SDL_Window * ApplicationWindow;
+	std::unique_ptr<WindowSystem> mWindowSystem;
+	std::unique_ptr<RenderingSystem> mRenderingSystem;
 
 	void LogicLoop();
 	void RenderingLoop();
 
-	std::shared_ptr<Renderer*> mRenderer = nullptr;
 
 };
 

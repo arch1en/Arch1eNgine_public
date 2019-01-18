@@ -1,5 +1,5 @@
 Properties = 
 {
 	Name = "Math",
-	LinkageType = "None"
+	LinkageType = "Include"
 }

@@ -12,7 +12,7 @@
 // -=- VECTOR2 -=-
 
 template<class T = float>
-struct MODULE_API Vector2
+struct Vector2
 {
 public:
 
@@ -82,7 +82,7 @@ public:
 // -=- VECTOR3 -=-
 
 template<class T = float>
-struct MODULE_API Vector3
+struct Vector3
 {
 public:
 	struct

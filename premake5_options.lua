@@ -48,7 +48,6 @@ newoption {
     allowed = { 
         {"0", "Least Verbose" },
         {"1", "Verbose"},
-        {"2", "Very Verbose"},
-		{"3", "Uber Verbose"}
+        {"2", "Very Verbose"}
    }
 }

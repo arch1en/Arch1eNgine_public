@@ -6,11 +6,10 @@
 //  @version    : 1.0.0
 //
 ////////////////////////////////////////
-#pragma once
+#ifndef LOGGER_H
+#define LOGGER_H
 
-#define Log(LogType, Message, ...) Logger::GetInstance().Log_( __FILE__, __LINE__, LogType, Message, __VA_ARGS__);
-
-enum class LogType : unsigned char
+enum LogType
 {
 	Notice,
 	Warning,
@@ -20,7 +19,7 @@ enum class LogType : unsigned char
 	Total		// U can't touch this ! (HAMMER TIME)
 };
 
-class MODULE_API Logger
+class Logger
 {
 public:
 	Logger();
@@ -31,7 +30,7 @@ public:
 	
 	static Logger& GetInstance();
 
-	void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InMessage, ...);
+	void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...);
 
 private:
 
@@ -53,3 +52,8 @@ private:
 	*/
 	void SetMessageColor(int InForeground = 15, int InBackground = 0);
 };
+
+#define LogV(LogType, LogDomain, VerbosityLevel, Message, ...) Logger::GetInstance().Log_( __FILE__, __LINE__, LogType, LogDomain, VerbosityLevel, Message, __VA_ARGS__);
+#define Log(LogType, Message, ...) LogV(LogType, "Temp", 0, Message, __VA_ARGS__)
+
+#endif
