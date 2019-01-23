@@ -42,3 +42,15 @@ void* Window_SDL2::GetWindowHandle() const
 {
 	return WindowHandle;
 }
+
+void Window_SDL2::DestroyWindow()
+{
+	SDL_DestroyWindow(WindowHandle);
+
+	// @todo There should also be SDL_Quit() but it should rather be made when we will do a WindowManager of some kind.
+}
+
+void Window_SDL2::SwapBuffers()
+{
+	SDL_GL_SwapWindow(WindowHandle);
+}

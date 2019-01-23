@@ -15,9 +15,9 @@ bool Application::Initiate()
 
 	Configurator::Window_RenderingContext Configurator(mWindowSystem->GetMainWindow(), mRenderingSystem->GetRenderingContext());
 
-	Configurator.AttachRenderingContextHandleToWindow();
+	Configurator.ConfigureImplementations();
 
-	LogicLoop();
+	MainLoop();
 
 	return false;
 }
@@ -44,6 +44,15 @@ void Application::CreateRenderer()
 	mRenderingSystem->CreateContext(Properties);
 }
 
+void Application::MainLoop()
+{
+	while (mWindowSystem->GetMainWindow() != nullptr)
+	{
+		LogicLoop();
+		RenderingLoop();
+	}
+}
+
 void Application::LogicLoop()
 {
 
@@ -51,5 +60,13 @@ void Application::LogicLoop()
 
 void Application::RenderingLoop()
 {
+	mRenderingSystem->GetRenderingContext()->SetClearColor(Vector4<float>(0.f, 0.f, 0.f, 1.f));
 
+	I::RenderingContextProperties_ClearColor_Impl Properties;
+
+	Properties.ClearColorBuffer = true;
+
+	mRenderingSystem->GetRenderingContext()->ClearContext(Properties);
+
+	mWindowSystem->GetMainWindow()->SwapBuffers();
 }

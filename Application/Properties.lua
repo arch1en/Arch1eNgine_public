@@ -1,6 +1,6 @@
 Properties = 
 {
 	LinkageType = "Dynamic",
-	ForeignDependencies = {"SDL2"},
-	ModuleDependencies = {"Logger", "Renderer", "WUL"}
+	ForeignDependencies = {"SDL2", "GLAD"},
+	ModuleDependencies = {"Logger", "Renderer", "WUL", "Math"}
 }

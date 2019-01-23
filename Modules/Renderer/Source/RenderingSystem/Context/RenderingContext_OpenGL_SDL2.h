@@ -12,10 +12,14 @@ class RenderingContext_OpenGL_SDL2 : public I::RenderingContext_Impl
 {
 public:
 	virtual void Initialize() override;
+	void InitializeGLAD();
 	virtual const std::string GetImplementationType() const override;
 	void UseDoubleBuffering(bool State);
 	virtual void* GetRenderingContextHandle() const override;
 	virtual void SetRenderingContextHandle(void* Handle) override;
+	virtual void SetSwapInterval(int Interval) override;
+	virtual void SetClearColor(Vector4<float> ClearColor) override;
+	virtual void ClearContext(I::RenderingContextProperties_ClearColor_Impl Properties) override;
 
 private:
 

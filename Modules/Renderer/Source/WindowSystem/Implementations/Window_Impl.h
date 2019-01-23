@@ -15,6 +15,8 @@ namespace I
 		virtual bool InitiateWindow(WindowProperties Properties) = 0;
 		virtual std::string GetImplementationType() = 0;
 		virtual void* GetWindowHandle() const = 0;
+		virtual void DestroyWindow() = 0;
+		virtual void SwapBuffers() = 0;
 	};
 }
 

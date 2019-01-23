@@ -15,8 +15,8 @@ public:
 	virtual bool InitiateWindow(WindowProperties Properties) override;
 	virtual std::string GetImplementationType() override;
 	virtual void* GetWindowHandle() const override;
-
-	void SwapCanvas();
+	virtual void DestroyWindow() override;
+	virtual void SwapBuffers() override;
 
 protected:
 	SDL_Window * WindowHandle;

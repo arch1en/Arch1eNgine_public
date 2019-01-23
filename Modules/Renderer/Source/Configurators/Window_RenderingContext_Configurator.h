@@ -12,7 +12,7 @@ namespace Configurator {
 		Window_RenderingContext() = delete;
 		Window_RenderingContext(I::Window_Impl* Window, I::RenderingContext_Impl* RenderingContext);
 
-		void AttachRenderingContextHandleToWindow();
+		void ConfigureImplementations();
 
 	private:
 

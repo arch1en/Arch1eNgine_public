@@ -8,11 +8,19 @@ enum class RenderingContextType
 	Direct3D,
 	DirectX,
 	Metal,
+	TOTAL,
+	INVALID
 };
 
 struct RenderingContextProperties
 {
+	RenderingContextProperties()
+		: Type{ RenderingContextType::INVALID}
+		, BufferSwapInterval{ 1 }
+	{}
+
 	RenderingContextType Type;
+	int BufferSwapInterval;
 };
 
 #endif

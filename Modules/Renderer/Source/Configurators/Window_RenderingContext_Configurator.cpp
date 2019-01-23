@@ -11,15 +11,17 @@ Configurator::Window_RenderingContext::Window_RenderingContext(I::Window_Impl* W
 	, mRenderingContext{RenderingContext}
 {}
 
-void Configurator::Window_RenderingContext::AttachRenderingContextHandleToWindow()
+void Configurator::Window_RenderingContext::ConfigureImplementations()
 {
 	if (mWindow->GetImplementationType().compare("SDL2") == 0)
 	{
 		if (mRenderingContext->GetImplementationType().compare("OpenGL/SDL2") == 0)
 		{
+			RenderingContext_OpenGL_SDL2* ContextOGLSDL2 = static_cast<RenderingContext_OpenGL_SDL2*>(mRenderingContext);
 			SDL_GLContext NewContext = SDL_GL_CreateContext(static_cast<SDL_Window*>(mWindow->GetWindowHandle()));
 			
-			mRenderingContext->SetRenderingContextHandle(static_cast<void*>(NewContext));
+			ContextOGLSDL2->SetRenderingContextHandle(static_cast<void*>(NewContext));
+			ContextOGLSDL2->InitializeGLAD();
 			return;
 		}
 	}

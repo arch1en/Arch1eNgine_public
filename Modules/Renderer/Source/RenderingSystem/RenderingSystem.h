@@ -6,14 +6,15 @@
 
 #include <memory>
 
-	class RenderingSystem
-	{
-	public:
-		void CreateContext(RenderingContextProperties Properties);
-		I::RenderingContext_Impl* GetRenderingContext() const;
-	private:
+class RenderingSystem
+{
+public:
+	void CreateContext(RenderingContextProperties Properties);
+	I::RenderingContext_Impl* GetRenderingContext() const;
 
-		std::unique_ptr<I::RenderingContext_Impl> mRenderingContext;
-	};
+private:
+
+	std::unique_ptr<I::RenderingContext_Impl> mRenderingContext;
+};
 
 #endif

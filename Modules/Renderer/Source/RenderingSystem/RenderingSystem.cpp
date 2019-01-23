@@ -17,6 +17,7 @@ void RenderingSystem::CreateContext(RenderingContextProperties Properties)
 	}
 
 	mRenderingContext = std::unique_ptr<I::RenderingContext_Impl>(NewRenderingContext);
+	mRenderingContext->SetSwapInterval(Properties.BufferSwapInterval);
 
 }
 

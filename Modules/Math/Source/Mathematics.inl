@@ -120,9 +120,9 @@ public:
 	{
 		Vector3<T> NewVector;
 
-		NewVector.x = this.x - RHS.x;
-		NewVector.y = this.y - RHS.y;
-		NewVector.z = this.z - RHS.z;
+		NewVector.x = this->x - RHS.x;
+		NewVector.y = this->y - RHS.y;
+		NewVector.z = this->z - RHS.z;
 
 		return NewVector;
 	}
@@ -131,9 +131,9 @@ public:
 	{
 		Vector3<T> NewVector;
 
-		NewVector.x = this.x * RHS.x;
-		NewVector.y = this.y * RHS.y;
-		NewVector.z = this.z * RHS.z;
+		NewVector.x = this->x * RHS.x;
+		NewVector.y = this->y * RHS.y;
+		NewVector.z = this->z * RHS.z;
 
 		return NewVector;
 	}
@@ -142,9 +142,9 @@ public:
 	{
 		Vector3<T> NewVector;
 
-		NewVector.x = this.x / RHS.x;
-		NewVector.y = this.y / RHS.y;
-		NewVector.z = this.z / RHS.z;
+		NewVector.x = this->x / RHS.x;
+		NewVector.y = this->y / RHS.y;
+		NewVector.z = this->z / RHS.z;
 
 		return NewVector;
 	}
@@ -153,8 +153,89 @@ public:
 
 // ~=~ VECTOR3 ~=~
 
+// -=- VECTOR4 -=-
+
+template<class T = float>
+struct Vector4
+{
+public:
+	struct
+	{
+		T x;
+		T y;
+		T z;
+		T w;
+	};
+
+	Vector4::Vector4(T X, T Y, T Z, T W)
+	{
+		x = X;
+		y = Y;
+		z = Z;
+		w = W;
+	}
+
+	template<class T>
+	Vector4::Vector4(const Vector4<T>& InObject)
+	{
+		this->x = InObject.x;
+		this->y = InObject.y;
+		this->z = InObject.z;
+		this->w = InObject.w;
+	}
+
+	Vector4<T> Vector4<T>::operator+(const Vector4<T>& RHS)
+	{
+		x = x + RHS.x;
+		y = y + RHS.y;
+		z = z + RHS.z;
+		w = w + RHS.w;
+
+		return *this;
+	}
+
+	Vector4<T> Vector4<T>::operator-(const Vector4<T>& RHS)
+	{
+		Vector4<T> NewVector;
+
+		NewVector.x = this->x - RHS.x;
+		NewVector.y = this->y - RHS.y;
+		NewVector.z = this->z - RHS.z;
+		NewVector.w = this->w - RHS.w;
+
+		return NewVector;
+	}
+
+	Vector4<T> Vector4<T>::operator*(const Vector4<T>& RHS)
+	{
+		Vector4<T> NewVector;
+
+		NewVector.x = this->x * RHS.x;
+		NewVector.y = this->y * RHS.y;
+		NewVector.z = this->z * RHS.z;
+		NewVector.w = this->w * RHS.w;
+
+		return NewVector;
+	}
+
+	Vector4<T> Vector4<T>::operator/(const Vector4<T>& RHS)
+	{
+		Vector4<T> NewVector;
+
+		NewVector.x = this->x / RHS.x;
+		NewVector.y = this->y / RHS.y;
+		NewVector.z = this->z / RHS.z;
+		NewVector.w = this->w / RHS.w;
+
+		return NewVector;
+	}
+
+};
+
+// ~=~ VECTOR4 ~=~
+
 template<unsigned int X, unsigned int Y, class T = float>
-struct MODULE_API Matrix
+struct Matrix
 {
 	explicit Matrix()
 	{
@@ -212,7 +293,7 @@ private:
 };
 
 template<class T>
-bool MODULE_API IsPowerOfTwo(T InParam)
+bool IsPowerOfTwo(T InParam)
 {
 	return (InParam & (InParam - 1) == 0);
 }

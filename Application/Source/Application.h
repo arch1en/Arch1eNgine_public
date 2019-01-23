@@ -29,6 +29,7 @@ private:
 	std::unique_ptr<WindowSystem> mWindowSystem;
 	std::unique_ptr<RenderingSystem> mRenderingSystem;
 
+	void MainLoop();
 	void LogicLoop();
 	void RenderingLoop();
 
