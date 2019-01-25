@@ -11,6 +11,7 @@
 
 enum LogType
 {
+	Info,
 	Notice,
 	Warning,
 	Error,
@@ -30,7 +31,7 @@ public:
 	
 	static Logger& GetInstance();
 
-	void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...);
+	virtual void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...);
 
 private:
 

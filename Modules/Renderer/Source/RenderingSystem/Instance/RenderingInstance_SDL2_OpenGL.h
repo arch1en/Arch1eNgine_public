@@ -4,26 +4,26 @@
 #include <memory>
 #include <SDL.h>
 
-#include "RenderingSystem/Context/RenderingContext_Impl.h"
+#include "RenderingSystem/Instance/RenderingInstance_Impl.h"
 
 class I::WindowImpl;
 
-class RenderingContext_OpenGL_SDL2 : public I::RenderingContext_Impl
+class RenderingInstance_SDL2_OpenGL : public I::RenderingInstance_Impl
 {
 public:
 	virtual void Initialize() override;
 	void InitializeGLAD();
 	virtual const std::string GetImplementationType() const override;
 	void UseDoubleBuffering(bool State);
-	virtual void* GetRenderingContextHandle() const override;
-	virtual void SetRenderingContextHandle(void* Handle) override;
+	virtual void* GetRenderingInstanceHandle() const override;
+	virtual void SetRenderingInstanceHandle(void* Handle) override;
 	virtual void SetSwapInterval(int Interval) override;
 	virtual void SetClearColor(Vector4<float> ClearColor) override;
-	virtual void ClearContext(I::RenderingContextProperties_ClearColor_Impl Properties) override;
+	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;
 
 private:
 
-	std::unique_ptr<SDL_GLContext> mContextHandle;
+	std::unique_ptr<SDL_GLContext> mInstanceHandle;
 
 };
 

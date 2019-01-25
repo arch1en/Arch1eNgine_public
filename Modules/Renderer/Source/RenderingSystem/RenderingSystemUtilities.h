@@ -1,7 +1,9 @@
 #ifndef RENDERINGSYSTEMUTILITIES_H
 #define RENDERINGSYSTEMUTILITIES_H
 
-enum class RenderingContextType
+
+// Needs to match WindowSystemUtilities -> WindowRendererType
+enum class RenderingInstanceType
 {
 	OpenGL,
 	Vulkan,
@@ -12,14 +14,14 @@ enum class RenderingContextType
 	INVALID
 };
 
-struct RenderingContextProperties
+struct RenderingInstanceProperties
 {
-	RenderingContextProperties()
-		: Type{ RenderingContextType::INVALID}
+	RenderingInstanceProperties()
+		: Type{ RenderingInstanceType::INVALID}
 		, BufferSwapInterval{ 1 }
 	{}
 
-	RenderingContextType Type;
+	RenderingInstanceType Type;
 	int BufferSwapInterval;
 };
 

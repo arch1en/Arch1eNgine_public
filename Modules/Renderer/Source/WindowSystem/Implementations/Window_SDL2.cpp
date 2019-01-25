@@ -12,30 +12,18 @@ bool Window_SDL2::InitiateWindow(WindowProperties Properties)
 		Result = false;
 	}
 
-	int WindowPositionX = 0;
-	int WindowPositionY = 0;
-
 	if (Properties.WindowPosition.Mode == WindowPositionMode::Centered)
 	{
-		WindowPositionX = SDL_WINDOWPOS_CENTERED;
-		WindowPositionY = SDL_WINDOWPOS_CENTERED;
+		Properties.WindowPosition.PositionX = SDL_WINDOWPOS_CENTERED;
+		Properties.WindowPosition.PositionY = SDL_WINDOWPOS_CENTERED;
 	}
-
-	WindowHandle = SDL_CreateWindow(
-		Properties.Title.c_str(),
-		WindowPositionX,
-		WindowPositionY,
-		Properties.Width,
-		Properties.Height,
-		SDL_WINDOW_OPENGL
-	);
 
 	return Result;
 }
 
 std::string Window_SDL2::GetImplementationType()
 {
-	return "SDL2";
+	return "";
 }
 
 void* Window_SDL2::GetWindowHandle() const
@@ -48,9 +36,4 @@ void Window_SDL2::DestroyWindow()
 	SDL_DestroyWindow(WindowHandle);
 
 	// @todo There should also be SDL_Quit() but it should rather be made when we will do a WindowManager of some kind.
-}
-
-void Window_SDL2::SwapBuffers()
-{
-	SDL_GL_SwapWindow(WindowHandle);
 }

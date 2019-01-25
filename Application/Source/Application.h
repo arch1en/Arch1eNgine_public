@@ -21,8 +21,8 @@ public:
 	~Application() {}
 
 	bool Initiate();
-	void CreateApplicationWindow();
-	void CreateRenderer();
+	void CreateApplicationWindow(RenderingInstanceType Type);
+	void CreateRenderer(RenderingInstanceType Type);
 
 private:
 

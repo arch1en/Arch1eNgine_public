@@ -9,6 +9,18 @@ enum class WindowPositionMode
 	Custom		// Use PositionX and PositionY to set the position.
 };
 
+// Needs to match RenderingSystemUtilities -> RenderingInstanceType
+enum class WindowRendererType
+{
+	OpenGL,
+	Vulkan,
+	Direct3D,
+	DirectX,
+	Metal,
+	TOTAL,
+	INVALID
+};
+
 struct WindowProperties
 {
 	explicit WindowProperties()
@@ -30,6 +42,8 @@ struct WindowProperties
 	} WindowPosition;
 
 	int Flags;
+
+	WindowRendererType RendererType;
 };
 
 

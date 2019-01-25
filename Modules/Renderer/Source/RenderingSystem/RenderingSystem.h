@@ -2,19 +2,19 @@
 #define RENDERINGSYSTEM_H
 
 #include "RenderingSystemUtilities.h"
-#include "RenderingSystem/Context/RenderingContext_Impl.h"
+#include "RenderingSystem/Instance/RenderingInstance_Impl.h"
 
 #include <memory>
 
 class RenderingSystem
 {
 public:
-	void CreateContext(RenderingContextProperties Properties);
-	I::RenderingContext_Impl* GetRenderingContext() const;
+	void CreateInstance(RenderingInstanceProperties Properties);
+	I::RenderingInstance_Impl* GetRenderingInstance() const;
 
 private:
 
-	std::unique_ptr<I::RenderingContext_Impl> mRenderingContext;
+	std::unique_ptr<I::RenderingInstance_Impl> mRenderingInstance;
 };
 
 #endif

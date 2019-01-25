@@ -4,9 +4,9 @@
 #include <string>
 
 #include "Window_Impl.h"
-#include "RenderingSystem/Context/RenderingContext_Impl.h"
+#include "RenderingSystem/Instance/RenderingInstance_Impl.h"
 
-class RenderingContext;
+class RenderingInstance;
 struct SDL_Window;
 
 class Window_SDL2 : public I::Window_Impl
@@ -16,11 +16,10 @@ public:
 	virtual std::string GetImplementationType() override;
 	virtual void* GetWindowHandle() const override;
 	virtual void DestroyWindow() override;
-	virtual void SwapBuffers() override;
 
 protected:
 	SDL_Window * WindowHandle;
-	RenderingContext* mRenderingContext;
+	RenderingInstance* mRenderingInstance;
 
 };
 

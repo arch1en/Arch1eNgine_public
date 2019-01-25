@@ -1,7 +1,7 @@
 
 #include "Application.h"
 
-#include "Configurators/Window_RenderingContext_Configurator.h"
+#include "Configurators/Window_RenderingInstance_Configurator.h"
 
 static const std::string ApplicationName = "Arch1eNgine";
 
@@ -10,10 +10,12 @@ bool Application::Initiate()
 	mWindowSystem = std::make_unique<WindowSystem>();
 	mRenderingSystem = std::make_unique<RenderingSystem>();
 
-	CreateApplicationWindow();
-	CreateRenderer();
+	RenderingInstanceType Type = RenderingInstanceType::Vulkan;
 
-	Configurator::Window_RenderingContext Configurator(mWindowSystem->GetMainWindow(), mRenderingSystem->GetRenderingContext());
+	CreateRenderer(Type);
+	CreateApplicationWindow(Type);
+
+	Configurator::Window_RenderingInstance Configurator(mWindowSystem->GetMainWindow(), mRenderingSystem->GetRenderingInstance());
 
 	Configurator.ConfigureImplementations();
 
@@ -22,7 +24,7 @@ bool Application::Initiate()
 	return false;
 }
 
-void Application::CreateApplicationWindow()
+void Application::CreateApplicationWindow(RenderingInstanceType Type)
 {
 
 	WindowProperties Properties;
@@ -31,17 +33,18 @@ void Application::CreateApplicationWindow()
 	Properties.WindowPosition.Mode = WindowPositionMode::Centered;
 	Properties.Width = 640;
 	Properties.Height = 480;
+	Properties.RendererType = static_cast<WindowRendererType>(Type);
 
 	mWindowSystem->CreateWindow(Properties);
 }
 
-void Application::CreateRenderer()
+void Application::CreateRenderer(RenderingInstanceType Type)
 {
-	RenderingContextProperties Properties;
+	RenderingInstanceProperties Properties;
 
-	Properties.Type = RenderingContextType::OpenGL;
+	Properties.Type = RenderingInstanceType::Vulkan;
 
-	mRenderingSystem->CreateContext(Properties);
+	mRenderingSystem->CreateInstance(Properties);
 }
 
 void Application::MainLoop()
@@ -60,13 +63,13 @@ void Application::LogicLoop()
 
 void Application::RenderingLoop()
 {
-	mRenderingSystem->GetRenderingContext()->SetClearColor(Vector4<float>(0.f, 0.f, 0.f, 1.f));
+	mRenderingSystem->GetRenderingInstance()->SetClearColor(Vector4<float>(0.f, 0.f, 0.f, 1.f));
 
-	I::RenderingContextProperties_ClearColor_Impl Properties;
+	I::RenderingInstanceProperties_ClearColor_Impl Properties;
 
 	Properties.ClearColorBuffer = true;
 
-	mRenderingSystem->GetRenderingContext()->ClearContext(Properties);
+	mRenderingSystem->GetRenderingInstance()->ClearInstance(Properties);
 
 	mWindowSystem->GetMainWindow()->SwapBuffers();
 }

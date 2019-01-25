@@ -1,27 +1,31 @@
 
 #include "RenderingSystem.h"
 
-#include "RenderingSystem/Context/RenderingContext_OpenGL_SDL2.h"
+#include "RenderingSystem/Instance/RenderingInstance_SDL2_OpenGL.h"
+#include "RenderingSystem/Instance/RenderingInstance_SDL2_Vulkan.h"
 
-void RenderingSystem::CreateContext(RenderingContextProperties Properties)
+void RenderingSystem::CreateInstance(RenderingInstanceProperties Properties)
 {
-	I::RenderingContext_Impl* NewRenderingContext = nullptr;
+	I::RenderingInstance_Impl* NewRenderingInstance = nullptr;
 
-	if (Properties.Type == RenderingContextType::OpenGL)
+	if (Properties.Type == RenderingInstanceType::OpenGL)
 	{
 #if PLATFORM_WIN32 || PLATFORM_WIN64
-		NewRenderingContext = new RenderingContext_OpenGL_SDL2;
+		NewRenderingInstance = new RenderingInstance_SDL2_OpenGL;
 #elif PLATFORM_LINUX
 
 #endif
 	}
+	else if (Properties.Type == RenderingInstanceType::Vulkan)
+	{
+		NewRenderingInstance = new RenderingInstance_SDL2_Vulkan;
+	}
 
-	mRenderingContext = std::unique_ptr<I::RenderingContext_Impl>(NewRenderingContext);
-	mRenderingContext->SetSwapInterval(Properties.BufferSwapInterval);
-
+	mRenderingInstance = std::unique_ptr<I::RenderingInstance_Impl>(NewRenderingInstance);
+	mRenderingInstance->SetSwapInterval(Properties.BufferSwapInterval);
 }
 
-I::RenderingContext_Impl* RenderingSystem::GetRenderingContext() const
+I::RenderingInstance_Impl* RenderingSystem::GetRenderingInstance() const
 {
-	return mRenderingContext.get();
+	return mRenderingInstance.get();
 }

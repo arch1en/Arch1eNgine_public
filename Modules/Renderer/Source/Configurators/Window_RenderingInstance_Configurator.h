@@ -6,18 +6,18 @@
 
 namespace Configurator {
 
-	class Window_RenderingContext : public I::Configurator
+	class Window_RenderingInstance : public I::Configurator
 	{
 	public:
-		Window_RenderingContext() = delete;
-		Window_RenderingContext(I::Window_Impl* Window, I::RenderingContext_Impl* RenderingContext);
+		Window_RenderingInstance() = delete;
+		Window_RenderingInstance(I::Window_Impl* Window, I::RenderingInstance_Impl* RenderingInstance);
 
 		void ConfigureImplementations();
 
 	private:
 
 		I::Window_Impl* mWindow;
-		I::RenderingContext_Impl* mRenderingContext;
+		I::RenderingInstance_Impl* mRenderingInstance;
 
 		virtual void Invalidate() override;
 
