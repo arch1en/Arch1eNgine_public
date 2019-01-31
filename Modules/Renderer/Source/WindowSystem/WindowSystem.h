@@ -12,7 +12,7 @@ class WindowSystem
 {
 public:
 
-	void CreateWindow(WindowProperties aProperties);
+	void CreateNewWindow(WindowProperties aProperties);
 	I::Window_Impl* GetMainWindow();
 
 private:

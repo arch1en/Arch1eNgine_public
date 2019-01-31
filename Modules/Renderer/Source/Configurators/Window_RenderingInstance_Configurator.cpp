@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-#include "Logger.h"
+#include "LogSystem.h"
 #include "WindowSystem/Implementations/Window_SDL2.h"
 #include "RenderingSystem/Instance/RenderingInstance_SDL2_OpenGL.h"
 #include "RenderingSystem/Instance/RenderingInstance_SDL2_Vulkan.h"

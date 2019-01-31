@@ -1,5 +1,6 @@
 #include "Logger_Vulkan.h"
 
+#include "LogSystem.h"
 
 void Logger_Vulkan::InitiateDebugMessenger(const VkInstance& Instance)
 {
@@ -21,7 +22,7 @@ void Logger_Vulkan::InitiateDebugMessenger(const VkInstance& Instance)
 
 	if (CreateDebugUtilsMessenger(Instance, &CreateInfo, nullptr, &DebugMessengerHandle) != VK_SUCCESS)
 	{
-		LogVk(LogType::Error, 0, "Debug Utils Messenger creation failed !");
+		ExecuteLog(LogType::Error, LOGDOMAIN_RENDERER_VULKAN, 0, "Debug Utils Messenger creation failed ! Make sure that VK_EXT_DEBUG_UTILS_EXTENSION_NAME extension is present.");
 	}
 }
 
@@ -47,10 +48,10 @@ void Logger_Vulkan::DestroyDebugUtilsMessenger(VkInstance Instance, VkDebugUtils
 
 VkBool32 Logger_Vulkan::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageType, const VkDebugUtilsMessengerCallbackDataEXT* CallbackData, void* UserData)
 {
-	char LogDomain[256] = LOGDOMAIN_RENDERER_VULKAN;
-	char Delimiter[2] = "/";
-	strcat_s(LogDomain, strlen(LogDomain), (Delimiter + GetPartLogDomainByMessageTypeFlag(MessageType)).c_str());
-	LogV(MapSeverityFlagBitToLogType(MessageSeverity), LogDomain, 0, CallbackData->pMessage);
+	std::string LogDomain = LOGDOMAIN_RENDERER_VULKAN;
+	LogDomain += "/";
+	LogDomain += GetPartLogDomainByMessageTypeFlag(MessageType);
+	LogV(MapSeverityFlagBitToLogType(MessageSeverity), LogDomain.c_str(), 0, CallbackData->pMessage);
 
 	return VK_FALSE;
 }

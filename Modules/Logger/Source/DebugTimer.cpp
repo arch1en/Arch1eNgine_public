@@ -8,13 +8,10 @@
 ////////////////////////////////////////
 //#include "stdafx.h"
 #include "DebugTimer.h"
-#include "Logger.h"
 
-DebugTimer& DebugTimer::GetInstance()
-{
-	static DebugTimer Instance;
-	return Instance;
-}
+
+#include "LogSystem.h"
+#include "LogSystemUtilities.h"
 
 void DebugTimer::Start()
 {
@@ -47,6 +44,5 @@ void DebugTimer::ShowResult()
 	else
 	{
 		Log(LogType::Notice, "Time Difference : %f ms", Check());
-
 	}
 }

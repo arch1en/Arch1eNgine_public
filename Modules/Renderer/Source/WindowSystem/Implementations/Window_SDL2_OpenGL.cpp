@@ -2,7 +2,7 @@
 
 #include "SDL.h"
 
-#include "Logger.h"
+#include "LogSystem.h"
 
 bool Window_SDL2_OpenGL::InitiateWindow(WindowProperties Properties)
 {

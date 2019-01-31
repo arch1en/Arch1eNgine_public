@@ -1,5 +1,5 @@
 #include "Window_SDL2.h"
-#include "Logger.h"
+#include "LogSystem.h"
 #include "SDL.h"
 
 bool Window_SDL2::InitiateWindow(WindowProperties Properties)

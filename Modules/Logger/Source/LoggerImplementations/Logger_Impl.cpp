@@ -1,32 +1,20 @@
-////////////////////////////////////////
-//
-//  @project    : Arch1eN Engine
-//  @author     : Artur Ostrowski
-//  @usage      : Debugging tool, for using Log messages, and future similar mechanisms.
-//  @version    : 1.0.0
-//
-////////////////////////////////////////
-//#include "stdafx.h"
-
-#include "Logger.h"
+#include "Logger_Impl.h"
 
 #include <string>
-#include <cstdarg>
 
-Logger::Logger()
+Logger_Impl::Logger_Impl()
 {
-#ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WIN32
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
 }
 
-Logger& Logger::GetInstance()
+Logger_Impl::~Logger_Impl()
 {
-	static Logger Singleton;
-	return Singleton;
+
 }
 
-void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...)
+void Logger_Impl::Log_Internal(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...)
 {
 	va_list Arguments;
 	va_start(Arguments, InMessage);
@@ -98,27 +86,17 @@ void Logger::Log_(const char* InFilePath, int InLineNumber, LogType InDebugType,
 
 	if (InDebugType < LogType::Error)
 	{
-		printf("%s : %s\n", LogTypeString, String.c_str());
+		printf("%s (%s) : %s\n", LogTypeString, InLogDomain, String.c_str());
 	}
 	else
 	{
-		printf("%s : %s | In %s Line (%i)\n", LogTypeString, String.c_str(), InFilePath, InLineNumber);
+		printf("%s (%s) : %s | In %s Line (%i)\n", LogTypeString, InLogDomain, String.c_str(), InFilePath, InLineNumber);
 	}
 }
 
-void Logger::CreateLogFile()
+void Logger_Impl::SetMessageColor(int InForeground, int InBackground)
 {
-	// TODO : Implement log file creating according to DebuggingProperties.ini file.
-}
-
-void Logger::SaveLogToFile()
-{
-	// TODO : Implement log file creating according to DebuggingProperties.ini file.
-}
-
-void Logger::SetMessageColor(int InForeground, int InBackground)
-{
-#ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_WIN32
 	int Color = InForeground + InBackground * 16;
 
 	SetConsoleTextAttribute(hConsole, Color);

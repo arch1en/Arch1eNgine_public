@@ -15,7 +15,8 @@ class DebugTimer
 {
 public:
 
-	static DebugTimer& GetInstance();
+	DebugTimer() = default;
+	~DebugTimer() = default;
 
 	void Start();
 	void Stop();
@@ -24,9 +25,6 @@ public:
 	void ShowResult();
 
 private:
-
-	DebugTimer() = default;
-	~DebugTimer() = default;
 
 	clock_t StartTime;
 	clock_t StopTime;

@@ -3,12 +3,12 @@
 
 #include <string>
 
-#include "Logger.h"
+#include "Logger_Impl.h"
 #include "vulkan/vulkan.h"
 
-#define LOGDOMAIN_RENDERER_VULKAN "Renderer/Vulkan"
+#include "LogSystemUtilities.h"
 
-class Logger_Vulkan : public Logger
+class Logger_Vulkan : public Logger_Impl
 {
 public:
 
@@ -26,7 +26,5 @@ private:
 	static std::string GetPartLogDomainByMessageTypeFlag(VkDebugUtilsMessageTypeFlagsEXT MessageType);
 	static LogType MapSeverityFlagBitToLogType(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity);
 };
-
-#define LogVk(LogType, Verbosity, Message, ...) LogV(LogType, LOGDOMAIN_RENDERER_VULKAN, Verbosity, Message, __VA_ARGS__)
 
 #endif

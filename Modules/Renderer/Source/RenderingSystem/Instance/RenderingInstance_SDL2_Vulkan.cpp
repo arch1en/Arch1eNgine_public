@@ -6,7 +6,7 @@
 #include "SDL_vulkan.h"
 
 #include "RenderingSystem/RenderingSystemUtilities.h"
-#include "Logger_Vulkan.h"
+#include "LogSystem.h"
 
 RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
 #ifdef DEBUG
@@ -36,7 +36,8 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	// Extensions
 	std::vector<const char*> Extensions =
 	{
-		VK_EXT_DEBUG_REPORT_EXTENSION_NAME
+		VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
+		VK_EXT_DEBUG_UTILS_EXTENSION_NAME	// Required for appropriate Logger_Vulkan behavior.
 	};
 
 	if (!AddExtensions(WindowHandle, Extensions))
@@ -86,7 +87,7 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	}
 
 	// @todo [Urgent] Decide what to do with the logger class (maybe make it classless ?)
-	Logger_Vulkan::GetInstance().InitiateDebugMessenger(InstanceHandle,)
+	LogSystem::GetInstance()->GetVulkanLogger()->InitiateDebugMessenger(InstanceHandle);
 
 	return true;
 }

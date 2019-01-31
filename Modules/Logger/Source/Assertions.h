@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logger.h"
+#include "LogSystem.h"
 #include <assert.h>
 
 #define StaticAssert(Expression, Message)				\

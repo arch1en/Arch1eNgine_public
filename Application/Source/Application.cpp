@@ -35,7 +35,7 @@ void Application::CreateApplicationWindow(RenderingInstanceType Type)
 	Properties.Height = 480;
 	Properties.RendererType = static_cast<WindowRendererType>(Type);
 
-	mWindowSystem->CreateWindow(Properties);
+	mWindowSystem->CreateNewWindow(Properties);
 }
 
 void Application::CreateRenderer(RenderingInstanceType Type)
