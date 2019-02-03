@@ -21,7 +21,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		RenderingInstance_SDL2_Vulkan* InstanceVkSDL2 = static_cast<RenderingInstance_SDL2_Vulkan*>(mRenderingInstance);
 
 		InstanceVkSDL2->CreateVulkanInstance(mWindow->GetWindowHandle());
-
+		InstanceVkSDL2->CreateDeviceHandler();
 		// @todo
 		return;
 	}

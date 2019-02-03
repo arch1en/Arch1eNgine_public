@@ -3,8 +3,10 @@
 
 #include <vector>
 
-#include "RenderingInstance_Impl.h"
 #include "vulkan/vulkan.h"
+
+#include "RenderingInstance_Impl.h"
+#include "RenderingSystem/Vulkan/DeviceHandler.h"
 
 class RenderingInstance_SDL2_Vulkan : public I::RenderingInstance_Impl
 {
@@ -15,6 +17,7 @@ public:
 
 	bool AddExtensions(void* WindowHandle, std::vector<const char*>& Extensions);
 	bool CreateVulkanInstance(void* WindowHandle);
+	void CreateDeviceHandler();
 
 	std::vector<VkLayerProperties>		CheckValidationLayersAvailability(const std::vector<const char*> DesiredLayers);
 	std::vector<VkExtensionProperties>	GetAvailableExtensions();
@@ -31,8 +34,9 @@ public:
 
 private:
 
-	bool EnableValidationLayers;
 	VkInstance InstanceHandle;
+
+	std::unique_ptr<DeviceHandler> PhysDeviceHandler;
 
 };
 #endif

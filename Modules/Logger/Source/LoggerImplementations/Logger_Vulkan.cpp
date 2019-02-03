@@ -2,6 +2,16 @@
 
 #include "LogSystem.h"
 
+Logger_Vulkan::Logger_Vulkan()
+#ifdef DEBUG
+	: ValidationLayersEnabled {true}
+#else
+	: ValidationLayersEnabled{ false }
+#endif
+{
+
+}
+
 void Logger_Vulkan::InitiateDebugMessenger(const VkInstance& Instance)
 {
 	VkDebugUtilsMessengerCreateInfoEXT CreateInfo = {};
@@ -24,6 +34,16 @@ void Logger_Vulkan::InitiateDebugMessenger(const VkInstance& Instance)
 	{
 		ExecuteLog(LogType::Error, LOGDOMAIN_RENDERER_VULKAN, 0, "Debug Utils Messenger creation failed ! Make sure that VK_EXT_DEBUG_UTILS_EXTENSION_NAME extension is present.");
 	}
+}
+
+void Logger_Vulkan::AddValidationLayer(const char* ValidationLayerName)
+{
+	ValidationLayers.push_back(ValidationLayerName);
+}
+
+const std::vector<const char*>& Logger_Vulkan::GetValidationLayers() const
+{
+	return ValidationLayers;
 }
 
 VkResult Logger_Vulkan::CreateDebugUtilsMessenger(VkInstance Instance, const VkDebugUtilsMessengerCreateInfoEXT* CreateInfo, const VkAllocationCallbacks* Allocator, VkDebugUtilsMessengerEXT* DebugMessenger)
@@ -77,4 +97,14 @@ LogType Logger_Vulkan::MapSeverityFlagBitToLogType(VkDebugUtilsMessageSeverityFl
 	if (MessageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) return LogType::Error;
 
 	return LogType::Notice;
+}
+
+void Logger_Vulkan::EnableValidationLayers(bool Enable)
+{
+	ValidationLayersEnabled = Enable;
+}
+
+bool Logger_Vulkan::AreValidationLayersEnabled() const
+{
+	return ValidationLayersEnabled;
 }

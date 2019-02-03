@@ -9,11 +9,6 @@
 #include "LogSystem.h"
 
 RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
-#ifdef DEBUG
-	: EnableValidationLayers{ true }
-#elif
-	: EnableValidationLayers{ false }
-#endif
 {
 
 }
@@ -47,10 +42,9 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	// ~Extensions
 
 	// Validation Layers
-	const std::vector<const char*> ValidationLayers =
-	{
-		"VK_LAYER_LUNARG_standard_validation"
-	};
+	LogSystem::GetInstance()->GetVulkanLogger()->AddValidationLayer("VK_LAYER_LUNARG_standard_validation");
+	const std::vector<const char*>& ValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->GetValidationLayers();
+	bool EnableValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->AreValidationLayersEnabled();
 
 	if (EnableValidationLayers)
 	{
@@ -90,6 +84,11 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	LogSystem::GetInstance()->GetVulkanLogger()->InitiateDebugMessenger(InstanceHandle);
 
 	return true;
+}
+
+void RenderingInstance_SDL2_Vulkan::CreateDeviceHandler()
+{
+	PhysDeviceHandler = std::make_unique<DeviceHandler>(InstanceHandle);
 }
 
 bool RenderingInstance_SDL2_Vulkan::AddExtensions(void* WindowHandle, std::vector<const char*>& Extensions)
