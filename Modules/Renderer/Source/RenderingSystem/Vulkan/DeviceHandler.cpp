@@ -4,23 +4,24 @@
 
 #include "LogSystem.h"
 
-DeviceHandler::DeviceHandler(const VkInstance& InstanceHandle)
+
+void DeviceHandler::Initiate(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface)
 {
-    std::vector<VkPhysicalDevice> RetrievedDevices;
+	std::vector<VkPhysicalDevice> RetrievedDevices;
 
-    if(!RetrievePhysicalDevices(InstanceHandle, RetrievedDevices))
-    {
-        return;
-    }
+	if (!RetrievePhysicalDevices(InstanceHandle, RetrievedDevices))
+	{
+		return;
+	}
 
-    if(!FilterSuitableDevices(InstanceHandle, RetrievedDevices))
-    {
-        return;
-    }
+	if (!FilterSuitableDevices(InstanceHandle, Surface, RetrievedDevices))
+	{
+		return;
+	}
 
-    CacheDevices(RetrievedDevices);
+	CacheDevices(RetrievedDevices);
 
-	CreateLogicalDevice(DeviceProperties[0]);
+	CreateLogicalDevice(Surface, DeviceProperties[0]);
 }
 
 bool DeviceHandler::RetrievePhysicalDevices(const VkInstance& InstanceHandle, std::vector<VkPhysicalDevice>& Devices)
@@ -38,11 +39,11 @@ bool DeviceHandler::RetrievePhysicalDevices(const VkInstance& InstanceHandle, st
     return true;
 }
 
-bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, std::vector<VkPhysicalDevice>& Devices)
+bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, std::vector<VkPhysicalDevice>& Devices)
 {
     for(int i = Devices.size() - 1; i >= 0; i--)
     {
-        if(!IsDeviceSuitable(Devices[i]))
+        if(!IsDeviceSuitable(Surface, Devices[i]))
         {
             Devices.erase(Devices.begin() + i);
         }
@@ -57,10 +58,10 @@ bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, std:
     return true;
 }
 
-bool DeviceHandler::IsDeviceSuitable(const VkPhysicalDevice& Device) const
+bool DeviceHandler::IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
 {
 	int Rating = GetDeviceSuitabilityRating(Device);
-	QueueFamilyIndices Indices = RetrieveQueueFamilies(Device);
+	QueueFamilies Indices = RetrieveQueueFamilies(Surface, Device);
 
     return Rating != 0 && Indices.IsComplete();
 }
@@ -107,10 +108,10 @@ void DeviceHandler::CacheDevices(std::vector<VkPhysicalDevice>& Devices)
 	});
 }
 
-QueueFamilyIndices DeviceHandler::RetrieveQueueFamilies(const VkPhysicalDevice& Device) const
+QueueFamilies DeviceHandler::RetrieveQueueFamilies(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
 {
-	QueueFamilyIndices Indices;
-	std::vector<VkQueueFamilyProperties> QueueFamilies;
+	QueueFamilies Indices;
+	std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
 
 	uint32_t QueueFamilyCount = 0;
 
@@ -118,36 +119,40 @@ QueueFamilyIndices DeviceHandler::RetrieveQueueFamilies(const VkPhysicalDevice& 
 	if (QueueFamilyCount == 0)
 	{
 		LogVk(LogType::Error, 0, "No Queue Family properties for physical devices were found.");
-		return QueueFamilyIndices();
+		return QueueFamilies();
 	}
 
-	QueueFamilies.resize(QueueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(Device, &QueueFamilyCount, QueueFamilies.data());
+	QueueFamilyProperties.resize(QueueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(Device, &QueueFamilyCount, QueueFamilyProperties.data());
 
-	if (!FilterSuitableQueueFamilies(QueueFamilies, Indices))
+	if (!FilterSuitableQueueFamilies(Surface, QueueFamilyProperties, Device, Indices))
 	{
-		return QueueFamilyIndices();
+		return QueueFamilies();
 	}
 
 	return Indices;
 }
 
-bool DeviceHandler::FilterSuitableQueueFamilies(std::vector<VkQueueFamilyProperties>& QueueFamilies, QueueFamilyIndices& Indices) const
+bool DeviceHandler::FilterSuitableQueueFamilies(const VkSurfaceKHR& Surface, std::vector<VkQueueFamilyProperties>& QueueFamiliesProperties, const VkPhysicalDevice& Device, QueueFamilies& Indices) const
 {
-	if (QueueFamilies.size() == 0)
+	if (QueueFamiliesProperties.size() == 0)
 	{
-		LogVk(LogType::Error, 0, "No queue families to filter.");
+		LogVk(LogType::Error, 0, "No queue families properties to filter.");
 		return false;
 	}
 
 	int i = 0;
-	for (const auto& QueueFamily : QueueFamilies)
+	for (const auto& QueueFamily : QueueFamiliesProperties)
 	{
-		if (!IsQueueFamilySuitable(QueueFamily))
+		if (IsGraphicsQueueFamilySuitable(QueueFamily))
 		{
-			Indices.GraphicsFamilyIndex = i;
+			Indices.FamilyIndices[static_cast<size_t>(QueueFamilyIndices::GraphicsFamily)].Index = i;
 		}
-
+		else if(IsPresentationQueueFamilySuitable(QueueFamily, Device, Surface, i))
+		{
+			Indices.FamilyIndices[static_cast<size_t>(QueueFamilyIndices::PresentationFamily)].Index = i;
+		}
+		
 		if (Indices.IsComplete())
 		{
 			break;
@@ -159,27 +164,40 @@ bool DeviceHandler::FilterSuitableQueueFamilies(std::vector<VkQueueFamilyPropert
 	return true;
 }
 
-bool DeviceHandler::IsQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamily) const
+bool DeviceHandler::IsGraphicsQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamilyProperties) const
 {
-	return QueueFamily.queueCount > 0 && QueueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+	return QueueFamilyProperties.queueCount > 0 && QueueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
 }
 
-void DeviceHandler::CreateLogicalDevice(const PhysicalDeviceProperties& PhysicalDevice)
+bool DeviceHandler::IsPresentationQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamilyProperties, const VkPhysicalDevice& Device, const VkSurfaceKHR& SurfaceHandle, int Index) const
 {
-	QueueFamilyIndices Indices = RetrieveQueueFamilies(PhysicalDevice.DeviceHandle);
+	VkBool32 SurfaceSupport = false;
+	vkGetPhysicalDeviceSurfaceSupportKHR(Device, Index, SurfaceHandle, &SurfaceSupport);
+	return QueueFamilyProperties.queueCount > 0 && SurfaceSupport;
+}
 
-	VkDeviceQueueCreateInfo QueueCreateInfo = {};
-	QueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	QueueCreateInfo.queueFamilyIndex = Indices.GraphicsFamilyIndex.value();
-	QueueCreateInfo.queueCount = 1;
-	QueueCreateInfo.pQueuePriorities = &Indices.QueuePriority;
+void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const PhysicalDeviceProperties& PhysicalDevice)
+{
+	QueueFamilies Families = RetrieveQueueFamilies(Surface, PhysicalDevice.DeviceHandle);
+
+	std::vector<VkDeviceQueueCreateInfo> QueueCreateInfos;
+
+	for (const auto& Family : Families.FamilyIndices)
+	{
+		VkDeviceQueueCreateInfo QueueCreateInfo = {};
+		QueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		QueueCreateInfo.queueFamilyIndex = Family.Index.value();
+		QueueCreateInfo.queueCount = 1;
+		QueueCreateInfo.pQueuePriorities = &Family.QueuePriority;
+		QueueCreateInfos.push_back(QueueCreateInfo);
+	}
 
 	VkPhysicalDeviceFeatures DeviceFeatures = {};
 
 	VkDeviceCreateInfo CreateInfo = {};
 	CreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	CreateInfo.pQueueCreateInfos = &QueueCreateInfo;
-	CreateInfo.queueCreateInfoCount = 1;
+	CreateInfo.queueCreateInfoCount = static_cast<uint32_t>(QueueCreateInfos.size());
+	CreateInfo.pQueueCreateInfos = QueueCreateInfos.data();
 	CreateInfo.pEnabledFeatures = &DeviceFeatures;
 	CreateInfo.enabledExtensionCount = 0;
 	

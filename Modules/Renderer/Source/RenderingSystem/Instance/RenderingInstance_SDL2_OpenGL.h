@@ -11,12 +11,13 @@ class I::WindowImpl;
 class RenderingInstance_SDL2_OpenGL : public I::RenderingInstance_Impl
 {
 public:
+	void CreateOpenGLContext(SDL_Window* WindowHandle);
 	virtual void Initialize() override;
 	void InitializeGLAD();
 	virtual const std::string GetImplementationType() const override;
 	void UseDoubleBuffering(bool State);
-	virtual void* GetRenderingInstanceHandle() const override;
-	virtual void SetRenderingInstanceHandle(void* Handle) override;
+	//const void* GetRenderingInstanceHandle() const;
+	//virtual void SetRenderingInstanceHandle(void* Handle) override;
 	virtual void SetSwapInterval(int Interval) override;
 	virtual void SetClearColor(Vector4<float> ClearColor) override;
 	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;

@@ -6,9 +6,9 @@
 class Window_SDL2_OpenGL : public Window_SDL2
 {
 public:
-	virtual bool InitiateWindow(WindowProperties Properties) override;
-	virtual std::string GetImplementationType() override;
-	virtual void SwapBuffers() override;
+	Window_SDL2_OpenGL(WindowProperties Properties);
+	std::string GetImplementationType() override;
+	void SwapBuffers() override;
 };
 
 #endif

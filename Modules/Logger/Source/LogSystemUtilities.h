@@ -2,6 +2,7 @@
 #define LOGSYSTEMUTILITIES_H
 
 #define LOGDOMAIN_RENDERER_VULKAN "Renderer/Vulkan"
+#define LOGDOMAIN_WINDOW_SDL2 "Window/SDL2"
 
 enum LogImplementation
 {

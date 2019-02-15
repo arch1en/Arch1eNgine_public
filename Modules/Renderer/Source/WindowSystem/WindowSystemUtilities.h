@@ -28,6 +28,7 @@ struct WindowProperties
 		, Width{ 0 }
 		, Height{ 0 }
 		, Flags{ 0x0 }
+		, RendererType{WindowRendererType::INVALID}
 	{}
 
 	std::string Title;

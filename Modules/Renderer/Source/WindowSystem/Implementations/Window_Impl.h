@@ -11,8 +11,10 @@ namespace I
 	class Window_Impl
 	{
 	public:
+		Window_Impl() = delete;
+		Window_Impl(WindowProperties Properties) {}
 		virtual ~Window_Impl() {}
-		virtual bool InitiateWindow(WindowProperties Properties) = 0;
+		virtual void RetrieveWindowInfo() {}
 		virtual std::string GetImplementationType() = 0;
 		virtual void* GetWindowHandle() const = 0;
 		virtual void DestroyWindow() = 0;

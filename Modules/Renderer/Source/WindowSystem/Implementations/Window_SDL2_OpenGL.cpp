@@ -4,10 +4,9 @@
 
 #include "LogSystem.h"
 
-bool Window_SDL2_OpenGL::InitiateWindow(WindowProperties Properties)
+Window_SDL2_OpenGL::Window_SDL2_OpenGL(WindowProperties Properties)
+	: Window_SDL2{Properties}
 {
-	bool Result = Window_SDL2::InitiateWindow(Properties);
-
 	Properties.Flags |= SDL_WINDOW_OPENGL;
 
 	WindowHandle = SDL_CreateWindow(
@@ -18,8 +17,6 @@ bool Window_SDL2_OpenGL::InitiateWindow(WindowProperties Properties)
 		Properties.Height,
 		Properties.Flags
 	);
-
-	return Result;
 }
 
 std::string Window_SDL2_OpenGL::GetImplementationType()

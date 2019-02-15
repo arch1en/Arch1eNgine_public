@@ -16,6 +16,8 @@ Logger_Impl::~Logger_Impl()
 
 void Logger_Impl::Log_Internal(const char* InFilePath, int InLineNumber, LogType InDebugType, const char* InLogDomain, int InLogVerbosity, const char* InMessage, ...)
 {
+	if (InMessage == nullptr) return;
+
 	va_list Arguments;
 	va_start(Arguments, InMessage);
 

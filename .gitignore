@@ -10,3 +10,6 @@ Modules/*/Libraries/*
 .vs/*
 # All logs
 *.log
+Application/.vs/*
+Application/Application/*
+*.sln

@@ -1,13 +1,13 @@
 #include "Window_SDL2_Vulkan.h"
 
 #include "SDL.h"
+#include "SDL_vulkan.h"
 
 #include "LogSystem.h"
 
-bool Window_SDL2_Vulkan::InitiateWindow(WindowProperties Properties)
+Window_SDL2_Vulkan::Window_SDL2_Vulkan(WindowProperties Properties)
+	: Window_SDL2{Properties}
 {
-	bool Result = Window_SDL2::InitiateWindow(Properties);
-
 	Properties.Flags |= SDL_WINDOW_VULKAN;
 
 	WindowHandle = SDL_CreateWindow(
@@ -18,8 +18,6 @@ bool Window_SDL2_Vulkan::InitiateWindow(WindowProperties Properties)
 		Properties.Height,
 		Properties.Flags
 	);
-
-	return Result;
 }
 
 std::string Window_SDL2_Vulkan::GetImplementationType()
@@ -30,4 +28,15 @@ std::string Window_SDL2_Vulkan::GetImplementationType()
 void Window_SDL2_Vulkan::SwapBuffers()
 {
 
+}
+
+void Window_SDL2_Vulkan::CreateWindowSurface(const VkInstance* InstanceHandle, VkSurfaceKHR* SurfaceHandle)
+{
+	Assert(InstanceHandle != nullptr, "InstanceHandle must be valid.");
+	Assert(SurfaceHandle != nullptr, "SurfaceHandle must be valid.");
+
+	if (SDL_Vulkan_CreateSurface(WindowHandle, *InstanceHandle, SurfaceHandle) != SDL_bool::SDL_TRUE)
+	{
+		LogVk(LogType::Error, 0, "Surface creation for Vulkan failed.");
+	}
 }
