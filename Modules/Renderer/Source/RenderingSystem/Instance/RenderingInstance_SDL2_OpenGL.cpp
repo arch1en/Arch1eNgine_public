@@ -8,6 +8,7 @@ void RenderingInstance_SDL2_OpenGL::CreateOpenGLContext(SDL_Window* WindowHandle
 	mInstanceHandle = std::make_unique<SDL_GLContext>(SDL_GL_CreateContext(WindowHandle));
 }
 
+
 void RenderingInstance_SDL2_OpenGL::Initialize()
 {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -32,6 +33,17 @@ void RenderingInstance_SDL2_OpenGL::UseDoubleBuffering(bool State)
 const std::string RenderingInstance_SDL2_OpenGL::GetImplementationType() const
 {
 	return "SDL2/OpenGL";
+}
+
+void* RenderingInstance_SDL2_OpenGL::GetRenderingInstanceHandle()
+{
+	return mInstanceHandle.get();
+}
+
+void RenderingInstance_SDL2_OpenGL::SetRenderingInstanceHandle(void* Handle)
+{
+	Assert(static_cast<SDL_GLContext>(Handle) != nullptr, "Wrong handle type.");
+	mInstanceHandle = std::unique_ptr<SDL_GLContext>(static_cast<SDL_GLContext*>(Handle));
 }
 
 void RenderingInstance_SDL2_OpenGL::SetSwapInterval(int Interval)

@@ -9,6 +9,7 @@
 #include "RenderingSystem/Instance/RenderingInstance_SDL2_Vulkan.h"
 #include "RenderingSystem/Vulkan/Surface/SurfaceUtilities.h"
 #include "RenderingSystem/Vulkan/Surface/SurfaceHandler.h"
+#include "RenderingSystem/Vulkan/DeviceHandler.h"
 #include "RenderingSystem/Vulkan/Surface/Implementations/Surface_Base.h"
 #include "vulkan/vulkan.h"
 
@@ -22,6 +23,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 {
 	if (mWindow->GetImplementationType().compare("SDL2/Vulkan") == 0)
 	{
+		// todo: This whole block of code needs to have these method chains shrinked to variable.
 		RenderingInstance_SDL2_Vulkan* InstanceVkSDL2 = static_cast<RenderingInstance_SDL2_Vulkan*>(mRenderingInstance);
 		Window_SDL2_Vulkan* WindowVkSDL2 = static_cast<Window_SDL2_Vulkan*>(mWindow);
 
@@ -29,16 +31,36 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		InstanceVkSDL2->CreateSurfaceHandler();
 		InstanceVkSDL2->CreateDeviceHandler();
 
-		SurfaceHandlerCreationData_SDL SurfaceData;
+		SurfaceHandlerCreationData_SDL SurfaceData = {};
 		
-		SurfaceData.VulkanInstanceRef = InstanceVkSDL2->GetRenderingInstanceHandle();
+		SurfaceData.VulkanInstanceRef = static_cast<VkInstance*>(InstanceVkSDL2->GetRenderingInstanceHandle());
 		SurfaceData.TargetSurfaceEnum = TargetSurface::Win32;
 		SurfaceData.WindowHandle = static_cast<SDL_Window*>(WindowVkSDL2->GetWindowHandle());
 		SurfaceData.WindowInfo = WindowVkSDL2->GetWindowInfo();
 
 		InstanceVkSDL2->GetSurfaceHandler()->CreateSurface(&SurfaceData);
 
-		InstanceVkSDL2->GetDeviceHandler()->Initiate(*InstanceVkSDL2->GetRenderingInstanceHandle(), *InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle());
+		InstanceVkSDL2->CreateSwapChainHandler();
+
+		DeviceHandlerCreationInfo CreationInfo;
+
+		CreationInfo.pInstanceHandle = static_cast<VkInstance*>(InstanceVkSDL2->GetRenderingInstanceHandle());
+		CreationInfo.pSurfaceHandle = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
+		CreationInfo.pSwapChainHandler = InstanceVkSDL2->GetSwapChainHandler();
+		CreationInfo.DesiredDeviceExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
+		InstanceVkSDL2->GetDeviceHandler()->Initiate(&CreationInfo);
+
+		SwapChainHandlerCreationInfo SwapChainCreationInfo = {};
+
+		SwapChainCreationInfo.LogicalDevice = InstanceVkSDL2->GetDeviceHandler()->GetLogicalDeviceHandle();
+		SwapChainCreationInfo.PhysicalDevice = &InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties().DeviceHandle;
+		SwapChainCreationInfo.Surface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
+		SwapChainCreationInfo.Families = InstanceVkSDL2->GetDeviceHandler()->RetrieveQueueFamilies(*InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle(), &InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties().DeviceHandle);
+
+		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCreationInfo);
 
 		// @todo
 		return;

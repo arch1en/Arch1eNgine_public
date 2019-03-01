@@ -6,6 +6,16 @@
 
 #include <vulkan/vulkan.h>
 
+class SwapChainHandler;
+
+struct DeviceHandlerCreationInfo
+{
+	const VkInstance* pInstanceHandle;
+	const VkSurfaceKHR* pSurfaceHandle;
+	const SwapChainHandler* pSwapChainHandler;
+	std::vector<const char*> DesiredDeviceExtensions;
+};
+
 struct PhysicalDeviceProperties
 {
     VkPhysicalDevice DeviceHandle;
@@ -57,16 +67,21 @@ struct QueueFamilies
 class DeviceHandler
 {
 public:
-	void Initiate(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface);
+	void Initiate(const DeviceHandlerCreationInfo* CreationInfo);
+
+	const std::vector<PhysicalDeviceProperties>* GetPhysicalDevicesProperties() const;
+	const VkDevice* GetLogicalDeviceHandle() const;
 
 private:
 
     // Physical Devices
     bool RetrievePhysicalDevices(const VkInstance& InstanceHandle, std::vector<VkPhysicalDevice>& Devices);
-    bool FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, std::vector<VkPhysicalDevice>& Devices);
-	bool IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const;
+    bool FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, const SwapChainHandler* aSwapChainHandler, std::vector<VkPhysicalDevice>& Devices);
+	bool IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device, const SwapChainHandler* aSwapChainHandler) const;
+	bool CheckDeviceExtensionSupport(const VkPhysicalDevice& aDevice, const std::vector<const char*> aDesiredDeviceExtensions) const;
     void CacheDevices(std::vector<VkPhysicalDevice>& Devices);
 	int GetDeviceSuitabilityRating(const VkPhysicalDevice& Device) const;
+	void SetDesiredDeviceExtensions(const std::vector<const char*> aDesiredDeviceExtensions);
     // ~Physical Devices
 
 	// Queue Families
@@ -84,7 +99,7 @@ private:
 
 	VkDevice LogicalDevice;
     std::vector<PhysicalDeviceProperties> DeviceProperties;
-
+	std::vector<const char*> mDesiredDeviceExtensions;
 };
 
 #endif

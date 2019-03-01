@@ -1,27 +1,28 @@
 #include "DeviceHandler.h"
 
 #include <algorithm>
+#include <set>
 
 #include "LogSystem.h"
+#include "SwapChainHandler.h"
 
-
-void DeviceHandler::Initiate(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface)
+void DeviceHandler::Initiate(const DeviceHandlerCreationInfo* CreationInfo)
 {
 	std::vector<VkPhysicalDevice> RetrievedDevices;
 
-	if (!RetrievePhysicalDevices(InstanceHandle, RetrievedDevices))
+	if (!RetrievePhysicalDevices(*CreationInfo->pInstanceHandle, RetrievedDevices))
 	{
 		return;
 	}
 
-	if (!FilterSuitableDevices(InstanceHandle, Surface, RetrievedDevices))
+	if (!FilterSuitableDevices(*CreationInfo->pInstanceHandle, *CreationInfo->pSurfaceHandle, CreationInfo->pSwapChainHandler, RetrievedDevices))
 	{
 		return;
 	}
 
 	CacheDevices(RetrievedDevices);
 
-	CreateLogicalDevice(Surface, DeviceProperties[0]);
+	CreateLogicalDevice(*CreationInfo->pSurfaceHandle, DeviceProperties[0]);
 }
 
 bool DeviceHandler::RetrievePhysicalDevices(const VkInstance& InstanceHandle, std::vector<VkPhysicalDevice>& Devices)
@@ -39,11 +40,11 @@ bool DeviceHandler::RetrievePhysicalDevices(const VkInstance& InstanceHandle, st
     return true;
 }
 
-bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, std::vector<VkPhysicalDevice>& Devices)
+bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, const SwapChainHandler* aSwapChainHandler, std::vector<VkPhysicalDevice>& Devices)
 {
     for(int i = Devices.size() - 1; i >= 0; i--)
     {
-        if(!IsDeviceSuitable(Surface, Devices[i]))
+        if(!IsDeviceSuitable(Surface, Devices[i], aSwapChainHandler))
         {
             Devices.erase(Devices.begin() + i);
         }
@@ -58,12 +59,33 @@ bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, cons
     return true;
 }
 
-bool DeviceHandler::IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
+bool DeviceHandler::IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device, const SwapChainHandler* aSwapChainHandler) const
 {
 	int Rating = GetDeviceSuitabilityRating(Device);
 	QueueFamilies Indices = RetrieveQueueFamilies(Surface, Device);
+	bool AreExtensionsSupported = CheckDeviceExtensionSupport(Device, mDesiredDeviceExtensions);
+	bool SwapChainAdequate = aSwapChainHandler->IsAdequate(Device, Surface);
 
-    return Rating != 0 && Indices.IsComplete();
+    return Rating != 0 && Indices.IsComplete() && AreExtensionsSupported && SwapChainAdequate;
+}
+
+bool DeviceHandler::CheckDeviceExtensionSupport(const VkPhysicalDevice & aDevice, const std::vector<const char*> aDesiredDeviceExtensions) const
+{
+	uint32_t ExtensionsCount = 0;
+
+	vkEnumerateDeviceExtensionProperties(aDevice, nullptr, &ExtensionsCount, nullptr);
+
+	std::vector<VkExtensionProperties> AvailableExtensions(ExtensionsCount);
+	vkEnumerateDeviceExtensionProperties(aDevice, nullptr, &ExtensionsCount, AvailableExtensions.data());
+
+	std::set<std::string> RequiredExtensions(aDesiredDeviceExtensions.begin(), aDesiredDeviceExtensions.end());
+
+	for (const auto& Extension : AvailableExtensions)
+	{
+		RequiredExtensions.erase(Extension.extensionName);
+	}
+
+	return RequiredExtensions.empty() == true;
 }
 
 int DeviceHandler::GetDeviceSuitabilityRating(const VkPhysicalDevice& Device) const
@@ -89,6 +111,11 @@ int DeviceHandler::GetDeviceSuitabilityRating(const VkPhysicalDevice& Device) co
     }
 
     return Rating;
+}
+
+void DeviceHandler::SetDesiredDeviceExtensions(const std::vector<const char*> aDesiredDeviceExtensions)
+{
+	mDesiredDeviceExtensions = aDesiredDeviceExtensions;
 }
 
 void DeviceHandler::CacheDevices(std::vector<VkPhysicalDevice>& Devices)
@@ -199,7 +226,8 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 	CreateInfo.queueCreateInfoCount = static_cast<uint32_t>(QueueCreateInfos.size());
 	CreateInfo.pQueueCreateInfos = QueueCreateInfos.data();
 	CreateInfo.pEnabledFeatures = &DeviceFeatures;
-	CreateInfo.enabledExtensionCount = 0;
+	CreateInfo.enabledExtensionCount = static_cast<uint32_t>(mDesiredDeviceExtensions.size());
+	CreateInfo.ppEnabledExtensionNames = mDesiredDeviceExtensions.data();
 	
 	const std::vector<const char*>& ValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->GetValidationLayers();
 	bool EnableValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->AreValidationLayersEnabled();
@@ -218,6 +246,16 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 		LogVk(LogType::Error, 0, "Logical device creation failed.");
 		return;
 	}
+}
+
+const std::vector<PhysicalDeviceProperties>* DeviceHandler::GetPhysicalDevicesProperties() const
+{
+	return &DeviceProperties;
+}
+
+const VkDevice * DeviceHandler::GetLogicalDeviceHandle() const
+{
+	return &LogicalDevice;
 }
 
 void DeviceHandler::Cleanup()

@@ -6,7 +6,6 @@
 #include "SDL_vulkan.h"
 
 #include "RenderingSystem/RenderingSystemUtilities.h"
-#include "RenderingSystem/Vulkan/Surface/SurfaceUtilities.h"
 #include "LogSystem.h"
 
 RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
@@ -16,13 +15,13 @@ RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
 
 RenderingInstance_SDL2_Vulkan::~RenderingInstance_SDL2_Vulkan()
 {
+	mSwapChainHandler->Destroy(GetDeviceHandler()->GetLogicalDeviceHandle());
+
 	vkDestroyInstance(InstanceHandle, nullptr);
 }
 
 bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 {
-	SDL_Window* SDLWindowHandle = static_cast<SDL_Window*>(WindowHandle);
-
 	VkApplicationInfo ApplicationInfo = {};
 	ApplicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	ApplicationInfo.pApplicationName = "Arch1eNgine";
@@ -38,7 +37,7 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME	// Required for appropriate Logger_Vulkan behavior.
 	};
 
-	if (!AddExtensions(SDLWindowHandle, Extensions))
+	if (!AddExtensions(WindowHandle, Extensions))
 	{
 		return false;
 	}
@@ -83,6 +82,7 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 		return false;
 	}
 
+	// @todo [Urgent] Decide what to do with the logger class (maybe make it classless ?)
 	LogSystem::GetInstance()->GetVulkanLogger()->InitiateDebugMessenger(InstanceHandle);
 
 	return true;
@@ -90,7 +90,12 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 
 void RenderingInstance_SDL2_Vulkan::CreateDeviceHandler()
 {
-	mPhysicalDeviceHandler = std::make_unique<DeviceHandler>();
+	mDeviceHandler = std::make_unique<DeviceHandler>();
+}
+
+DeviceHandler* const RenderingInstance_SDL2_Vulkan::GetDeviceHandler() const
+{
+	return mDeviceHandler.get();
 }
 
 void RenderingInstance_SDL2_Vulkan::CreateSurfaceHandler()
@@ -98,21 +103,28 @@ void RenderingInstance_SDL2_Vulkan::CreateSurfaceHandler()
 	mSurfaceHandler = std::make_unique<SurfaceHandler>();
 }
 
-SurfaceHandler * RenderingInstance_SDL2_Vulkan::GetSurfaceHandler() const
+void RenderingInstance_SDL2_Vulkan::CreateSwapChainHandler()
+{
+	mSwapChainHandler = std::make_unique<SwapChainHandler>();
+}
+
+SurfaceHandler* const RenderingInstance_SDL2_Vulkan::GetSurfaceHandler() const
 {
 	return mSurfaceHandler.get();
 }
 
-DeviceHandler* RenderingInstance_SDL2_Vulkan::GetDeviceHandler() const
+SwapChainHandler * const RenderingInstance_SDL2_Vulkan::GetSwapChainHandler() const
 {
-	return mPhysicalDeviceHandler.get();
+	return mSwapChainHandler.get();
 }
 
-bool RenderingInstance_SDL2_Vulkan::AddExtensions(SDL_Window* WindowHandle, std::vector<const char*>& Extensions)
+bool RenderingInstance_SDL2_Vulkan::AddExtensions(void* WindowHandle, std::vector<const char*>& Extensions)
 {
 	unsigned int ExtensionsCount = 0;
 
-	if (!SDL_Vulkan_GetInstanceExtensions(WindowHandle, &ExtensionsCount, nullptr))
+	SDL_Window* Window = static_cast<SDL_Window*>(WindowHandle);
+
+	if (!SDL_Vulkan_GetInstanceExtensions(Window, &ExtensionsCount, nullptr))
 	{
 		LogV(LogType::Error, LOGDOMAIN_RENDERER_VULKAN, 0, "Vulkan instance extensions receivement failed.");
 		return false;
@@ -122,7 +134,7 @@ bool RenderingInstance_SDL2_Vulkan::AddExtensions(SDL_Window* WindowHandle, std:
 
 	Extensions.resize(AdditionalExtensionsCount + ExtensionsCount);
 
-	if (!SDL_Vulkan_GetInstanceExtensions(WindowHandle, &ExtensionsCount, Extensions.data() + AdditionalExtensionsCount))
+	if (!SDL_Vulkan_GetInstanceExtensions(Window, &ExtensionsCount, Extensions.data() + AdditionalExtensionsCount))
 	{
 		LogV(LogType::Error, LOGDOMAIN_RENDERER_VULKAN, 0, "Vulkan instance extensions addition failed.");
 		return false;
@@ -174,9 +186,13 @@ const std::string RenderingInstance_SDL2_Vulkan::GetImplementationType() const
 	return "SDL2/Vulkan";
 }
 
-const VkInstance* RenderingInstance_SDL2_Vulkan::GetRenderingInstanceHandle() const
+void* RenderingInstance_SDL2_Vulkan::GetRenderingInstanceHandle()
 {
 	return &InstanceHandle;
+}
+
+void RenderingInstance_SDL2_Vulkan::SetRenderingInstanceHandle(void * Handle)
+{
 }
 
 void RenderingInstance_SDL2_Vulkan::SetSwapInterval(int Interval)

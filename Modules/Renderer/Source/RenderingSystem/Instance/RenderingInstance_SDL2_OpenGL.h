@@ -16,8 +16,8 @@ public:
 	void InitializeGLAD();
 	virtual const std::string GetImplementationType() const override;
 	void UseDoubleBuffering(bool State);
-	//const void* GetRenderingInstanceHandle() const;
-	//virtual void SetRenderingInstanceHandle(void* Handle) override;
+	virtual void* GetRenderingInstanceHandle() override;
+	virtual void SetRenderingInstanceHandle(void* Handle) override;
 	virtual void SetSwapInterval(int Interval) override;
 	virtual void SetClearColor(Vector4<float> ClearColor) override;
 	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;
