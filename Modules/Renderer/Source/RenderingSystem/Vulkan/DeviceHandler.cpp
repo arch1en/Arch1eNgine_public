@@ -10,6 +10,8 @@ void DeviceHandler::Initiate(const DeviceHandlerCreationInfo* CreationInfo)
 {
 	std::vector<VkPhysicalDevice> RetrievedDevices;
 
+	SetDesiredDeviceExtensions(CreationInfo->DesiredDeviceExtensions);
+
 	if (!RetrievePhysicalDevices(*CreationInfo->pInstanceHandle, RetrievedDevices))
 	{
 		return;
@@ -135,7 +137,7 @@ void DeviceHandler::CacheDevices(std::vector<VkPhysicalDevice>& Devices)
 	});
 }
 
-QueueFamilies DeviceHandler::RetrieveQueueFamilies(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
+const QueueFamilies DeviceHandler::RetrieveQueueFamilies(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
 {
 	QueueFamilies Indices;
 	std::vector<VkQueueFamilyProperties> QueueFamilyProperties;

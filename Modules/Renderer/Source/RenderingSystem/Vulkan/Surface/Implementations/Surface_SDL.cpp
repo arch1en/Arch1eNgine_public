@@ -21,7 +21,7 @@ Surface_SDL::Surface_SDL(const SurfaceHandlerCreationData* Data)
 		LogVk(LogType::Error, 0, "Window surface creation failed !");
 	}
 
-	if (CreateSDLSurface(WinData->WindowHandle, WinData->VulkanInstanceRef, &SurfaceHandle) != true)
+	if (SDL_Vulkan_CreateSurface(WinData->WindowHandle, *WinData->VulkanInstanceRef, &SurfaceHandle) != SDL_bool::SDL_TRUE)
 	{
 		LogVk(LogType::Error, 0, "SDL surface creation failed.");
 	}
@@ -32,9 +32,4 @@ void Surface_SDL::Destroy(const VkInstance& InstanceHandle)
 {
 	// InstanceHandle must be valid in order to destroy surface.
 	vkDestroySurfaceKHR(InstanceHandle, SurfaceHandle, nullptr);
-}
-
-bool Surface_SDL::CreateSDLSurface(SDL_Window* WindowHandle, const VkInstance* VulkanInstance, VkSurfaceKHR* SurfaceHandle)
-{
-	return SDL_Vulkan_CreateSurface(WindowHandle, *VulkanInstance, SurfaceHandle) == SDL_bool::SDL_TRUE;
 }

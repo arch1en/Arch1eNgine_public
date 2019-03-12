@@ -13,9 +13,6 @@ public:
 	Surface_SDL(const SurfaceHandlerCreationData* Data);
 
 	void Destroy(const VkInstance& InstanceHandle) override;
-private:
-
-	bool CreateSDLSurface(SDL_Window* WindowHandle, const VkInstance* VulkanInstance, VkSurfaceKHR* Surface);
 
 };
 

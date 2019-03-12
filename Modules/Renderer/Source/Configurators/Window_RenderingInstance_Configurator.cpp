@@ -56,9 +56,10 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		SwapChainHandlerCreationInfo SwapChainCreationInfo = {};
 
 		SwapChainCreationInfo.LogicalDevice = InstanceVkSDL2->GetDeviceHandler()->GetLogicalDeviceHandle();
-		SwapChainCreationInfo.PhysicalDevice = &InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties().DeviceHandle;
+		SwapChainCreationInfo.PhysicalDevice = &InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
 		SwapChainCreationInfo.Surface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
-		SwapChainCreationInfo.Families = InstanceVkSDL2->GetDeviceHandler()->RetrieveQueueFamilies(*InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle(), &InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties().DeviceHandle);
+		QueueFamilies Families = InstanceVkSDL2->GetDeviceHandler()->RetrieveQueueFamilies(*InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle(), InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle);
+		SwapChainCreationInfo.Families = &Families;
 
 		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCreationInfo);
 

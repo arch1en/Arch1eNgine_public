@@ -26,6 +26,7 @@ void SwapChainHandler::CreateSwapChain(const SwapChainHandlerCreationInfo& Creat
 	CreateInfo.surface = *CreationInfo.Surface;
 	CreateInfo.minImageCount = ImageCount;
 	CreateInfo.imageFormat = SurfaceFormat.format;
+	CreateInfo.imageColorSpace = SurfaceFormat.colorSpace;
 	CreateInfo.imageExtent = Extent;
 	CreateInfo.imageArrayLayers = 1;
 	CreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -180,6 +181,8 @@ VkExtent2D SwapChainHandler::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Ca
 const SwapChainSupportDetails SwapChainHandler::QuerySwapChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const
 {
 	SwapChainSupportDetails Details;
+
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Device, Surface, &Details.Capabilities);
 
 	uint32_t FormatCount = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(Device, Surface, &FormatCount, nullptr);
