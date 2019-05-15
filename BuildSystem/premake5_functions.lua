@@ -1,5 +1,7 @@
 -- CMake Functions
 
+require("GlobalFunctions")
+
 function CMakeGenerate(GenerateDir, CMakeListsDir, Generator, Platform)
     local log = ""
     local DefaultGenerator = "Visual Studio 15 2017"
@@ -61,82 +63,9 @@ end
 
 -- ~CMake Functions
 
-function AdaptDirSlashes(String)
-	local Result = String
-    if os.target() == "windows" then
-        Result = string.gsub(String, "/",AdaptedDirSlash())
-    elseif os.target() == "linux" then
-        Result = string.gsub(String, "\\",AdaptedDirSlash())
-    else
-        Result = string.gsub(String, "\\",AdaptedDirSlash())
-    end
-    return Result
-end
-
-function AdaptedDirSlash()
-    if os.target() == "windows" then
-        return "\\"
-    elseif os.target() == "linux"  then
-        return "/"
-    end
-
-     return "/"
-end
 -- Initialization block
-DependenciesDir = "Dependencies"
-ModulesDir = "Modules"
-BuildsDir = "Builds"
-LibrariesDir = "Libraries"
-PropertiesFileName = "Properties"
-DependencyBuildsDir = AdaptDirSlashes(BuildsDir.. "/" ..DependenciesDir)
-DependencyLibrariesDir = AdaptDirSlashes(BuildsDir.. "/" ..LibrariesDir.. "/" ..DependenciesDir)
-
-WorkspaceDirectory = AdaptDirSlashes(io.popen("cd"):read('*l')) -- ugly hack, because premake tokens doesnt work -.-
-
-local GeneratedFolderName = "Generated"
-local ApplicationFolderName = "Application"
-local SourceFolderName = "Source"
-local BuildFolderName = "Build"
-local BinariesFolderName = "Binaries"
-local LibrariesFolderName = "Libraries"
-
-function GetApplicationDir()
-	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ApplicationFolderName)
-end
-
-function GetBinariesDir()
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..BinariesFolderName)
-end
 
 -- Dependencies
-
-function GetDependenciesDir()
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir)
-end
-
-function GetDependencyDir(DependencyName)
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..DependencyName)
-end
-
-function GetDependencySourceDir(DependencyName)
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..DependencyName.. "/" ..SourceFolderName)
-end
-
-function GetDependencyGeneratedDir(DependencyName)
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..DependencyName.. "/" ..GeneratedFolderName)
-end
-
-function GetDependencyBuildDir(DependencyName)
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..DependencyName.. "/" ..BuildFolderName)
-end
-
-function GetDependencyLibrariesDir(DependencyName)
-    return AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependenciesDir.. "/" ..DependencyName.. "/" ..LibrariesFolderName)
-end
-
-function GetModuleDependencyLibrariesDir(ModuleName)
-	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir.. "/" ..ModuleName.. "/" ..LibrariesFolderName)
-end
 
 -- @todo Isn't it too excessive ?
 function GetDependencyConfigurationMappingFromName(DependencyConfigurationName, DependencyProperties)
@@ -188,7 +117,7 @@ function GetDependencyPlatformNameFromMapping(ProjectConfiguration, DependencyPr
 end
 
 function GetDependencyPropertiesByName(Name)
-    local Result = dofileopt(AdaptDirSlashes(GetDependenciesDir().."/"..Name.."/"..PropertiesFileName..".lua"))
+    local Result = dofileopt(AdaptDirSlashes(GetDependenciesDir().."/"..Name.."/"..GetPropertiesFileName()..".lua"))
     if Result == true then
         return Properties
     end
@@ -197,7 +126,7 @@ function GetDependencyPropertiesByName(Name)
 end
 
 function GetListOfDependencyNames()
-    local Paths = os.matchfiles(AdaptDirSlashes(GetDependenciesDir().."/**/"..PropertiesFileName..".lua"))
+    local Paths = os.matchfiles(AdaptDirSlashes(GetDependenciesDir().."/**/"..GetPropertiesFileName()..".lua"))
     local DependenciesList = {}
     for i,v in pairs(Paths) do
         local Tokens = string.explode(v, "/")
@@ -224,7 +153,7 @@ function GetModuleBuildDir(ModuleName)
 end
 
 function GetApplicationProperties()
-    local Result = dofileopt(AdaptDirSlashes(GetApplicationDir().."/"..PropertiesFileName..".lua"))
+    local Result = dofileopt(AdaptDirSlashes(GetApplicationDir().."/"..GetPropertiesFileName()..".lua"))
     if Result == true then
         return Properties
     end
@@ -233,7 +162,7 @@ function GetApplicationProperties()
 end
 
 function GetModulePropertiesByName(Name)
-    local Result = dofileopt(AdaptDirSlashes(GetModulesDir().."/"..Name.."/"..PropertiesFileName..".lua"))
+    local Result = dofileopt(AdaptDirSlashes(GetModulesDir().."/"..Name.."/"..GetPropertiesFileName()..".lua"))
     if Result == true then
         return Properties
     end
@@ -242,7 +171,7 @@ function GetModulePropertiesByName(Name)
 end
 
 function GetListOfModuleNames()
-    local Paths = os.matchfiles(AdaptDirSlashes(GetModulesDir().."/**/"..PropertiesFileName..".lua"))
+    local Paths = os.matchfiles(AdaptDirSlashes(GetModulesDir().."/**/"..GetPropertiesFileName()..".lua"))
     local DependenciesList = {}
     for i,v in pairs(Paths) do
         local Tokens = string.explode(v, "/")
@@ -1056,4 +985,49 @@ function OrganizeDependency(DependencyName, ConfigurationName, PlatformName)
         CopyFile(AdaptDirSlashes(v), DependencyLibraryFolderName)
         --Log(0,os.copyfile(AdaptDirSlashes(v), AdaptDirSlashes(WorkspaceDirectory.. "/" ..DependencyLibrariesDir.. "/" ..Dependency)))
     end
+end
+
+
+
+function FindApplication(FileIdentifier, DefaultPaths)
+
+	-- Prepare command sufix and prefix.
+	local CommandSamplePrefix, CommandSamplePostfix
+	if os.target() == "windows" then
+		CommandSamplePrefix = "dir "
+		CommandSamplePostfix = " /b"
+	end
+	
+	-- Recursive search.
+	for i,v in pairs(DefaultPaths) do
+		-- Prepare commands.
+		local Command = CommandSamplePrefix .. AdaptDirSlashes(v) .. CommandSamplePostfix
+		
+			local pfile = io.popen(Command)
+			for line in pfile:lines() do
+			
+				local FullPath = DefaultPaths[i].. line
+				if os.isdir(FullPath) then
+					print("dir "..FullPath)
+					local FullPathTable = {}
+					FullPathTable[0] = FullPath .. "/"
+					Found = FindApplication(FileIdentifier, FullPathTable)
+					if Found ~= nil then
+						pfile:close()
+						return Found
+					end
+				elseif os.isfile(FullPath) then
+					print("file "..FullPath)
+					IsFound = string.find(FullPath, FileIdentifier)
+					if IsFound ~= nil then
+						print("FOUND")
+						pfile:close()
+						return FullPath
+					end
+				end
+			end
+			pfile:close()
+	end
+	
+	return nil
 end

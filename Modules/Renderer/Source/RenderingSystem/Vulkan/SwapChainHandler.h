@@ -6,6 +6,7 @@
 
 struct QueueFamilies;
 struct QueueFamilyProperties;
+
 struct SwapChainHandlerCreationInfo
 {
 	const VkPhysicalDevice* PhysicalDevice;
@@ -36,7 +37,7 @@ public:
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& AvailableFormats);
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> AvailablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities);
-
+	const VkExtent2D& GetSwapChainExtent() const;
 	void RetrieveSwapChainImages(const VkDevice& Device);
 
 	void Destroy(const VkDevice* Device);

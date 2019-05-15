@@ -45,6 +45,7 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 
 	// Validation Layers
 	LogSystem::GetInstance()->GetVulkanLogger()->AddValidationLayer("VK_LAYER_LUNARG_standard_validation");
+
 	const std::vector<const char*>& ValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->GetValidationLayers();
 	bool EnableValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->AreValidationLayersEnabled();
 
@@ -106,6 +107,11 @@ void RenderingInstance_SDL2_Vulkan::CreateSurfaceHandler()
 void RenderingInstance_SDL2_Vulkan::CreateSwapChainHandler()
 {
 	mSwapChainHandler = std::make_unique<SwapChainHandler>();
+}
+
+void RenderingInstance_SDL2_Vulkan::CreatePipelineSystem()
+{
+	mPipelineSystem = std::make_unique<PipelineSystem>();
 }
 
 SurfaceHandler* const RenderingInstance_SDL2_Vulkan::GetSurfaceHandler() const

@@ -204,3 +204,8 @@ const SwapChainSupportDetails SwapChainHandler::QuerySwapChainSupport(const VkPh
 
 	return Details;
 }
+
+const VkExtent2D& SwapChainHandler::GetSwapChainExtent() const
+{
+	return SwapChainExtent;
+}

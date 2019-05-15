@@ -1,6 +1,7 @@
 # All files from local history plugin
 */.localhistory/*
 # All automatically generated files
+Binaries/*
 Dependencies/*/Generated/*
 Dependencies/*/Build/*
 Dependencies/*/Libraries/*
