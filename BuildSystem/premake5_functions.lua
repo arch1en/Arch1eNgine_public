@@ -144,14 +144,6 @@ end
 
 -- Modules
 
-function GetModulesDir()
-	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir)
-end
-
-function GetModuleBuildDir(ModuleName)
-	return AdaptDirSlashes(WorkspaceDirectory.. "/" ..ModulesDir.. "/" ..ModuleName.. "/" ..BuildFolderName)
-end
-
 function GetApplicationProperties()
     local Result = dofileopt(AdaptDirSlashes(GetApplicationDir().."/"..GetPropertiesFileName()..".lua"))
     if Result == true then

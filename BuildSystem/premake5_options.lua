@@ -1,4 +1,5 @@
 -- Dependency Option
+-- pass as a parameter like that : "--logverbosity=1"
 
 local DependencyAllowed = {}
 

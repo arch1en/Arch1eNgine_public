@@ -23,11 +23,14 @@ end
 
 function GetPropertiesFromFile(Path)
 	local Result = dofileopt(Path)
-    if Result ~= nil then
+    if Result == true then
         return Properties
     end
+	
+    return nil
 end
 
+--{	Folder Names
 function GetPropertiesFileName()
 	return "Properties"
 end
@@ -67,7 +70,9 @@ end
 function GetModulesFolderName()
 	return "Modules"
 end
+--}		Folder Names
 
+--{		Global Directories
 function GetApplicationDir()
 	return AdaptDirSlashes(GetWorkspaceDir().. "/" ..ApplicationFolderName)
 end
@@ -91,7 +96,9 @@ end
 function GetToolsDir()
     return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetToolsFolderName())
 end
+--}		Global Directories
 
+--{		Dependency Directories
 function GetDependencyDir(DependencyName)
     return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetDependenciesFolderName().. "/" ..DependencyName)
 end
@@ -111,7 +118,16 @@ end
 function GetDependencyLibrariesDir(DependencyName)
     return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetDependenciesFolderName().. "/" ..DependencyName.. "/" ..GetLibrariesFolderName())
 end
+--}		Dependency Directories
+
+function GetModuleBuildDir(ModuleName)
+	return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetModulesFolderName().. "/" ..ModuleName.. "/" ..GetBuildFolderName())
+end
 
 function GetModuleDependencyLibrariesDir(ModuleName)
 	return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetModulesFolderName().. "/" ..ModuleName.. "/" ..GetLibrariesFolderName())
 end
+
+--{ Dependency Properties
+
+--} Dependency Properties

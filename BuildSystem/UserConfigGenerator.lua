@@ -12,7 +12,7 @@ ToolField =
 
 EDependencyType =
 {
-	Dependency = "Dependency",
+	Foreign = "Foreign",
 	Module = "Module",
 	Tool = "Tool"
 }
@@ -27,13 +27,20 @@ end
 
 function UserConfig.GetDependencyInstallDir(self, Properties)
 
+	local ErrorCode = 0
 	local PathData = nil
-		
+	
+	if Properties.PathData == nil then
+		Log(1, "\""..Properties.Name .."\" dependency doesn't have specified PathData. Omitting...")
+		ErrorCode = 1
+		return nil, ErrorCode
+	end	
+	
 	if os.target() == "windows" then
 		PathData = Properties.PathData.Win32
 	end
 		
-	Path = UserConfig.GetRegistryValue(self, PathData.Registry)
+	local Path = UserConfig.GetRegistryValue(self, PathData.Registry)
 
 	if Path == nil or Path == "" then
 		
@@ -43,19 +50,19 @@ function UserConfig.GetDependencyInstallDir(self, Properties)
 				
 			if MatchResult[1] ~= nil then
 				
-				return MatchResult[1]
+				return MatchResult[1], ErrorCode
 					
 			end
 		end
 	end
 	
-	return Path
+	return Path, ErrorCode
 end
 
 function UserConfig.GetDependencyProperties(self, DependencyTypeEnum, Name)
 	local DependenciesDir = UserConfig.GetDependencyDirByType(self, DependencyTypeEnum)
 	local Path = os.matchfiles(AdaptDirSlashes(DependenciesDir.."/"..Name.."/"..GetPropertiesFileName()..".lua"))
-	if Path ~= nil then
+	if Path ~= nil and Path[1] ~= nil then
 		return GetPropertiesFromFile(Path[1])
 	end
 end
@@ -72,27 +79,34 @@ end
 
 function UserConfig.GenerateUserConfigFile(self)
 
-	local Names = UserConfig.GetDependencyNamesByType(self, EDependencyType.Tool)
-	
 	local ConfigFileBody = {}
 	local Success = true
-	local DependencyType = EDependencyType.Tool
-	for _,v in ipairs(Names) do
-		local Properties = UserConfig.GetDependencyProperties(self, DependencyType, v)
-		if Properties == nil then
-			Success = false
-			Log(0, "Missing dependency properties")
-			break
+	
+	for _,v0 in pairs(EDependencyType) do
+
+		local DependencyType = v0
+		local Names = UserConfig.GetDependencyNamesByType(self, DependencyType)
+	
+		for _,v in ipairs(Names) do
+			local Properties = UserConfig.GetDependencyProperties(self, DependencyType, v)
+
+			if Properties == nil then
+				Success = false
+				Log(0, "Missing \""..v.."\" dependency properties.")
+				break
+			end
+		
+			local InstallDir, ErrorCode = UserConfig.GetDependencyInstallDir(self, Properties)
+		
+			if ErrorCode == 0 then
+				if InstallDir == nil then
+					InstallDir = "Please fill this field."
+				end
+		
+				local Table = { Name = v, Kind = DependencyType, Properties = { Directory = InstallDir} }
+				table.insert(ConfigFileBody, Table)
+			end
 		end
-		
-		local InstallDir = UserConfig.GetDependencyInstallDir(self, Properties)
-		
-		if InstallDir == nil then
-			InstallDir = "Please fill this field."
-		end
-		
-		local Table = { Name = v, Kind = DependencyType, Properties = { Directory = InstallDir} }
-		table.insert(ConfigFileBody, Table)
 	end
 	
 	if Success == true then
@@ -111,7 +125,8 @@ function UserConfig.GetDependencyNamesByType(self, DependencyTypeEnum)
 	local Results = {}
 	
 	for k,v in ipairs(Directories) do
-		table.insert(Results, string.match(v, "%w+$"))
+		local Match = string.match(v, "[a-zA-Z0-9%_%-]+$")
+		table.insert(Results, Match)
 	end
 	
 	return Results
@@ -119,7 +134,7 @@ end
 
 function UserConfig.GetDependencyDirByType(self, DependencyTypeEnum)
 	local Dir = nil
-	if DependencyTypeEnum == EDependencyType.Dependency then
+	if DependencyTypeEnum == EDependencyType.Foreign then
 		Dir = GetDependenciesDir()
 	elseif DependencyTypeEnum == EDependencyType.Module then
 		Dir = GetModulesDir()
