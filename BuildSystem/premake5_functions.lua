@@ -322,7 +322,7 @@ function SetupModule(ModuleName)
 
     targetdir(AdaptDirSlashes(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}"))
     targetname(ModuleName)
-    location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..BuildFolderName))
+    location(AdaptDirSlashes(ModulesDir.."/"..ModuleName.."/"..GetBuildFolderName()))
     includedirs(IncludeDir)
 	
 	if ModuleProperties.LinkageType == "Static" then
@@ -821,24 +821,24 @@ function CleanDependency(DependencyName)
     end
 
     if os.isdir(GetDependencyGeneratedDir(DependencyName)) then
-        LogAct(0, DependencyName, "Cleaning " ..DependencyName.. " removing " ..GeneratedFolderName.. " directory.")
+        LogAct(0, DependencyName, "Cleaning " ..DependencyName.. " removing " ..GetGeneratedFolderName().. " directory.")
         os.rmdir(GetDependencyGeneratedDir(DependencyName))
     else
-        LogAct(0, DependencyName, GeneratedFolderName.. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
+        LogAct(0, DependencyName, GetGeneratedFolderName().. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
     end
 
     if os.isdir(GetDependencyBuildDir(DependencyName)) then
-        LogAct(0, DependencyName, "Cleaning " ..DependencyName.. " removing " ..BuildFolderName.. " directory.")
+        LogAct(0, DependencyName, "Cleaning " ..DependencyName.. " removing " ..GetBuildFolderName().. " directory.")
         os.rmdir(GetDependencyBuildDir(DependencyName))
     else
-        LogAct(0, DependencyName, BuildFolderName.. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
+        LogAct(0, DependencyName, GetBuildFolderName().. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
     end
 
     if os.isdir(GetDependencyLibrariesDir(DependencyName)) then
-        LogAct(0, DependencyName, "Cleaning " ..DependencyName.. " removing " ..LibrariesFolderName.. " directory.")
+        LogAct(0, DependencyName, "Cleaning " ..DependencyName.. " removing " ..GetLibrariesFolderName().. " directory.")
         os.rmdir(GetDependencyLibrariesDir(DependencyName))
     else
-        LogAct(0, DependencyName, LibrariesFolderName.. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
+        LogAct(0, DependencyName, GetLibrariesFolderName().. " directory for " ..DependencyName.. " inaccessible or cleaned already.")
     end
 end
 
@@ -866,7 +866,7 @@ function GenerateDependency(DependencyName)
     LogAct(0, DependencyName, GenerationTool)
     LogAct(0, DependencyName, "Generating " ..DependencyName)
 
-    LogAct(0, DependencyName, "Generate : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GeneratedFolderName))
+    LogAct(0, DependencyName, "Generate : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GetGeneratedFolderName()))
 
     -- @todo This thing should be changed on some kind of system that determines the generator type.
     local GeneratorType = "Visual Studio 15 2017" 
@@ -913,7 +913,7 @@ function BuildDependency(DependencyName, Configuration, Platform)
 
     if BuildTool == "cmake" then
         for _,v in pairs(DependencyProperties.ConfigurationProperties) do
-            Log(0,"Build ["..DependencyName.."] : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), BuildFolderName))
+            Log(0,"Build ["..DependencyName.."] : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GetBuildFolderName()))
             CMakeBuild(GetDependencyBuildDir(DependencyName), GetDependencyGeneratedDir(DependencyName), MappedDependencyPlatform ,MappedDependencyConfiguration)
         end
     elseif BuildTool == "make" then
