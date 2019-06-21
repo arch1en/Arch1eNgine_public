@@ -1,13 +1,19 @@
 -- CMake Functions
 
 require("GlobalFunctions")
+require("UserConfigHandler")
 
-function CMakeGenerate(GenerateDir, CMakeListsDir, Generator, Platform)
+function CMakeGenerate(GenerateDir, CMakeListsDir, Platform)
     local log = ""
     local DefaultGenerator = "Visual Studio 15 2017"
     local DefaultPlatform = ""
 
-    local Command = "cd /d \"" ..GenerateDir.. "\" && \"" ..AdaptDirSlashes(CMakeExecutableDir.. "/cmake\"").. " -G \""
+	local uch = UserConfigHandler.New()
+	local CMakeUserData = UserConfigHandler.FindDepedencyDataByName(uch, "CMake")
+	local CMakeExecutableDir = CMakeUserData.Properties.Directory
+	local Generator = CMakeUserData.Properties.DefaultGenerator
+	
+    local Command = "cd /d \"" ..GenerateDir.. "\" && \"" ..AdaptDirSlashes(CMakeExecutableDir.. "/bin/cmake\"").. " -G \""
 
     if Generator == "" or Generator == nil then
         Generator = DefaultGenerator
@@ -290,8 +296,8 @@ function SetupModule(ModuleName)
 
     local ModuleProperties = GetModulePropertiesByName(ModuleName)
     local ModuleData
-	local IncludeDir = ModulesDir.."/"..ModuleName.."/"..SourceFolderName
-	local FilesToAdd = {ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.h", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.cpp", ModulesDir.."/"..ModuleName.."/"..SourceFolderName.."/**.inl"}
+	local IncludeDir = GetModulesDir().."/"..ModuleName.."/"..GetSourceFolderName()
+	local FilesToAdd = {GetModulesDir().."/"..ModuleName.."/"..GetSourceFolderName().."/**.h", GetModulesDir().."/"..ModuleName.."/"..GetSourceFolderName().."/**.cpp", GetModulesDir().."/"..ModuleName.."/"..GetSourceFolderName().."/**.inl"}
 	
     if ModuleProperties == nil then
         Log(0, "Module "..ModuleName.. " : Cannot setup module. Properties not found.")
@@ -400,7 +406,7 @@ function SetupDependencies(DependencyType, ModuleProperties)
         elseif DependencyType == "Module" then
             ModuleDependencyProperties = GetModulePropertiesByName(v)
             Log(2, "Module Dependency Properties : " ..v)
-            includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
+            includedirs(AdaptDirSlashes(GetModulesDir().."/"..v.."/"..GetSourceFolderName()))
         end
 
         if ModuleDependencyProperties == nil then
@@ -868,13 +874,10 @@ function GenerateDependency(DependencyName)
 
     LogAct(0, DependencyName, "Generate : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GetGeneratedFolderName()))
 
-    -- @todo This thing should be changed on some kind of system that determines the generator type.
-    local GeneratorType = "Visual Studio 15 2017" 
-
     if GenerationTool == "cmake" then
-        CMakeGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), GeneratorType, _OPTIONS["platform"])
+        CMakeGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), _OPTIONS["platform"])
     elseif GenerationTool == "makefile" then
-        MakefileGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), GeneratorType, MappedDependencyPlatform)
+        MakefileGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), MappedDependencyPlatform)
     end
 end
 

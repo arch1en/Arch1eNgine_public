@@ -1,4 +1,11 @@
 
+EDependencyType =
+{
+	Foreign = "Foreign",
+	Module = "Module",
+	Tool = "Tool"
+}
+
 function AdaptedDirSlash()
     if os.target() == "windows" then
         return "\\"
@@ -7,6 +14,14 @@ function AdaptedDirSlash()
     end
 
      return "/"
+end
+
+function TableLength(Table)
+	local count = 0
+	for _ in pairs(Table) do
+		count = count + 1
+	end
+	return count
 end
 
 function AdaptDirSlashes(String)
@@ -74,11 +89,11 @@ end
 
 --{		Global Directories
 function GetApplicationDir()
-	return AdaptDirSlashes(GetWorkspaceDir().. "/" ..ApplicationFolderName)
+	return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetApplicationFolderName())
 end
 
 function GetBinariesDir()
-    return AdaptDirSlashes(GetWorkspaceDir().. "/" ..BinariesFolderName)
+    return AdaptDirSlashes(GetWorkspaceDir().. "/" ..GetBinariesFolderName())
 end
 
 function GetWorkspaceDir()

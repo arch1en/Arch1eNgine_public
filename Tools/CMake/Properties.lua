@@ -1,13 +1,23 @@
 Properties = 
 {
     Name = "CMake",
-	PathData =
+	-- UserConfig is required if dependency properties suppose to be set up by the user.
+	UserConfig	=
 	{
-	    Win32 = 
+		-- This helps with the default path to the dependency (a CMake executable for example)
+		PathData =
 		{
-			Registry = "HKLM:\\SOFTWARE\\Kitware\\CMake\\InstallDir",
-			Defaults = { "D:\\_Tools\\CMake" },
-			Executable = "bin\\cmake.exe"
+			Win32 = 
+			{
+				Registry = "HKLM:\\SOFTWARE\\Kitware\\CMake\\InstallDir",
+				Defaults = { "D:\\_Tools\\CMake" },
+				Executable = "bin\\cmake.exe"
+			}
+		},
+		-- This table will be put to the user config as is.
+		AdditionalData =
+		{
+			DefaultEnvironment = "Visual Studio 15 2017"
 		}
 	}
 }

@@ -1,7 +1,24 @@
+require("BuildSystem/UserConfigHandler")
+
 premake.modules.lua = {}
 
 local m = premake.modules.lua
 local p = premake
+
+newaction
+{
+  trigger = "init",
+  description = "Initialize project. That includes configuration file generations.",
+  onStart = function()
+    Log(0,"Initiation : Starting process")
+	local uch = UserConfigHandler.New()
+	UserConfigHandler.GenerateUserConfigFile(uch)
+  end,
+
+  onEnd = function()
+    print("Initiation : Finished")
+  end,
+}
 
 newaction
 {
@@ -58,18 +75,6 @@ newaction
         end
       end
   end,
-
-  --onWorkspace = function(wks)
-  --  printf("Build : Workspace '%s' processing", wks.name)
-  --end,
-
-  --onProject = function(prj)
-  --  printf("Build : Project '%s' processing", prj.name)
-  --end,
-
-  --execute = function()
-  --  print("Build : Executing...")
-  --end,
 
   onEnd = function()
       print("Build : Finished")
