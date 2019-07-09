@@ -106,7 +106,7 @@ void SwapChainHandler::RetrieveSwapChainImages(const VkDevice& Device)
 void SwapChainHandler::Destroy(const VkDevice* Device)
 {
 	vkDestroySwapchainKHR(*Device, SwapChainHandle, nullptr);
-	for (auto ImageView : SwapChainImages)
+	for (auto ImageView : SwapChainImageViews)
 	{
 		vkDestroyImageView(*Device, ImageView, nullptr);
 	}

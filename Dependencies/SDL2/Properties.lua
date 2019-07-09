@@ -16,7 +16,7 @@ Properties =
 			Mapping = "Debug"
         }
     },
-    PlatformProperties =
+    PlatformProperties = -- Relative to this project platform name (x64).
     {
         {
             Name = "Win32",

@@ -1,15 +1,25 @@
 Properties =
 {
     Name = "Vulkan",
+	IncludeDirs = { "Include" },
+	LinkageType	= "Dynamic",
 	UserConfig =
 	{
 		PathData =
 		{
-			Win32 = {
+			Windows = {
 				Registry = "HKLM:\\SOFTWARE\\LunarG\\VulkanSDK\\VK_SDK_PATHs",
-				Defaults = { "D:\\_SDK\\VulkanSDK\\*\\" }
+				Defaults = { "D:\\_SDK\\VulkanSDK\\*\\", "X:\\_SDK\\Vulkan\\*\\" }
 			}
 		}
-	}
+	},
+	PropertyGroups =
+    {
+        {
+            Name = "Debug|Win32",
+            LinkFileNames = { "vulkan-1" },
+			LibraryDir = "Lib32"
+        },
+    }
 }
 

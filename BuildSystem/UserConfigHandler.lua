@@ -49,7 +49,7 @@ function UserConfigHandler.GetDependencyInstallDir(self, Properties)
 	end	
 	
 	if os.target() == "windows" then
-		PathData = Properties.UserConfig.PathData.Win32
+		PathData = Properties.UserConfig.PathData.Windows
 	end
 		
 	local Path = UserConfigHandler.GetRegistryValue(self, PathData.Registry)

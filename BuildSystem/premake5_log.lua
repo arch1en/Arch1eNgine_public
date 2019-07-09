@@ -5,7 +5,11 @@ CurrentAction = ""
 
 function Log(Verbosity, Message)
     if Verbosity <= LogVerbosity then
-        print(Message)
+        local IndentationLevel = ""
+        for i=0,Verbosity,1 do
+            IndentationLevel = IndentationLevel .. "    "
+        end
+        print("[Log]["..Verbosity.."]: " ..IndentationLevel..Message)
     end
 end
 

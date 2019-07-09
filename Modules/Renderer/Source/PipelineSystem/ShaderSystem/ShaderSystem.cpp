@@ -1,6 +1,8 @@
 #include "ShaderSystem.h"
 #include "LogSystem.h"
 
+#include <fstream>
+
 // @todo: Loading files should be performed through internal file management system.
 std::vector<char> ShaderSystem::LoadShaderFromFile(const std::string& FileName)
 {
@@ -8,7 +10,7 @@ std::vector<char> ShaderSystem::LoadShaderFromFile(const std::string& FileName)
 
 	if (!File.is_open())
 	{
-		Log(0, )
+		//Log(0, )
 	}
 
 	size_t FileSize = static_cast<size_t>(File.tellg());
@@ -22,7 +24,7 @@ std::vector<char> ShaderSystem::LoadShaderFromFile(const std::string& FileName)
 	return Buffer;
 }
 
-VkShaderModule ShaderSystem::CreateShaderModule(const std::vector<char>& Code)
+VkShaderModule ShaderSystem::CreateShaderModule(const std::vector<char>& Code, const VkDevice& Device)
 {
 	VkShaderModuleCreateInfo CreateInfo = {};
 	CreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -30,7 +32,7 @@ VkShaderModule ShaderSystem::CreateShaderModule(const std::vector<char>& Code)
 	CreateInfo.pCode = reinterpret_cast<const uint32_t*>(Code.data());
 
 	VkShaderModule ShaderModule;
-	if (vkCreateShaderModule(&Device, &CreateInfo, nullptr &ShaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(Device, &CreateInfo, nullptr, &ShaderModule) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Shader module creation failed.");
 	}

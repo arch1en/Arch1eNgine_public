@@ -1,5 +1,7 @@
 #include "PipelineSystem.h"
 
+#include "LogSystem.h"
+
 void PipelineSystem::CleanUp(const VkDevice& Device)
 {
 	vkDestroyPipeline(Device, mPipelineHandle, nullptr);
@@ -46,8 +48,8 @@ void PipelineSystem::CreateGraphicsPipeline(const VkDevice& Device, const VkExte
 	auto ShaderCode_Vertex = mShaderSystem.LoadShaderFromFile("shaders/vert.spv");
 	auto ShaderCode_Fragment = mShaderSystem.LoadShaderFromFile("shaders/frag.spv");
 
-	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(ShaderCode_Vertex);
-	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(ShaderCode_Fragment);
+	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(ShaderCode_Vertex, Device);
+	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(ShaderCode_Fragment, Device);
 
 	VkPipelineShaderStageCreateInfo ShaderStageInfo_Vertex = {};
 	ShaderStageInfo_Vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -142,7 +144,7 @@ void PipelineSystem::CreateGraphicsPipeline(const VkDevice& Device, const VkExte
 	PipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	PipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-	if (vkCreatePipelineLayout(Device, &PipelineLayoutInfo, nullptr &mPipelineLayout) != VK_SUCCESS)
+	if (vkCreatePipelineLayout(Device, &PipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Pipeline layout creation failed !");
 	}
@@ -150,15 +152,15 @@ void PipelineSystem::CreateGraphicsPipeline(const VkDevice& Device, const VkExte
 	VkGraphicsPipelineCreateInfo PipelineInfo = {};
 	PipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	PipelineInfo.stageCount = 2;
-	PipelineInfo.pStages = mShaderStages;
+	PipelineInfo.pStages = &mShaderStages[0]; // @todo : How to add more handles (if its possible).
 	PipelineInfo.pVertexInputState = &VertexInputInfo;
 	PipelineInfo.pInputAssemblyState = &InputAssembly;
 	PipelineInfo.pViewportState = &ViewportState;
 	PipelineInfo.pRasterizationState = &Rasterizer;
 	PipelineInfo.pMultisampleState = &Multisampling;
 	PipelineInfo.pColorBlendState = &ColorBlendState;
-	PipelineInfo.layout = pipelineLayout;
-	PipelineInfo.renderPass = renderPass;
+	PipelineInfo.layout = mPipelineLayout;
+	PipelineInfo.renderPass = mRenderPass;
 	PipelineInfo.subpass = 0;
 	PipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	PipelineInfo.basePipelineIndex = -1;

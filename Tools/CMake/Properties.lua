@@ -10,14 +10,14 @@ Properties =
 			Win32 = 
 			{
 				Registry = "HKLM:\\SOFTWARE\\Kitware\\CMake\\InstallDir",
-				Defaults = { "D:\\_Tools\\CMake" },
+				Defaults = { "D:\\_Tools\\CMake", "E:\\_Tools\\CMake" },
 				Executable = "bin\\cmake.exe"
 			}
 		},
 		-- This table will be put to the user config as is.
 		AdditionalData =
 		{
-			DefaultEnvironment = "Visual Studio 15 2017"
+			DefaultEnvironment = "Visual Studio 16 2019"
 		}
 	}
 }

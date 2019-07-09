@@ -5,14 +5,14 @@ require("UserConfigHandler")
 
 function CMakeGenerate(GenerateDir, CMakeListsDir, Platform)
     local log = ""
-    local DefaultGenerator = "Visual Studio 15 2017"
+    local DefaultGenerator = "Visual Studio 16 2019"
     local DefaultPlatform = ""
 
-	local uch = UserConfigHandler.New()
-	local CMakeUserData = UserConfigHandler.FindDepedencyDataByName(uch, "CMake")
-	local CMakeExecutableDir = CMakeUserData.Properties.Directory
-	local Generator = CMakeUserData.Properties.DefaultGenerator
-	
+    local uch = UserConfigHandler.New()
+    local CMakeUserData = UserConfigHandler.FindDepedencyDataByName(uch, "CMake")
+    local CMakeExecutableDir = CMakeUserData.Properties.Directory
+    local Generator = CMakeUserData.Properties.DefaultGenerator
+
     local Command = "cd /d \"" ..GenerateDir.. "\" && \"" ..AdaptDirSlashes(CMakeExecutableDir.. "/bin/cmake\"").. " -G \""
 
     if Generator == "" or Generator == nil then
@@ -30,7 +30,7 @@ function CMakeGenerate(GenerateDir, CMakeListsDir, Platform)
 
     Command = Command.. "\" "
     Command = Command.. "\"" ..CMakeListsDir.. "\""
-   
+
     Log(0,Command)
     if os.target() == "windows" then
         log = io.popen(Command, 'r')
@@ -48,9 +48,9 @@ function CMakeBuild(BuildDir, GeneratedDir, Platform)
 
     if os.target() == "windows" then
         Command = "cd /d " ..BuildDir.. " && cmake --build \"" ..GeneratedDir.. "\" --config"
-		if(Platform ~= "Win32") then
-			Command = Command.." "..Platform
-		end
+        if(Platform ~= "Win32") then
+            Command = Command.." "..Platform
+        end
     else
         Log(0, "CMakeBuild Error : Operational System target invalid or inoperable.")
         return
@@ -75,26 +75,35 @@ end
 
 -- @todo Isn't it too excessive ?
 function GetDependencyConfigurationMappingFromName(DependencyConfigurationName, DependencyProperties)
-	for _,v in ipairs(DependencyProperties.ConfigurationProperties) do
-        if v.Mapping ~= nil and v.Name == DependencyConfigurationName then
-            return v.Mapping
-        elseif v.Name == DependencyConfigurationName then
-            return DependencyConfigurationName
+
+    local ConfigurationProperties = DependencyProperties.ConfigurationProperties
+
+    if ConfigurationProperties ~= nil and #ConfigurationProperties ~= 0 then
+        for _,v in ipairs(ConfigurationProperties) do
+            if v.Mapping ~= nil and v.Name == DependencyConfigurationName then
+                return v.Mapping
+            elseif v.Name == DependencyConfigurationName then
+                return DependencyConfigurationName
+            end
         end
     end
-	
-	return DependencyConfigurationName
+
+    return DependencyConfigurationName
 end
 
 function GetDependencyPlatformMappingFromName(DependencyPlatformName, DependencyProperties)
-	for _,v in ipairs(DependencyProperties.PlatformProperties) do
-        if v.Mapping ~= nil and v.Name == DependencyPlatformName then
-            return v.Mapping
-        elseif v.Name == DependencyPlatformName then
-            return DependencyPlatformName
+
+    local PlatformProperties = DependencyProperties.PlatformProperties
+
+    if PlatformProperties ~= nil and #PlatformProperties ~= 0 then
+        for _,v in ipairs(DependencyProperties.PlatformProperties) do
+            if v.Mapping ~= nil and v.Name == DependencyPlatformName then
+                return v.Mapping
+            elseif v.Name == DependencyPlatformName then
+                return DependencyPlatformName
+            end
         end
     end
-	
 	return DependencyPlatformName
 end
 
@@ -106,17 +115,24 @@ function GetDependencyConfigurationNameFromMapping(ProjectConfiguration, Depende
             return v.Name
         end
     end
-	
-	return nil  -- There is no mapping and configuration at all.
+
+    return nil  -- There is no mapping and configuration at all.
 end
 
 function GetDependencyPlatformNameFromMapping(ProjectConfiguration, DependencyProperties)
-    for _,v in ipairs(DependencyProperties.PlatformProperties) do
-        if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then -- There is mapping.
-            return v.Mapping
-        elseif v.Name == ProjectConfiguration then -- There is no mapping, but Dependency Platform has the same name.
-            return v.Name
-        end 
+    
+    local PlatformProperties = DependencyProperties.PlatformProperties
+
+    if PlatformProperties ~= nil and #PlatformProperties ~= 0 then
+        for _,v in ipairs(PlatformProperties) do
+            if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then -- There is mapping.
+                return v.Mapping
+            elseif v.Name == ProjectConfiguration then -- There is no mapping, but Dependency Platform has the same name.
+                return v.Name
+            end 
+        end
+    else
+        Log(0, "Getting dependency platform name from mapping failed. No platform properties found.")
     end
 
 	return nil -- There is no mapping and platform at all.
@@ -211,7 +227,6 @@ function SetupApplication()
     end
 
     --SetupModuleDependencies(ApplicationProperties)
-    --SetupForeignDependencies(ApplicationProperties)
 	
 	SetupDependencies("Module", ApplicationProperties)
 	SetupDependencies("Foreign", ApplicationProperties)
@@ -313,7 +328,6 @@ function SetupModule(ModuleName)
 	
     if ModuleProperties.LinkageType == "None" then
         -- @todo Is this really nescessary ?
-        --SetupModuleDependencies(ModuleProperties)
         Log(1, "Module "..ModuleName.. " : Module without LinkageType, skipping...")
         return
     elseif ModuleProperties.LinkageType == "Include" then
@@ -346,6 +360,8 @@ function SetupModule(ModuleName)
 	else
 		defines{"MODULE_API=__declspec(dllimport)"}
     end
+
+	filter{}
 
     language("C++")
 
@@ -400,13 +416,9 @@ function SetupDependencies(DependencyType, ModuleProperties)
         if DependencyType == "Foreign" then
             ModuleDependencyProperties = GetDependencyPropertiesByName(v)
             Log(2, "Foreign Dependency Properties : " ..v)
-            for _,w in ipairs(ModuleDependencyProperties.IncludeDirs) do
-                includedirs(AdaptDirSlashes(GetDependencyDir(ModuleDependencyProperties.Name).."/"..w))
-            end
         elseif DependencyType == "Module" then
             ModuleDependencyProperties = GetModulePropertiesByName(v)
             Log(2, "Module Dependency Properties : " ..v)
-            includedirs(AdaptDirSlashes(GetModulesDir().."/"..v.."/"..GetSourceFolderName()))
         end
 
         if ModuleDependencyProperties == nil then
@@ -414,6 +426,7 @@ function SetupDependencies(DependencyType, ModuleProperties)
             return
         end
 
+        IncludeDependency(DependencyType, ModuleDependencyProperties)
         local LinkageType = ModuleDependencyProperties.LinkageType
 
         if LinkageType == "Dynamic" then
@@ -434,69 +447,33 @@ function SetupDependencies(DependencyType, ModuleProperties)
     end
 end
 
-function SetupModuleDependencies(ModuleProperties, ModuleData)
-    if ModuleProperties == nil then
-        Log(0,"Module dependencies setting up failed. ModuleProperties are invalid.")
-        return
-    end
+function IncludeDependency(DependencyType, DependencyProperties)
+    
+    local DependencyDir = ""
+    local DependencyName = DependencyProperties.Name
 
-    if ModuleProperties.ModuleDependencies == nil then
-        return
-    end
+    if DependencyType == "Module" then
+        includedirs(AdaptDirSlashes(GetModulesDir().."/"..DependencyName.."/"..GetSourceFolderName()))
+    elseif DependencyType == "Foreign" then
+        if DependencyProperties.UserConfig ~= nil and DependencyProperties.UserConfig.PathData ~= nil then
+            Log(2, DependencyProperties.Name .." dependency user config path data found.")
+            local uch = UserConfigHandler.New()
+            local DependencyUserData = UserConfigHandler.FindDepedencyDataByName(uch, DependencyProperties.Name)
+            local DependencyUserDir = DependencyUserData.Properties.Directory
 
-    for _,v in pairs(ModuleProperties.ModuleDependencies) do
-        local ModuleDependencyProperties = GetModulePropertiesByName(v)
-        if ModuleDependencyProperties == nil then
-            Log(0,"Error : Cannot setup "..v.." module. Properties not found.")
-            return
-        end
-
-        --table.insert(ModuleData.IncludedModules, v)
-        includedirs(AdaptDirSlashes(ModulesDir.."/"..v.."/"..SourceFolderName))
-		
-		if ModuleDependencyProperties.LinkageType == "Include" then
-			
-		elseif ModuleDependencyProperties.LinkageType == "Dynamic" then
-            LinkDependency("Module", ModuleDependencyProperties)
-            AddDependencyLibraryDirs("Module", ModuleDependencyProperties)
-        end
-    end
-end
-
-
-function SetupForeignDependencies(ModuleProperties)
-    if ModuleProperties == nil then
-        Log(0,"Module dependencies setting up failed. ModuleProperties are invalid.")
-        return
-    end
-
-    if ModuleProperties.ForeignDependencies == nil then
-        return
-    end
-
-    for _,v in pairs(ModuleProperties.ForeignDependencies) do
-        local ForeignDependencyProperties = GetDependencyPropertiesByName(v)
-        if ForeignDependencyProperties == nil then
-            Log(0,"SetupForeignDependencies failed. "..v.." dependency property file missing.")
-            break
-        end
-        for _,w in ipairs(ForeignDependencyProperties.IncludeDirs) do
-            includedirs(AdaptDirSlashes(GetDependencyDir(ForeignDependencyProperties.Name).."/"..w))
-        end
-
-        if ForeignDependencyProperties.LinkageType == "Dynamic" then
-            local Result = LinkDependency("Foreign", ForeignDependencyProperties)
-            if Result[1] == false then
-                Log(0, Result[2])
+            if DependencyUserDir ~= nil then
+                DependencyDir = DependencyUserDir
+                Log(2, "Dependency directory set to : "..DependencyDir)
             end
-            Result = AddDependencyLibraryDirs("Foreign", ForeignDependencyProperties)
-            if Result[1] == false then
-                Log(0, Result[2])
-            end
+
+        else
+            DependencyDir = GetDependencyDir(DependencyName)
+        end
+
+        for _,w in ipairs(DependencyProperties.IncludeDirs) do
+            includedirs(AdaptDirSlashes(DependencyDir.."/"..w))
         end
     end
-
-    return { true }
 end
 
 function LinkDependency(DependencyType, DependencyProperties)
@@ -505,12 +482,12 @@ function LinkDependency(DependencyType, DependencyProperties)
     end
 
     if DependencyType == "Foreign" then
-        local PropertyGroups = DependencyProperties.PropertyGroups
+		local PropertyGroups = DependencyProperties.PropertyGroups
         if PropertyGroups ~= nil and #PropertyGroups ~= 0 then
             for _,v1 in ipairs(PropertyGroups) do
                 local ConfigurationName = GetDependencyConfigurationMappingFromName(GetPropertyGroupConfigurationName(v1.Name), DependencyProperties)
                 local PlatformName = GetDependencyPlatformMappingFromName(GetPropertyGroupPlatformName(v1.Name), DependencyProperties)
-
+                
                 filter{"configurations:"..ConfigurationName,"platforms:"..PlatformName}
 
                 if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
@@ -521,6 +498,8 @@ function LinkDependency(DependencyType, DependencyProperties)
                     end
                 end
             end
+		else
+            Log(0, "Dependency linking failed. No property groups set")
         end
     elseif DependencyType == "Module" then
         for _,c in pairs(Configurations) do
@@ -547,16 +526,38 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 		for _,c in pairs(Configurations) do
 			for _,p in pairs(Platforms) do
 				filter("configurations:"..c.Name,"platforms:" ..p.Name)
-				local LibraryDir
+				
+                local LibraryDir = ""
 				if DependencyType == "Foreign" then
-					LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
+                    if DependencyProperties.UserConfig ~= nil and DependencyProperties.UserConfig.PathData ~= nil then
+                        local uch = UserConfigHandler.New()
+                        local DependencyUserData = UserConfigHandler.FindDepedencyDataByName(uch, DependencyProperties.Name)
+                        local DependencyUserDir = DependencyUserData.Properties.Directory
+                
+                        local FoundPropertyGroup = FindPropertyGroup(DependencyProperties.PropertyGroups, c.Name, p.Name)
+                        
+                        if FoundPropertyGroup ~= nil then
+                            local PropertyLibraryDir = FoundPropertyGroup.LibraryDir
+                            if PropertyLibraryDir == nil then
+                                Log(0, "Adding dependency library directories failed. LibraryDir property is invalid.")
+                            else
+                                LibraryDir = AdaptDirSlashes(DependencyUserDir.."/"..PropertyLibraryDir)
+                                Log(2, "PropertyGroup for "..c.Name.."|"..p.Name.." found.")
+                            end
+                        else
+                            Log(1, "No PropertyGroup for "..c.Name.."|"..p.Name.." found. Skipping...")
+                        end
+
+                    else
+					    LibraryDir = AdaptDirSlashes(GetDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
+                    end
 				elseif DependencyType == "Module" then
 					LibraryDir = AdaptDirSlashes(GetModuleDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
 				else
                     return { false, "Linking "..DependencyName.." failed. DependencyType invalid." }
 				end
-
-				if os.isdir(LibraryDir) then
+    
+				if LibraryDir ~= "" and os.isdir(LibraryDir) then
 					libdirs(LibraryDir)
 				end
 			end
@@ -588,9 +589,20 @@ function os.winSdkVersion()
 end
 
 -- PropertyIndex = 0 for Configuration, 1 for Platform
-function IsTokenInPropertyGroup(PropertyIndex, PropertyGroupName, Token)
+function FindPropertyGroup(InPropertyGroups, ConfigurationName, PlatformName)
+    for i,v in pairs(InPropertyGroups) do
+        local Tokens = DetokenizePropertyGroup(v.Name)
+        if Tokens[1] == ConfigurationName and Tokens[2] == PlatformName then
+                return v 
+        end
+    end 
+
+    return nil
+end
+
+function DetokenizePropertyGroup(PropertyGroupName)
     local Tokens = string.explode(PropertyGroupName, "|")
-    return Tokens[PropertyIndex] == Token
+    return Tokens
 end
 
 function GetPropertyGroupConfigurationName(PropertyGroupName)
@@ -655,12 +667,13 @@ function FindDependencyLibraryFiles(DependencyProperties, ConfigurationName, Pla
     local DependencyName = DependencyProperties.Name
     local PropertyGroups = DependencyProperties.PropertyGroups
     local FoundFileNames = nil
-    for i,v in pairs(PropertyGroups) do
-        if IsTokenInPropertyGroup(1, v.Name, ConfigurationName) and IsTokenInPropertyGroup(2, v.Name, PlatformName) then
-                FoundFileNames = v.LinkFileNames 
-        end
-    end 
 
+    local FoundPropertyGroup = FindPropertyGroup(PropertyGroups, ConfigurationName, PlatformName)
+
+    if FoundPropertyGroup ~= nil then
+        FoundFileNames = FoundPropertyGroup.LinkFileNames
+    end
+	
     if FoundFileNames == nil or #FoundFileNames == 0 then
         Log(0,"Error : " ..DependencyName.. " dependency files to link were not found. Aborting.")
         return nil
@@ -964,7 +977,7 @@ function OrganizeDependency(DependencyName, ConfigurationName, PlatformName)
     end
 
     local DependencyName = DependencyProperties.Name
-    LogAct(0, DependencyName, CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), LibrariesFolderName))
+    LogAct(0, DependencyName, CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GetLibrariesFolderName()))
 
     -- Copy dynamic link files (dll and a) to respective folder.
     for _,v in pairs(FoundFiles[1]) do
