@@ -7,7 +7,7 @@ Properties =
 		-- This helps with the default path to the dependency (a CMake executable for example)
 		PathData =
 		{
-			Win32 = 
+			Windows = 
 			{
 				Registry = "HKLM:\\SOFTWARE\\Kitware\\CMake\\InstallDir",
 				Defaults = { "D:\\_Tools\\CMake", "E:\\_Tools\\CMake" },
@@ -17,7 +17,8 @@ Properties =
 		-- This table will be put to the user config as is.
 		AdditionalData =
 		{
-			DefaultEnvironment = "Visual Studio 16 2019"
+			DefaultGenerator = "Visual Studio 15 2017",
+            DefaultToolsetVersion = "v141" -- VS2017
 		}
 	}
 }

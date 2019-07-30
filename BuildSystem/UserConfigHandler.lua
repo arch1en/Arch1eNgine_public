@@ -19,17 +19,18 @@ function UserConfigHandler.New(self, o)
 	if ErrorMessage then
 		Log(0, ErrorMessage)
 	end
-	
+
 	return o
 end
 
 function UserConfigHandler.FindDepedencyDataByName(self, Name)
-	for _,v in ipairs(self.ConfigFileData) do
-		if v.Name == Name then
-			return v
+	if self.ConfigFileData ~= nil then
+		for _,v in ipairs(self.ConfigFileData) do
+			if v.Name == Name then
+				return v
+			end
 		end
 	end
-	
 	return nil
 end
 
@@ -50,6 +51,10 @@ function UserConfigHandler.GetDependencyInstallDir(self, Properties)
 	
 	if os.target() == "windows" then
 		PathData = Properties.UserConfig.PathData.Windows
+		if PathData == nil then
+			Log(0, "No PathData for Windows.")
+			return
+		end
 	end
 		
 	local Path = UserConfigHandler.GetRegistryValue(self, PathData.Registry)
@@ -90,14 +95,19 @@ function UserConfigHandler.GetRegistryValue(self, RegistryPath)
 end
 
 function UserConfigHandler.LoadConfigData(self)
-	local ConfigFileData = io.readfile("Config.json")
-	return json.decode(ConfigFileData)
+	local ConfigFileName = "Config.json"
+	if os.isfile(ConfigFileName) then
+		local ConfigFileData = io.readfile("Config.json")
+		return json.decode(ConfigFileData)
+	end
+
+	return nil, "Config file does not exist."
 end
 
 function UserConfigHandler.GenerateUserConfigFile(self)
 
 	local ConfigFileBody = {}
-	
+
 	for _,v0 in pairs(EDependencyType) do
 
 		local DependencyType = v0
@@ -130,7 +140,7 @@ function UserConfigHandler.GenerateUserConfigFile(self)
 						Success = false
 					end
 				else
-					Log(1, "Warning : Missing UserConfig data.")
+					Log(2, "No UserConfig data for " ..Properties.Name.. " dependency.")
 				end
 			else
 				Log(0, "Warning : Missing \""..v.."\" dependency properties.")

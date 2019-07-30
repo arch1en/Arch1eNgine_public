@@ -6,8 +6,6 @@ require("BuildSystem/premake5_options")
 
 --require("BuildSystem/FileFinder")
 
-
-
 workspace("Arch1eNgine")
 ConfigurationNames = {}
 PlatformNames = {}

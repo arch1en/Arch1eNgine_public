@@ -7,28 +7,39 @@ function CMakeGenerate(GenerateDir, CMakeListsDir, Platform)
     local log = ""
     local DefaultGenerator = "Visual Studio 16 2019"
     local DefaultPlatform = ""
+    local DefaultToolsetVersion = "v141"
 
     local uch = UserConfigHandler.New()
     local CMakeUserData = UserConfigHandler.FindDepedencyDataByName(uch, "CMake")
     local CMakeExecutableDir = CMakeUserData.Properties.Directory
     local Generator = CMakeUserData.Properties.DefaultGenerator
+    local ToolsetVersion = CMakeUserData.Properties.DefaultToolsetVersion
 
     local Command = "cd /d \"" ..GenerateDir.. "\" && \"" ..AdaptDirSlashes(CMakeExecutableDir.. "/bin/cmake\"").. " -G \""
 
+    --Generator
     if Generator == "" or Generator == nil then
+        Log(1, "No CMake Generator found. Using default one ("..DefaultGenerator..").")
         Generator = DefaultGenerator
     end
 
     Command = Command .. Generator
 
+    -- Platform
     if Platform == "Win32" or Platform == "" or Platform == nil then
+        Log(1, "No concrete platform found. Generating from default platform.")
         Platform = DefaultPlatform
-    else
-        Log(0,Platform)
-        Command = Command.. " "..Platform
+    end
+ 
+    Command = Command.. " "..Platform.."\""
+
+    --Toolset Version
+    if ToolsetVersion == "" or ToolsetVersion == nil then
+        Log(1, "No toolset version found. Generating with default toolset version ("..DefaultToolsetVersion..").")
+        ToolsetVersion = DefaultToolsetVersion
     end
 
-    Command = Command.. "\" "
+    Command = Command.." -T "..ToolsetVersion.." "
     Command = Command.. "\"" ..CMakeListsDir.. "\""
 
     Log(0,Command)
@@ -41,16 +52,19 @@ function CMakeGenerate(GenerateDir, CMakeListsDir, Platform)
     LiveLog(log)
 end
 
-function CMakeBuild(BuildDir, GeneratedDir, Platform)
+function CMakeBuild(BuildDir, GeneratedDir, Configuration)
 
     local log = ""
     local Command = ""
+    local DefaultConfiguration = "Debug"
+
+    if Configuration == "" or Configuration == nil then
+        Log(1, "No valid configuration passed. Using default configuration ("..DefaultConfiguration..").")
+        Configuration = DefaultConfiguration
+    end
 
     if os.target() == "windows" then
-        Command = "cd /d " ..BuildDir.. " && cmake --build \"" ..GeneratedDir.. "\" --config"
-        if(Platform ~= "Win32") then
-            Command = Command.." "..Platform
-        end
+        Command = "cd /d " ..BuildDir.. " && cmake --build \"" ..GeneratedDir.. "\" --config "..Configuration
     else
         Log(0, "CMakeBuild Error : Operational System target invalid or inoperable.")
         return
@@ -126,7 +140,7 @@ function GetDependencyPlatformNameFromMapping(ProjectConfiguration, DependencyPr
     if PlatformProperties ~= nil and #PlatformProperties ~= 0 then
         for _,v in ipairs(PlatformProperties) do
             if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then -- There is mapping.
-                return v.Mapping
+                return v.Name
             elseif v.Name == ProjectConfiguration then -- There is no mapping, but Dependency Platform has the same name.
                 return v.Name
             end 
@@ -135,6 +149,7 @@ function GetDependencyPlatformNameFromMapping(ProjectConfiguration, DependencyPr
         Log(0, "Getting dependency platform name from mapping failed. No platform properties found.")
     end
 
+    Log(0, "No platform mapping found.")
 	return nil -- There is no mapping and platform at all.
 end
 
@@ -218,7 +233,6 @@ function SetupApplication()
     -- use removefiles function to remove any unnescessary files.
 
     -- Including directories...
-    -- includedirs(WorkspaceDirectory.. "/Source") 
     
     local ApplicationProperties = GetApplicationProperties()
     if ApplicationProperties == nil then
@@ -293,6 +307,8 @@ function SetupApplication()
                 NewDefines[i] = w
             end
             defines(NewDefines)
+			system(v.System)
+			architecture(v.Architecture)
         end
     end
 
@@ -300,8 +316,6 @@ function SetupApplication()
 
     filter{"action:vs*"}
     systemversion(os.winSdkVersion() .. ".0")
-    --pchheader "stdafx.h"
-    --pchsource "stdafx.cpp"
 
     filter{}
 
@@ -434,10 +448,9 @@ function SetupDependencies(DependencyType, ModuleProperties)
             if Result[1] == false then
                 Log(0, Result[2])
             end
-            Result = AddDependencyLibraryDirs(DependencyType, ModuleDependencyProperties)
-            if Result[1] == false then
-                Log(0, Result[2])
-            end
+            
+			AddDependencyLibraryDirs(DependencyType, ModuleDependencyProperties)
+   
         end
 		
 		if ModuleDependencyProperties.PostPremakeCommand ~= nil then
@@ -459,6 +472,12 @@ function IncludeDependency(DependencyType, DependencyProperties)
             Log(2, DependencyProperties.Name .." dependency user config path data found.")
             local uch = UserConfigHandler.New()
             local DependencyUserData = UserConfigHandler.FindDepedencyDataByName(uch, DependencyProperties.Name)
+			 
+			 if DependencyUserData == nil then
+                Log(1, "Dependency user data not found. Config file might be not created yet.")
+				return
+            end
+			
             local DependencyUserDir = DependencyUserData.Properties.Directory
 
             if DependencyUserDir ~= nil then
@@ -517,7 +536,8 @@ end
 
 function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 	if DependencyProperties == nil then
-		return { false, "Linking : Action failed. Properties not found." }
+		Log(1, "Linking : Action failed. Properties not found.")
+		return
 	end
 	
     if DependencyProperties.LinkageType ~= nil and DependencyProperties.LinkageType == "Dynamic" then
@@ -531,8 +551,19 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 				if DependencyType == "Foreign" then
                     if DependencyProperties.UserConfig ~= nil and DependencyProperties.UserConfig.PathData ~= nil then
                         local uch = UserConfigHandler.New()
-                        local DependencyUserData = UserConfigHandler.FindDepedencyDataByName(uch, DependencyProperties.Name)
-                        local DependencyUserDir = DependencyUserData.Properties.Directory
+						local DependencyUserData = UserConfigHandler.FindDepedencyDataByName(uch, DependencyProperties.Name)
+			 
+						if DependencyUserData == nil then
+							filter{}
+							Log(1, "Dependency user data not found. Config file might be not created yet.")
+							return false
+						end
+			
+						local DependencyUserDir = DependencyUserData.Properties.Directory
+
+						if DependencyUserDir ~= nil then
+							Log(2, "Dependency directory set to : "..DependencyUserDir)
+						end
                 
                         local FoundPropertyGroup = FindPropertyGroup(DependencyProperties.PropertyGroups, c.Name, p.Name)
                         
@@ -554,7 +585,8 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 				elseif DependencyType == "Module" then
 					LibraryDir = AdaptDirSlashes(GetModuleDependencyLibrariesDir(DependencyName).. "/" ..c.Name.. "/" ..p.Name)
 				else
-                    return { false, "Linking "..DependencyName.." failed. DependencyType invalid." }
+					Log(0, "Linking "..DependencyName.." failed. DependencyType invalid.")
+                    return
 				end
     
 				if LibraryDir ~= "" and os.isdir(LibraryDir) then
@@ -564,7 +596,6 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 		end
     end
 	filter{}
-    return { true }
 end
 
 -- DEPRECATED
@@ -890,7 +921,7 @@ function GenerateDependency(DependencyName)
     if GenerationTool == "cmake" then
         CMakeGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), _OPTIONS["platform"])
     elseif GenerationTool == "makefile" then
-        MakefileGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), MappedDependencyPlatform)
+        MakefileGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), _OPTIONS["platform"])
     end
 end
 
@@ -930,7 +961,7 @@ function BuildDependency(DependencyName, Configuration, Platform)
     if BuildTool == "cmake" then
         for _,v in pairs(DependencyProperties.ConfigurationProperties) do
             Log(0,"Build ["..DependencyName.."] : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GetBuildFolderName()))
-            CMakeBuild(GetDependencyBuildDir(DependencyName), GetDependencyGeneratedDir(DependencyName), MappedDependencyPlatform ,MappedDependencyConfiguration)
+            CMakeBuild(GetDependencyBuildDir(DependencyName), GetDependencyGeneratedDir(DependencyName), MappedDependencyConfiguration)
         end
     elseif BuildTool == "make" then
         -- @todo Makefile build needs to be implemented.
@@ -1016,7 +1047,6 @@ function FindApplication(FileIdentifier, DefaultPaths)
 			
 				local FullPath = DefaultPaths[i].. line
 				if os.isdir(FullPath) then
-					print("dir "..FullPath)
 					local FullPathTable = {}
 					FullPathTable[0] = FullPath .. "/"
 					Found = FindApplication(FileIdentifier, FullPathTable)
@@ -1025,10 +1055,8 @@ function FindApplication(FileIdentifier, DefaultPaths)
 						return Found
 					end
 				elseif os.isfile(FullPath) then
-					print("file "..FullPath)
 					IsFound = string.find(FullPath, FileIdentifier)
 					if IsFound ~= nil then
-						print("FOUND")
 						pfile:close()
 						return FullPath
 					end
