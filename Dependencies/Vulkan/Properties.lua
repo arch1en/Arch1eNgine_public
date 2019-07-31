@@ -20,6 +20,11 @@ Properties =
             LinkFileNames = { "vulkan-1" },
 			LibraryDir = "Lib32"
         },
+        {
+            Name = "Debug|Win64",
+            LinkFileNames = { "vulkan-1" },
+            LibraryDir = "Lib"
+        }
     }
 }
 

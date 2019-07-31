@@ -31,7 +31,7 @@ function CMakeGenerate(GenerateDir, CMakeListsDir, Platform)
         Platform = DefaultPlatform
     end
  
-    Command = Command.. " "..Platform.."\""
+    Command = Command.. "\" -A "..Platform
 
     --Toolset Version
     if ToolsetVersion == "" or ToolsetVersion == nil then
@@ -124,7 +124,7 @@ end
 function GetDependencyConfigurationNameFromMapping(ProjectConfiguration, DependencyProperties)
     for _,v in ipairs(DependencyProperties.ConfigurationProperties) do
         if v.Mapping ~= nil and v.Mapping == ProjectConfiguration then -- There is mapping.
-            return v.Mapping
+            return v.Name
         elseif v.Name == ProjectConfiguration then -- There is no mapping, but Dependency Configuration has the same name.
             return v.Name
         end
@@ -218,13 +218,26 @@ function SetupApplication()
 
     filter{}
 
+    -- Configurations
+    ConfigurationNames = {}
+    for i,c in pairs(Configurations) do
+        ConfigurationNames[i] = c.Name
+    end
     configurations(ConfigurationNames)
+    
+    -- Platforms
+    PlatformNames = {}
+    for j,p in pairs(Platforms) do
+          PlatformNames[j] = p.Name
+    end
     platforms(PlatformNames)
+    
     location("Application")
 
     project("Application")
     kind("ConsoleApp")
     language("C++")
+    cppdialect("C++17")
     targetdir(GetBinariesDir().."/%{cfg.buildcfg}/%{cfg.platform}")
     location("Application/%{prj.name}")
 
@@ -240,39 +253,11 @@ function SetupApplication()
         return 
     end
 
-    --SetupModuleDependencies(ApplicationProperties)
-	
 	SetupDependencies("Module", ApplicationProperties)
 	SetupDependencies("Foreign", ApplicationProperties)
 	
-    --for _,v in pairs(GetListOfDependencyNames()) do
-
-    --  local DependencyProperties = GetDependencyPropertiesByName(v)
-    --if DependencyProperties == nil then
-    --    Log(0,"Including "..v.. " directories : Action failed. Properties not found.")
-    --    return
-    --end
-    --local Size = #DependencyProperties.IncludeDirs
-    --for j=1,Size do
-    --    includedirs(AdaptDirSlashes(GetDependencyDir(DependencyProperties.Name).. "/" ..DependencyProperties.IncludeDirs[j]))
-    --end
-    --end
-
-    -- Linking libraries...
-    --for _,v0 in pairs(GetListOfDependencyNames()) do
-    --    LinkForeignDependency(GetDependencyPropertiesByName(v0))
-    --end
-
-    --filter {}
-    -- Finding libraries...
-    --for _,v in pairs(GetListOfDependencyNames()) do
-    --    AddForeignDependencyLibraryDirs(GetDependencyPropertiesByName(v))
-    --end
-
 	defines{"MODULE_API=__declspec(dllimport)"}
 	
-    configuration("windows")
-
     filter("system:windows")
     links({"OpenGL32"})
 
@@ -282,7 +267,9 @@ function SetupApplication()
     filter {}
 
     -- Adding configuration defines
+    
     for i,v in pairs(Configurations) do
+
         filter("configurations:" .. v.Name)
         if #v.Defines ~= 0 then
             local DefinesNames = {}
@@ -308,7 +295,7 @@ function SetupApplication()
             end
             defines(NewDefines)
 			system(v.System)
-			architecture(v.Architecture)
+		    architecture(v.Architecture)
         end
     end
 
@@ -506,7 +493,6 @@ function LinkDependency(DependencyType, DependencyProperties)
             for _,v1 in ipairs(PropertyGroups) do
                 local ConfigurationName = GetDependencyConfigurationMappingFromName(GetPropertyGroupConfigurationName(v1.Name), DependencyProperties)
                 local PlatformName = GetDependencyPlatformMappingFromName(GetPropertyGroupPlatformName(v1.Name), DependencyProperties)
-                
                 filter{"configurations:"..ConfigurationName,"platforms:"..PlatformName}
 
                 if v1.LinkFileNames ~= nil and #v1.LinkFileNames ~= 0 then
@@ -545,6 +531,7 @@ function AddDependencyLibraryDirs(DependencyType, DependencyProperties)
 		local DependencyName = DependencyProperties.Name
 		for _,c in pairs(Configurations) do
 			for _,p in pairs(Platforms) do
+
 				filter("configurations:"..c.Name,"platforms:" ..p.Name)
 				
                 local LibraryDir = ""
@@ -682,6 +669,13 @@ function LiveLog(log)
 end
 
 function FindDependencyLibraryFiles(DependencyProperties, ConfigurationName, PlatformName)
+
+    local DependencyPlatformName = GetDependencyPlatformNameFromMapping(PlatformName, DependencyProperties)
+
+    if DependencyPlatformName ~= nil then
+        PlatformName = DependencyPlatformName
+    end
+
     local DynamicLibraryFileExtension = ""
     local LinkerLibraryFileExtension = "lib"
     if os.target() == "windows" then
@@ -698,7 +692,6 @@ function FindDependencyLibraryFiles(DependencyProperties, ConfigurationName, Pla
     local DependencyName = DependencyProperties.Name
     local PropertyGroups = DependencyProperties.PropertyGroups
     local FoundFileNames = nil
-
     local FoundPropertyGroup = FindPropertyGroup(PropertyGroups, ConfigurationName, PlatformName)
 
     if FoundPropertyGroup ~= nil then
@@ -918,10 +911,12 @@ function GenerateDependency(DependencyName)
 
     LogAct(0, DependencyName, "Generate : " ..CreateFolderIfDoesntExist(GetDependencyDir(DependencyName), GetGeneratedFolderName()))
 
+    local Platform = GetDependencyPlatformNameFromMapping(_OPTIONS["platform"], DependencyProperties)
+
     if GenerationTool == "cmake" then
-        CMakeGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), _OPTIONS["platform"])
+        CMakeGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), Platform)
     elseif GenerationTool == "makefile" then
-        MakefileGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), _OPTIONS["platform"])
+        MakefileGenerate(GetDependencyGeneratedDir(DependencyName), GetDependencySourceDir(DependencyName), Platform)
     end
 end
 

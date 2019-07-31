@@ -7,14 +7,6 @@ require("BuildSystem/premake5_options")
 --require("BuildSystem/FileFinder")
 
 workspace("Arch1eNgine")
-ConfigurationNames = {}
-PlatformNames = {}
-for i,c in pairs(Configurations) do
-    ConfigurationNames[i] = c.Name
-    for j,p in pairs(Platforms) do
-        PlatformNames[j] = p.Name
-    end
-end
 
 SetupApplication()
 
