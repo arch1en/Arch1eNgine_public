@@ -74,13 +74,13 @@ Platforms =
 {
     {
         Name = "Win32",
-        Defines = { "PLATFORM_WIN32" },
+        Defines = { "PLATFORM_WIN32", "ARCHITECTURE_X86" },
 		System = "Windows",
 		Architecture = "x86"
     },
     {
         Name = "Win64",
-        Defines = { "PLATFORM_WIN64" },
+        Defines = { "PLATFORM_WIN64", "ARCHITECTURE_X86_64" },
 		System = "Windows",
 		Architecture = "x86_64"
     },

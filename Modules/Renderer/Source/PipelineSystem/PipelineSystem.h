@@ -15,8 +15,6 @@ class PipelineSystem
 {
 public:
 
-	virtual	~PipelineSystem();
-
 	void CreatePipelineLayout(const VkDevice& Device);
 	void CreateRenderPass(const VkDevice& Device, const VkFormat& ImageFormat);
 

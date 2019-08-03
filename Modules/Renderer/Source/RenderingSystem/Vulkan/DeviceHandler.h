@@ -1,3 +1,5 @@
+// Handling Device related things.
+// LogicalDevice, QueueFamilies, Queues.
 #ifndef PHYSICALDEVICEHANDLER_H
 #define PHYSICALDEVICEHANDLER_H
 

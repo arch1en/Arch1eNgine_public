@@ -34,7 +34,13 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		SurfaceHandlerCreationData_SDL SurfaceData = {};
 		
 		SurfaceData.VulkanInstanceRef = static_cast<VkInstance*>(InstanceVkSDL2->GetRenderingInstanceHandle());
+
+#ifdef ARCHITECTURE_X86
 		SurfaceData.TargetSurfaceEnum = TargetSurface::Win32;
+#elif ARCHITECTURE_X86_64
+		SurfaceData.TargetSurfaceEnum = TargetSurface::Win64;
+#endif
+
 		SurfaceData.WindowHandle = static_cast<SDL_Window*>(WindowVkSDL2->GetWindowHandle());
 		SurfaceData.WindowInfo = WindowVkSDL2->GetWindowInfo();
 

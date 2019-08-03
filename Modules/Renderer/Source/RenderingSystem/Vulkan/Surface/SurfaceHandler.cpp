@@ -1,17 +1,21 @@
 #include "SurfaceHandler.h"
 #include "SurfaceUtilities.h"
 
-#ifdef PLATFORM_WIN32
+#if defined(ARCHITECTURE_X86) || defined(ARCHITECTURE_X86_64) 
 #include "Implementations/Surface_SDL.h"
 #endif
+
+#include "LogSystem.h"
 
 void SurfaceHandler::CreateSurface(const SurfaceHandlerCreationData* Data)
 {
 	Surface_Base* NewSurface = nullptr;
 
-#ifdef PLATFORM_WIN32
+#if defined(ARCHITECTURE_X86) || defined(ARCHITECTURE_X86_64) 
 	NewSurface = new Surface_SDL(Data);
 #endif
+
+	Assert(NewSurface != nullptr, "Surface creation failed.");
 
 	mSurfaces.push_back(std::unique_ptr<Surface_Base>(NewSurface));
 }

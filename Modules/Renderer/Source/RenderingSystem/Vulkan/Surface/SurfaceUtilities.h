@@ -8,7 +8,8 @@
 
 enum TargetSurface
 {
-	Win32
+	Win32,
+	Win64
 };
 
 struct SurfaceHandlerCreationData : public TypeID
