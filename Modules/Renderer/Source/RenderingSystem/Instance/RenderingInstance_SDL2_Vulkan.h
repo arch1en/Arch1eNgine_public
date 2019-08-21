@@ -9,7 +9,9 @@
 #include "RenderingSystem/Vulkan/DeviceHandler.h"
 #include "RenderingSystem/Vulkan/Surface/SurfaceHandler.h"
 #include "RenderingSystem/Vulkan/SwapChainHandler.h"
-#include "PipelineSystem/PipelineSystem.h"
+#include "RenderingSystem/Vulkan/PipelineSystem/PipelineSystem.h"
+#include "RenderingSystem/Vulkan/PipelineSystem/RenderPassManager.h"
+#include "RenderingSystem/Vulkan/PipelineSystem/CommandsHandler.h"
 
 class RenderingInstance_SDL2_Vulkan : public I::RenderingInstance_Impl
 {
@@ -23,15 +25,19 @@ public:
 	void CreateDeviceHandler();
 	void CreateSurfaceHandler();
 	void CreateSwapChainHandler();
+	void CreateRenderPassManager();
 	void CreatePipelineSystem();
+	void CreateCommandsHandler();
 
 	std::vector<VkLayerProperties>		CheckValidationLayersAvailability(const std::vector<const char*> DesiredLayers);
 	std::vector<VkExtensionProperties>	GetAvailableExtensions();
 
-	DeviceHandler* const	GetDeviceHandler() const;
-	SurfaceHandler*	const	GetSurfaceHandler() const;
-	SwapChainHandler* const GetSwapChainHandler() const;
-	PipelineSystem* const GetPipelineSystem() const;
+	DeviceHandler*		const	GetDeviceHandler() const;
+	SurfaceHandler*		const	GetSurfaceHandler() const;
+	SwapChainHandler*	const	GetSwapChainHandler() const;
+	RenderPassManager*	const	GetRenderPassManager() const;
+	PipelineSystem*		const	GetPipelineSystem() const;
+	CommandsHandler*	const	GetCommandsHandler() const;
 
 	// Begin I::RenderingInstance_Impl Interface
 	virtual void Initialize() override;
@@ -47,10 +53,12 @@ private:
 
 	VkInstance InstanceHandle;
 
+	std::unique_ptr<RenderPassManager> mRenderPassManager;
 	std::unique_ptr<DeviceHandler> mDeviceHandler;
 	std::unique_ptr<SwapChainHandler> mSwapChainHandler;
 	std::unique_ptr<SurfaceHandler> mSurfaceHandler;
 	std::unique_ptr<PipelineSystem> mPipelineSystem;
+	std::unique_ptr<CommandsHandler> mCommandsHandler;
 
 };
 #endif

@@ -109,9 +109,19 @@ void RenderingInstance_SDL2_Vulkan::CreateSwapChainHandler()
 	mSwapChainHandler = std::make_unique<SwapChainHandler>();
 }
 
+void RenderingInstance_SDL2_Vulkan::CreateRenderPassManager()
+{
+	mRenderPassManager = std::make_unique<RenderPassManager>();
+}
+
 void RenderingInstance_SDL2_Vulkan::CreatePipelineSystem()
 {
 	mPipelineSystem = std::make_unique<PipelineSystem>();
+}
+
+void RenderingInstance_SDL2_Vulkan::CreateCommandsHandler()
+{
+	mCommandsHandler = std::make_unique<CommandsHandler>();
 }
 
 SurfaceHandler* const RenderingInstance_SDL2_Vulkan::GetSurfaceHandler() const
@@ -122,6 +132,21 @@ SurfaceHandler* const RenderingInstance_SDL2_Vulkan::GetSurfaceHandler() const
 SwapChainHandler * const RenderingInstance_SDL2_Vulkan::GetSwapChainHandler() const
 {
 	return mSwapChainHandler.get();
+}
+
+RenderPassManager* const RenderingInstance_SDL2_Vulkan::GetRenderPassManager() const
+{
+	return mRenderPassManager.get();
+}
+
+PipelineSystem* const RenderingInstance_SDL2_Vulkan::GetPipelineSystem() const
+{
+	return mPipelineSystem.get();
+}
+
+CommandsHandler* const RenderingInstance_SDL2_Vulkan::GetCommandsHandler() const
+{
+	return mCommandsHandler.get();
 }
 
 bool RenderingInstance_SDL2_Vulkan::AddExtensions(void* WindowHandle, std::vector<const char*>& Extensions)

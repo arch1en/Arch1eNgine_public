@@ -24,46 +24,26 @@ struct PhysicalDeviceProperties
     int Rating;
 };
 
-enum class QueueFamilyIndices
+struct QueueFamilyData
 {
-	GraphicsFamily,
-	PresentationFamily,
-	TOTAL
+	uint32_t FamilyIndex = -1;
+	float Priority = 1.f;
+	bool IsPresentationSuitable = false;
 };
 
-struct QueueFamilyProperties
+class QueueFamilyHandler
 {
-	QueueFamilyProperties()
-		: QueuePriority{ 1.f }
-	{}
+public:
+	void ResetQueueFamilyData(const std::vector<QueueFamilyData>& Data);
 
-	std::optional<uint32_t> Index;
-	float QueuePriority;
-};
+	const std::vector<uint32_t> GetQueueFamiliesIndices() const;
+	const size_t GetNumberOfQueueFamilies() const;
+	const std::vector<QueueFamilyData>* GetQueueFamilyData() const;
 
-struct QueueFamilies
-{
-	QueueFamilies()
-		: QueuePriority{ 1.f }
-	{
-		FamilyIndices.resize(static_cast<size_t>(QueueFamilyIndices::TOTAL));
-	}
+private:
 
-	std::vector<QueueFamilyProperties> FamilyIndices;
+	std::vector<QueueFamilyData> mCachedQueueFamilyData;
 
-	float QueuePriority;
-	bool IsComplete()
-	{
-		for (const auto& Index : FamilyIndices)
-		{
-			if (Index.Index.has_value() == false)
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
 };
 
 class DeviceHandler
@@ -73,7 +53,9 @@ public:
 
 	const std::vector<PhysicalDeviceProperties>* GetPhysicalDevicesProperties() const;
 	const VkDevice* GetLogicalDeviceHandle() const;
-	const QueueFamilies RetrieveQueueFamilies(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const;
+	const std::vector<QueueFamilyData> RetrieveQueueFamiliesData(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const;
+
+	QueueFamilyHandler GetQueueFamilyHandler() const;
 
 private:
 
@@ -88,7 +70,7 @@ private:
     // ~Physical Devices
 
 	// Queue Families
-	bool FilterSuitableQueueFamilies(const VkSurfaceKHR& Surface, std::vector<VkQueueFamilyProperties>& QueueFamiliesProperties, const VkPhysicalDevice& Device, QueueFamilies& Indices) const;
+	std::vector<QueueFamilyData> FilterSuitableQueueFamilies(const VkSurfaceKHR& Surface, std::vector<VkQueueFamilyProperties>& QueueFamiliesProperties, const VkPhysicalDevice& Device) const;
 	bool IsGraphicsQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamilyProperties) const;
 	bool IsPresentationQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamilyProperties, const VkPhysicalDevice& Device, const VkSurfaceKHR& SurfaceHandle, int Index) const;
 	// ~Queue Families
@@ -98,7 +80,7 @@ private:
 	// ~Logical Devices
 
 	void Cleanup();
-
+	QueueFamilyHandler mQueueFamilyHandler;
 	VkDevice LogicalDevice;
     std::vector<PhysicalDeviceProperties> DeviceProperties;
 	std::vector<const char*> mDesiredDeviceExtensions;

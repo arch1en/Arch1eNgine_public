@@ -3,7 +3,7 @@
 
 #include "Configurators/Window_RenderingInstance_Configurator.h"
 
-static const std::string ApplicationName = "Arch1eNgine";
+static constexpr char* ApplicationName = "Arch1eNgine";
 
 bool Application::Initiate()
 {

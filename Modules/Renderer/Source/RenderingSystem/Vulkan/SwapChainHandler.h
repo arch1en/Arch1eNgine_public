@@ -4,22 +4,22 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-struct QueueFamilies;
+class QueueFamilyHandler;
 struct QueueFamilyProperties;
 
 struct SwapChainHandlerCreationInfo
 {
-	const VkPhysicalDevice* PhysicalDevice;
-	const VkDevice*	LogicalDevice;
-	const VkSurfaceKHR* Surface;
-	const QueueFamilies* Families;
+	const VkPhysicalDevice* mPhysicalDevice;
+	const VkDevice*	mLogicalDevice;
+	const VkSurfaceKHR* mSurface;
+	const QueueFamilyHandler* mQueueFamilyHandler;
 };
 
 struct SwapChainSupportDetails
 {
-	VkSurfaceCapabilitiesKHR Capabilities;
-	std::vector<VkSurfaceFormatKHR> Formats;
-	std::vector<VkPresentModeKHR> PresentModes;
+	VkSurfaceCapabilitiesKHR mCapabilities;
+	std::vector<VkSurfaceFormatKHR> mFormats;
+	std::vector<VkPresentModeKHR> mPresentModes;
 };
 
 class SwapChainHandler
@@ -37,20 +37,24 @@ public:
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& AvailableFormats);
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> AvailablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities);
-	const VkExtent2D& GetSwapChainExtent() const;
-	void RetrieveSwapChainImages(const VkDevice& Device);
+	void RetrieveSwapChainImages(const VkDevice& Device, std::vector<VkImage>& SwapChainImages);
 
 	void Destroy(const VkDevice* Device);
+
+	const VkFormat GetSwapChainImageFormat() const;
+	const VkExtent2D GetSwapChainExtent() const;
+	const std::vector<VkImageView>* GetSwapChainImageViews() const;
+
 private:
 
 	const SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const;
 
-	VkSwapchainKHR SwapChainHandle;
-	VkFormat SwapChainImageFormat;
-	VkExtent2D SwapChainExtent;
+	VkSwapchainKHR mSwapChainHandle;
+	VkFormat mSwapChainImageFormat;
+	VkExtent2D mSwapChainExtent;
 
-	std::vector<VkImage> SwapChainImages;
-	std::vector<VkImageView> SwapChainImageViews;
+	std::vector<VkImage> mSwapChainImages;
+	std::vector<VkImageView> mSwapChainImageViews;
 };
 
 #endif
