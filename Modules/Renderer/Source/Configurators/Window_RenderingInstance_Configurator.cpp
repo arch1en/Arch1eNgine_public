@@ -11,6 +11,7 @@
 #include "RenderingSystem/Vulkan/Surface/SurfaceHandler.h"
 #include "RenderingSystem/Vulkan/DeviceHandler.h"
 #include "RenderingSystem/Vulkan/Surface/Implementations/Surface_Base.h"
+#include "RenderingSystem/Vulkan/PipelineSystem/RenderPassManager.h"
 #include "vulkan/vulkan.h"
 
 
@@ -33,6 +34,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 
 		SurfaceHandlerCreationData_SDL SurfaceData = {};
 		
+		// Creating Window.
 		SurfaceData.VulkanInstanceRef = static_cast<VkInstance*>(InstanceVkSDL2->GetRenderingInstanceHandle());
 
 #ifdef ARCHITECTURE_X86
@@ -44,8 +46,10 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		SurfaceData.WindowHandle = static_cast<SDL_Window*>(WindowVkSDL2->GetWindowHandle());
 		SurfaceData.WindowInfo = WindowVkSDL2->GetWindowInfo();
 
+		// Surface.
 		InstanceVkSDL2->GetSurfaceHandler()->CreateSurface(&SurfaceData);
 
+		// SwapChain.
 		InstanceVkSDL2->CreateSwapChainHandler();
 
 		DeviceHandlerCreationInfo CreationInfo;
@@ -57,19 +61,56 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 
-		InstanceVkSDL2->GetDeviceHandler()->Initiate(&CreationInfo);
+		DeviceHandler* pDeviceHandler = InstanceVkSDL2->GetDeviceHandler();
+		pDeviceHandler->Initiate(&CreationInfo);
 
 		SwapChainHandlerCreationInfo SwapChainCreationInfo = {};
 
-		SwapChainCreationInfo.LogicalDevice = InstanceVkSDL2->GetDeviceHandler()->GetLogicalDeviceHandle();
-		SwapChainCreationInfo.PhysicalDevice = &InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
-		SwapChainCreationInfo.Surface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
-		QueueFamilies Families = InstanceVkSDL2->GetDeviceHandler()->RetrieveQueueFamilies(*InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle(), InstanceVkSDL2->GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle);
-		SwapChainCreationInfo.Families = &Families;
+		const VkDevice* LogicalDevice = pDeviceHandler->GetLogicalDeviceHandle();
+
+		SwapChainCreationInfo.mLogicalDevice = LogicalDevice;
+		SwapChainCreationInfo.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+		SwapChainCreationInfo.mSurface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
+		SwapChainCreationInfo.mQueueFamilyHandler = &pDeviceHandler->GetQueueFamilyHandler();
 
 		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCreationInfo);
 
-		// @todo
+		// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
+		InstanceVkSDL2->CreateRenderPassManager();
+		InstanceVkSDL2->GetRenderPassManager()->CreateRenderPass(*LogicalDevice, InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageFormat());
+
+		FramebufferCreateInfo FramebufferCreationInfo = {};
+
+		FramebufferCreationInfo.mLogicalDevice = LogicalDevice;
+		FramebufferCreationInfo.mRenderPassHandle = InstanceVkSDL2->GetRenderPassManager()->GetRenderPassHandle();
+		FramebufferCreationInfo.mSwapChainImageExtent = &InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainExtent();
+		FramebufferCreationInfo.mSwapChainImageViews = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageViews();
+
+		InstanceVkSDL2->GetRenderPassManager()->CreateFramebuffers(FramebufferCreationInfo);
+
+		// Pipeline.
+		InstanceVkSDL2->CreatePipelineSystem();
+		
+		PipelineSystemCreationInfo PipelineCreationInfo = {};
+
+		PipelineCreationInfo.mLogicalDevice = LogicalDevice;
+		PipelineCreationInfo.mImageFormat = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageFormat();
+		PipelineCreationInfo.mViewportExtent = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainExtent();
+		PipelineCreationInfo.mRenderPassHandle = InstanceVkSDL2->GetRenderPassManager()->GetRenderPassHandle();
+
+		InstanceVkSDL2->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
+
+		// Commands (Command Pool and Command Buffers).
+
+		InstanceVkSDL2->CreateCommandsHandler();
+
+		CommandPoolCreateInfo CommandPoolCI = {};
+
+		CommandPoolCI.mLogicalDevice = LogicalDevice;
+		CommandPoolCI.mQueueFamilyData = InstanceVkSDL2->GetDeviceHandler()->GetQueueFamilyHandler().GetQueueFamilyData();
+
+		InstanceVkSDL2->GetCommandsHandler()->CreateCommandPool(CommandPoolCI);
+
 		return;
 	}
 	else if (mRenderingInstance->GetImplementationType().compare("SDL2/OpenGL") == 0)
@@ -81,7 +122,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		return;
 	}
 
-	LogV(LogType::Warning, "Renderer", 0, "%s function is not implemented for Window{%s} and Instance{%s} pair.", __FUNCTION__, mWindow->GetImplementationType().c_str(), mRenderingInstance->GetImplementationType().c_str());
+	LogV(LogType::Warning, "Renderer", 0, "%s function is not implemented for Window {%s} and Instance {%s} pair.", __FUNCTION__, mWindow->GetImplementationType().c_str(), mRenderingInstance->GetImplementationType().c_str());
 }
 
 void Configurator::Window_RenderingInstance::Invalidate()

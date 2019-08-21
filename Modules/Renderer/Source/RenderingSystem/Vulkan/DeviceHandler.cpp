@@ -6,6 +6,38 @@
 #include "LogSystem.h"
 #include "SwapChainHandler.h"
 
+// Queue Family Handler
+void QueueFamilyHandler::ResetQueueFamilyData(const std::vector<QueueFamilyData>& Data)
+{
+	mCachedQueueFamilyData.erase(mCachedQueueFamilyData.begin(), mCachedQueueFamilyData.end());
+	mCachedQueueFamilyData.reserve(Data.size());
+	mCachedQueueFamilyData = Data;
+}
+
+const std::vector<uint32_t> QueueFamilyHandler::GetQueueFamiliesIndices() const
+{
+	std::vector<uint32_t> Indices;
+	Indices.reserve(mCachedQueueFamilyData.size());
+	for (const auto& i : mCachedQueueFamilyData)
+	{
+		Indices.push_back(i.FamilyIndex);
+	}
+
+	return Indices;
+}
+
+const size_t QueueFamilyHandler::GetNumberOfQueueFamilies() const
+{
+	return mCachedQueueFamilyData.size();
+}
+
+const std::vector<QueueFamilyData>* QueueFamilyHandler::GetQueueFamilyData() const
+{
+	return &mCachedQueueFamilyData;
+}
+
+// ~Queue Family Handler
+
 void DeviceHandler::Initiate(const DeviceHandlerCreationInfo* CreationInfo)
 {
 	std::vector<VkPhysicalDevice> RetrievedDevices;
@@ -44,7 +76,7 @@ bool DeviceHandler::RetrievePhysicalDevices(const VkInstance& InstanceHandle, st
 
 bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, const SwapChainHandler* aSwapChainHandler, std::vector<VkPhysicalDevice>& Devices)
 {
-    for(int i = Devices.size() - 1; i >= 0; i--)
+    for(int i = int(Devices.size()) - 1; i >= 0; i--)
     {
         if(!IsDeviceSuitable(Surface, Devices[i], aSwapChainHandler))
         {
@@ -64,11 +96,11 @@ bool DeviceHandler::FilterSuitableDevices(const VkInstance& InstanceHandle, cons
 bool DeviceHandler::IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device, const SwapChainHandler* aSwapChainHandler) const
 {
 	int Rating = GetDeviceSuitabilityRating(Device);
-	QueueFamilies Indices = RetrieveQueueFamilies(Surface, Device);
+	std::vector<QueueFamilyData> Indices = RetrieveQueueFamiliesData(Surface, Device);
 	bool AreExtensionsSupported = CheckDeviceExtensionSupport(Device, mDesiredDeviceExtensions);
 	bool SwapChainAdequate = aSwapChainHandler->IsAdequate(Device, Surface);
 
-    return Rating != 0 && Indices.IsComplete() && AreExtensionsSupported && SwapChainAdequate;
+    return Rating != 0 && !Indices.empty() && AreExtensionsSupported && SwapChainAdequate;
 }
 
 bool DeviceHandler::CheckDeviceExtensionSupport(const VkPhysicalDevice & aDevice, const std::vector<const char*> aDesiredDeviceExtensions) const
@@ -137,9 +169,8 @@ void DeviceHandler::CacheDevices(std::vector<VkPhysicalDevice>& Devices)
 	});
 }
 
-const QueueFamilies DeviceHandler::RetrieveQueueFamilies(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
+const std::vector<QueueFamilyData>  DeviceHandler::RetrieveQueueFamiliesData(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const
 {
-	QueueFamilies Indices;
 	std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
 
 	uint32_t QueueFamilyCount = 0;
@@ -148,49 +179,41 @@ const QueueFamilies DeviceHandler::RetrieveQueueFamilies(const VkSurfaceKHR& Sur
 	if (QueueFamilyCount == 0)
 	{
 		LogVk(LogType::Error, 0, "No Queue Family properties for physical devices were found.");
-		return QueueFamilies();
+		return std::vector<QueueFamilyData>();
 	}
 
 	QueueFamilyProperties.resize(QueueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(Device, &QueueFamilyCount, QueueFamilyProperties.data());
 
-	if (!FilterSuitableQueueFamilies(Surface, QueueFamilyProperties, Device, Indices))
-	{
-		return QueueFamilies();
-	}
-
-	return Indices;
+	return FilterSuitableQueueFamilies(Surface, QueueFamilyProperties, Device);
 }
 
-bool DeviceHandler::FilterSuitableQueueFamilies(const VkSurfaceKHR& Surface, std::vector<VkQueueFamilyProperties>& QueueFamiliesProperties, const VkPhysicalDevice& Device, QueueFamilies& Indices) const
+std::vector<QueueFamilyData> DeviceHandler::FilterSuitableQueueFamilies(const VkSurfaceKHR& Surface, std::vector<VkQueueFamilyProperties>& QueueFamiliesProperties, const VkPhysicalDevice& Device) const
 {
 	if (QueueFamiliesProperties.size() == 0)
 	{
 		LogVk(LogType::Error, 0, "No queue families properties to filter.");
-		return false;
+		return 	std::vector<QueueFamilyData>();
 	}
+
+	std::vector<QueueFamilyData> QueueFamilyIndices;
 
 	int i = 0;
 	for (const auto& QueueFamily : QueueFamiliesProperties)
 	{
-		if (IsGraphicsQueueFamilySuitable(QueueFamily))
+		if (	QueueFamily.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) 
+			&&	IsPresentationQueueFamilySuitable(QueueFamily, Device, Surface, i))
 		{
-			Indices.FamilyIndices[static_cast<size_t>(QueueFamilyIndices::GraphicsFamily)].Index = i;
-		}
-		else if(IsPresentationQueueFamilySuitable(QueueFamily, Device, Surface, i))
-		{
-			Indices.FamilyIndices[static_cast<size_t>(QueueFamilyIndices::PresentationFamily)].Index = i;
-		}
-		
-		if (Indices.IsComplete())
-		{
-			break;
+			QueueFamilyData NewProperties = {};
+			NewProperties.FamilyIndex = i;
+			NewProperties.IsPresentationSuitable = true;
+			QueueFamilyIndices.push_back(NewProperties);
 		}
 
 		i++;
 	}
 
-	return true;
+	return QueueFamilyIndices;
 }
 
 bool DeviceHandler::IsGraphicsQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamilyProperties) const
@@ -198,6 +221,7 @@ bool DeviceHandler::IsGraphicsQueueFamilySuitable(const VkQueueFamilyProperties&
 	return QueueFamilyProperties.queueCount > 0 && QueueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
 }
 
+// Presentation for queue family needs to be checked before creating swapchain, otherwise Vulkan will complain.
 bool DeviceHandler::IsPresentationQueueFamilySuitable(const VkQueueFamilyProperties& QueueFamilyProperties, const VkPhysicalDevice& Device, const VkSurfaceKHR& SurfaceHandle, int Index) const
 {
 	VkBool32 SurfaceSupport = false;
@@ -207,17 +231,17 @@ bool DeviceHandler::IsPresentationQueueFamilySuitable(const VkQueueFamilyPropert
 
 void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const PhysicalDeviceProperties& PhysicalDevice)
 {
-	QueueFamilies Families = RetrieveQueueFamilies(Surface, PhysicalDevice.DeviceHandle);
+	std::vector<QueueFamilyData> Families = RetrieveQueueFamiliesData(Surface, PhysicalDevice.DeviceHandle);
 
 	std::vector<VkDeviceQueueCreateInfo> QueueCreateInfos;
 
-	for (const auto& Family : Families.FamilyIndices)
+	for (const auto& Family : Families)
 	{
 		VkDeviceQueueCreateInfo QueueCreateInfo = {};
 		QueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		QueueCreateInfo.queueFamilyIndex = Family.Index.value();
+		QueueCreateInfo.queueFamilyIndex = Family.FamilyIndex;
 		QueueCreateInfo.queueCount = 1;
-		QueueCreateInfo.pQueuePriorities = &Family.QueuePriority;
+		QueueCreateInfo.pQueuePriorities = &Family.Priority;
 		QueueCreateInfos.push_back(QueueCreateInfo);
 	}
 
@@ -230,7 +254,7 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 	CreateInfo.pEnabledFeatures = &DeviceFeatures;
 	CreateInfo.enabledExtensionCount = static_cast<uint32_t>(mDesiredDeviceExtensions.size());
 	CreateInfo.ppEnabledExtensionNames = mDesiredDeviceExtensions.data();
-	
+
 	const std::vector<const char*>& ValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->GetValidationLayers();
 	bool EnableValidationLayers = LogSystem::GetInstance()->GetVulkanLogger()->AreValidationLayersEnabled();
 	if (EnableValidationLayers)
@@ -248,6 +272,8 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 		LogVk(LogType::Error, 0, "Logical device creation failed.");
 		return;
 	}
+
+	mQueueFamilyHandler.ResetQueueFamilyData(Families);
 }
 
 const std::vector<PhysicalDeviceProperties>* DeviceHandler::GetPhysicalDevicesProperties() const
@@ -263,4 +289,9 @@ const VkDevice * DeviceHandler::GetLogicalDeviceHandle() const
 void DeviceHandler::Cleanup()
 {
 	vkDestroyDevice(LogicalDevice, nullptr);
+}
+
+QueueFamilyHandler DeviceHandler::GetQueueFamilyHandler() const
+{
+	return mQueueFamilyHandler;
 }
