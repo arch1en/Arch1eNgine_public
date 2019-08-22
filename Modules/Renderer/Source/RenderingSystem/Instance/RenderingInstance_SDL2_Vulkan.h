@@ -46,6 +46,7 @@ public:
 	virtual void SetRenderingInstanceHandle(void* Handle) override;
 	virtual void SetSwapInterval(int Interval) override;
 	virtual void SetClearColor(Vector4<float> ClearColor) override;
+	virtual void RenderLoop() override;
 	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;
 	// End I::RenderingInstance_Impl Interface
 

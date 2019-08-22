@@ -291,7 +291,7 @@ void DeviceHandler::Cleanup()
 	vkDestroyDevice(LogicalDevice, nullptr);
 }
 
-QueueFamilyHandler DeviceHandler::GetQueueFamilyHandler() const
+const QueueFamilyHandler* DeviceHandler::GetQueueFamilyHandler() const
 {
-	return mQueueFamilyHandler;
+	return &mQueueFamilyHandler;
 }

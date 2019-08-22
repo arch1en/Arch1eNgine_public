@@ -234,6 +234,11 @@ void RenderingInstance_SDL2_Vulkan::SetClearColor(Vector4<float> ClearColor)
 {
 }
 
+void RenderingInstance_SDL2_Vulkan::RenderLoop()
+{
+	
+}
+
 void RenderingInstance_SDL2_Vulkan::ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties)
 {
 }

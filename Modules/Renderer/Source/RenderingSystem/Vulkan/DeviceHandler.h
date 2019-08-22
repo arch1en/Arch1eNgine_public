@@ -55,7 +55,7 @@ public:
 	const VkDevice* GetLogicalDeviceHandle() const;
 	const std::vector<QueueFamilyData> RetrieveQueueFamiliesData(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const;
 
-	QueueFamilyHandler GetQueueFamilyHandler() const;
+	const QueueFamilyHandler* GetQueueFamilyHandler() const;
 
 private:
 

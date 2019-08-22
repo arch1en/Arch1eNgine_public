@@ -71,7 +71,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		SwapChainCreationInfo.mLogicalDevice = LogicalDevice;
 		SwapChainCreationInfo.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
 		SwapChainCreationInfo.mSurface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
-		SwapChainCreationInfo.mQueueFamilyHandler = &pDeviceHandler->GetQueueFamilyHandler();
+		SwapChainCreationInfo.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
 
 		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCreationInfo);
 
@@ -107,9 +107,17 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		CommandPoolCreateInfo CommandPoolCI = {};
 
 		CommandPoolCI.mLogicalDevice = LogicalDevice;
-		CommandPoolCI.mQueueFamilyData = InstanceVkSDL2->GetDeviceHandler()->GetQueueFamilyHandler().GetQueueFamilyData();
+		CommandPoolCI.mQueueFamilyData = InstanceVkSDL2->GetDeviceHandler()->GetQueueFamilyHandler()->GetQueueFamilyData();
 
 		InstanceVkSDL2->GetCommandsHandler()->CreateCommandPool(CommandPoolCI);
+
+		RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
+
+		RenderPassCommandBufferCI.mLogicalDevice = LogicalDevice;
+		RenderPassCommandBufferCI.mBufferSize = InstanceVkSDL2->GetRenderPassManager()->GetFramebuffers()->size();
+		RenderPassCommandBufferCI.mCommandPool = InstanceVkSDL2->GetCommandsHandler()->GetCommandPool();
+
+		InstanceVkSDL2->GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
 
 		return;
 	}
