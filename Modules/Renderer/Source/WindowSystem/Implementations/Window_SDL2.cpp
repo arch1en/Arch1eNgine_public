@@ -6,9 +6,10 @@ Window_SDL2::Window_SDL2(WindowProperties Properties)
 	: I::Window_Impl{Properties}
 	, WindowHandle{nullptr}
 {
+
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		LogV(LogType::Error, "WindowSystem", 0, "Cannot initialize SDL Window. SDL_Init failed.");
+		LogV(LogType::Error, LOGDOMAIN_WINDOW_SDL2, 0, "Cannot initialize SDL Window. SDL_Init failed.");
 	}
 
 	if (Properties.WindowPosition.Mode == WindowPositionMode::Centered)
@@ -16,6 +17,7 @@ Window_SDL2::Window_SDL2(WindowProperties Properties)
 		Properties.WindowPosition.PositionX = SDL_WINDOWPOS_CENTERED;
 		Properties.WindowPosition.PositionY = SDL_WINDOWPOS_CENTERED;
 	}
+
 }
 
 void Window_SDL2::RetrieveWindowInfo()

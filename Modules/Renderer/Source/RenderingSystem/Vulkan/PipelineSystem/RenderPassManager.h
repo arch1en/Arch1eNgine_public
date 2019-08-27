@@ -27,12 +27,12 @@ public:
 	void CreateRenderPass(const VkDevice& Device, const VkFormat& ImageFormat);
 	void CreateFramebuffers(const FramebufferCreateInfo& CreateInfo);
 	const VkRenderPass* const GetRenderPassHandle() const;
+	const std::vector<VkCommandBuffer>* GetRenderPassCommandBuffers() const;
 
 	const std::vector<VkFramebuffer>* GetFramebuffers() const;
 
 	void CreateRenderPassCommandBuffers(const RenderPassCommandBufferCreateInfo& CreateInfo);
-	void BeginRenderPassCommandBuffer();
-
+	
 	void CleanUp(const VkDevice& Device);
 private:
 

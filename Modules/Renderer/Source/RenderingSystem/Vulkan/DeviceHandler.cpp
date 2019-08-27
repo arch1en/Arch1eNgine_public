@@ -36,6 +36,25 @@ const std::vector<QueueFamilyData>* QueueFamilyHandler::GetQueueFamilyData() con
 	return &mCachedQueueFamilyData;
 }
 
+const QueueFamilyData* QueueFamilyHandler::GetPresentationSuitableQueueFamilyData() const
+{
+	for (auto& QueueFamily : *GetQueueFamilyData())
+	{
+		if (QueueFamily.IsPresentationSuitable)
+		{
+			return &QueueFamily;
+		}
+	}
+}
+
+void QueueFamilyHandler::RetrieveDeviceQueueHandles(const VkDevice* LogicalDevice)
+{
+	for (QueueFamilyData& FamilyData : mCachedQueueFamilyData)
+	{
+		vkGetDeviceQueue(*LogicalDevice, FamilyData.FamilyIndex, 0, &FamilyData.QueueHandle);
+	}
+}
+
 // ~Queue Family Handler
 
 void DeviceHandler::Initiate(const DeviceHandlerCreationInfo* CreationInfo)
@@ -274,6 +293,7 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 	}
 
 	mQueueFamilyHandler.ResetQueueFamilyData(Families);
+	mQueueFamilyHandler.RetrieveDeviceQueueHandles(&LogicalDevice);
 }
 
 const std::vector<PhysicalDeviceProperties>* DeviceHandler::GetPhysicalDevicesProperties() const

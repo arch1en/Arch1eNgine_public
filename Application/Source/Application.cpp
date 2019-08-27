@@ -3,6 +3,8 @@
 
 #include "Configurators/Window_RenderingInstance_Configurator.h"
 
+#include "SDL.h"
+
 static constexpr char* ApplicationName = "Arch1eNgine";
 
 bool Application::Initiate()
@@ -58,18 +60,26 @@ void Application::MainLoop()
 
 void Application::LogicLoop()
 {
+	SDL_Event Event;
+
+	while(SDL_PollEvent(&Event))
+	{
+		
+	}
+	// [todo] Made for SDL for now. Some kind of API binding system would be good to do here.
 
 }
 
 void Application::RenderingLoop()
 {
-	mRenderingSystem->GetRenderingInstance()->SetClearColor(Vector4<float>(0.f, 0.f, 0.f, 1.f));
+	mRenderingSystem->GetRenderingInstance()->RenderLoop();
+	//mRenderingSystem->GetRenderingInstance()->SetClearColor(Vector4<float>(0.f, 0.f, 0.f, 1.f));
 
-	I::RenderingInstanceProperties_ClearColor_Impl Properties;
+//	I::RenderingInstanceProperties_ClearColor_Impl Properties;
 
-	Properties.ClearColorBuffer = true;
+//	Properties.ClearColorBuffer = true;
 
-	mRenderingSystem->GetRenderingInstance()->ClearInstance(Properties);
+//	mRenderingSystem->GetRenderingInstance()->ClearInstance(Properties);
 
-	mWindowSystem->GetMainWindow()->SwapBuffers();
+	//mWindowSystem->GetMainWindow()->SwapBuffers();
 }

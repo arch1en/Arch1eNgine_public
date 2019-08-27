@@ -206,6 +206,11 @@ const SwapChainSupportDetails SwapChainHandler::QuerySwapChainSupport(const VkPh
 	return Details;
 }
 
+const VkSwapchainKHR* SwapChainHandler::GetSwapChainHandle()
+{
+	return &mSwapChainHandle;
+}
+
 const VkFormat SwapChainHandler::GetSwapChainImageFormat() const
 {
 	return mSwapChainImageFormat;

@@ -23,6 +23,9 @@ public:
 	void CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo);
 
 	void CleanUp(const VkDevice& Device);
+
+	const VkPipeline* GetPipelineHandle() const;
+
 private:
 
 	VkPipelineLayout mPipelineLayout;

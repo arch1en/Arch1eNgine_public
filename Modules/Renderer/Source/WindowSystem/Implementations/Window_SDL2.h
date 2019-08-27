@@ -23,6 +23,7 @@ public:
 protected:
 	SDL_SysWMinfo WindowInfo;
 	SDL_Window * WindowHandle;
+	SDL_Surface* Surface;
 	RenderingInstance* mRenderingInstance;
 
 };

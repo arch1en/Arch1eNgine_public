@@ -41,6 +41,7 @@ public:
 
 	void Destroy(const VkDevice* Device);
 
+	const VkSwapchainKHR* GetSwapChainHandle();
 	const VkFormat GetSwapChainImageFormat() const;
 	const VkExtent2D GetSwapChainExtent() const;
 	const std::vector<VkImageView>* GetSwapChainImageViews() const;

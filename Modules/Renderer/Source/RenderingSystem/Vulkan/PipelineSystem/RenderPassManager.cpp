@@ -22,17 +22,29 @@ void RenderPassManager::CreateRenderPass(const VkDevice& Device, const VkFormat&
 	Subpass.colorAttachmentCount = 1;
 	Subpass.pColorAttachments = &ColorAttachmentRef;
 
+	VkSubpassDependency Dependency = {};
+	Dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	Dependency.dstSubpass = 0;
+	Dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	Dependency.srcAccessMask = 0;
+	Dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	Dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	VkRenderPassCreateInfo RenderPassInfo = {};
 	RenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	RenderPassInfo.attachmentCount = 1;
 	RenderPassInfo.pAttachments = &ColorAttachment;
 	RenderPassInfo.subpassCount = 1;
 	RenderPassInfo.pSubpasses = &Subpass;
+	RenderPassInfo.dependencyCount = 1;
+	RenderPassInfo.pDependencies = &Dependency;
 
 	if (vkCreateRenderPass(Device, &RenderPassInfo, nullptr, &mRenderPass) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Render pass creation failed !");
 	}
+
+
 }
 
 void RenderPassManager::CreateFramebuffers(const FramebufferCreateInfo& CreateInfo)
@@ -79,22 +91,6 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 	}
 }
 
-void RenderPassManager::BeginRenderPassCommandBuffer()
-{
-	for (size_t i = 0; i < mRenderPassCommandBuffers.size(); i++)
-	{
-		VkCommandBufferBeginInfo BeginInfo = {};
-		BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		BeginInfo.flags = 0; // Optional
-		BeginInfo.pInheritanceInfo = nullptr; // Optional
-
-		if (vkBeginCommandBuffer(mRenderPassCommandBuffers[i], &BeginInfo) != VK_SUCCESS)
-		{
-			LogVk(LogType::Error, 0, "Error beginning command buffer.");
-		}
-	}
-}
-
 const VkRenderPass* const RenderPassManager::GetRenderPassHandle() const
 {
 	return &mRenderPass;
@@ -108,8 +104,13 @@ const std::vector<VkFramebuffer>* RenderPassManager::GetFramebuffers() const
 void RenderPassManager::CleanUp(const VkDevice& Device)
 {
 	vkDestroyRenderPass(Device, mRenderPass, nullptr);
-	for (auto Framebuffer : mFramebuffers)
+	for (auto& Framebuffer : mFramebuffers)
 	{
 		vkDestroyFramebuffer(Device, Framebuffer, nullptr);
 	}
+}
+
+const std::vector<VkCommandBuffer>* RenderPassManager::GetRenderPassCommandBuffers() const
+{
+	return &mRenderPassCommandBuffers;
 }

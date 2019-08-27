@@ -97,7 +97,7 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	ColorBlendState.logicOp = VK_LOGIC_OP_COPY; // Optional
 	ColorBlendState.attachmentCount = 1;
 	ColorBlendState.pAttachments = &ColorBlendAttachment;
-	ColorBlendState.blendConstants[0] = 0.f; // Optional
+	ColorBlendState.blendConstants[0] = 0.f; // OptionalBeginInfo
 	ColorBlendState.blendConstants[1] = 0.f; // Optional
 	ColorBlendState.blendConstants[2] = 0.f; // Optional
 	ColorBlendState.blendConstants[3] = 0.f; // Optional
@@ -137,4 +137,9 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	vkDestroyShaderModule(*CreationInfo.mLogicalDevice, ShaderModule_Vertex, nullptr);
 	vkDestroyShaderModule(*CreationInfo.mLogicalDevice, ShaderModule_Fragment, nullptr);
 
+}
+
+const VkPipeline* PipelineSystem::GetPipelineHandle() const
+{
+	return &mPipelineHandle;
 }

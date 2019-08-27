@@ -26,6 +26,7 @@ struct PhysicalDeviceProperties
 
 struct QueueFamilyData
 {
+	VkQueue QueueHandle;
 	uint32_t FamilyIndex = -1;
 	float Priority = 1.f;
 	bool IsPresentationSuitable = false;
@@ -35,11 +36,12 @@ class QueueFamilyHandler
 {
 public:
 	void ResetQueueFamilyData(const std::vector<QueueFamilyData>& Data);
+	void RetrieveDeviceQueueHandles(const VkDevice* LogicalDevice);
 
 	const std::vector<uint32_t> GetQueueFamiliesIndices() const;
 	const size_t GetNumberOfQueueFamilies() const;
 	const std::vector<QueueFamilyData>* GetQueueFamilyData() const;
-
+	const QueueFamilyData* GetPresentationSuitableQueueFamilyData() const;
 private:
 
 	std::vector<QueueFamilyData> mCachedQueueFamilyData;

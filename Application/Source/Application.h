@@ -33,7 +33,6 @@ private:
 	void LogicLoop();
 	void RenderingLoop();
 
-
 };
 
 #endif

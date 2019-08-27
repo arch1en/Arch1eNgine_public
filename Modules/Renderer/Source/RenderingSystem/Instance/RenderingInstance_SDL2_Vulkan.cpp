@@ -8,8 +8,15 @@
 #include "RenderingSystem/RenderingSystemUtilities.h"
 #include "LogSystem.h"
 
+// Windows has a "max" macro.
+#undef max
+
 RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
 {
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+	{
+		LogV(LogType::Error, LOGDOMAIN_WINDOW_SDL2, 0, "SDL Initiation failed!");
+	}
 
 }
 
@@ -236,7 +243,75 @@ void RenderingInstance_SDL2_Vulkan::SetClearColor(Vector4<float> ClearColor)
 
 void RenderingInstance_SDL2_Vulkan::RenderLoop()
 {
-	
+	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetRenderPassManager()->GetRenderPassCommandBuffers();
+
+	for (size_t i = 0; i < GetRenderPassManager()->GetRenderPassCommandBuffers()->size(); i++)
+	{
+		VkCommandBufferBeginInfo CommandBufferBI = {};
+		CommandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		CommandBufferBI.flags = 0; // Optional
+		CommandBufferBI.pInheritanceInfo = nullptr; // Optional
+
+		if (vkBeginCommandBuffer(RenderPassCommandBuffers[i], &CommandBufferBI) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Error beginning command buffer.");
+		}
+
+		VkRenderPassBeginInfo RenderPassBI = {};
+		RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		RenderPassBI.renderPass = *GetRenderPassManager()->GetRenderPassHandle();
+		RenderPassBI.framebuffer = (*GetRenderPassManager()->GetFramebuffers())[i];
+		RenderPassBI.renderArea.offset = {0,0};
+		RenderPassBI.renderArea.extent = GetSwapChainHandler()->GetSwapChainExtent();
+
+		VkClearValue ClearColor = { 0.1f, 0.1f, 0.1f, 1.f };
+
+		RenderPassBI.clearValueCount = 1;
+		RenderPassBI.pClearValues = &ClearColor;
+
+		vkCmdBeginRenderPass((*GetRenderPassManager()->GetRenderPassCommandBuffers())[i], &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(RenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *GetPipelineSystem()->GetPipelineHandle());
+
+		vkCmdDraw(RenderPassCommandBuffers[i], 3, 1, 0, 0);
+
+		vkCmdEndRenderPass(RenderPassCommandBuffers[i]);
+
+		if (vkEndCommandBuffer(RenderPassCommandBuffers[i]) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Failed to record command buffer!");
+		}
+	}
+}
+
+void RenderingInstance_SDL2_Vulkan::DrawFrame()
+{
+	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetRenderPassManager()->GetRenderPassCommandBuffers();
+
+	uint32_t ImageIndex;
+
+	uint64_t Timeout = std::numeric_limits <uint64_t>::max(); // Timeout in nanoseconds. Using the maximum value of a 64bit unsigned integer disables the timeout.
+
+	vkAcquireNextImageKHR(*GetDeviceHandler()->GetLogicalDeviceHandle(), *GetSwapChainHandler()->GetSwapChainHandle(), Timeout, Semaphores[ESemaphoreType::ImageAvailable], VK_NULL_HANDLE, &ImageIndex);
+
+	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+	VkSubmitInfo SubmitInfo = {};
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.waitSemaphoreCount = 1;
+	SubmitInfo.pWaitSemaphores = {&Semaphores[ESemaphoreType::ImageAvailable]};
+	SubmitInfo.pWaitDstStageMask = WaitStages;
+	SubmitInfo.commandBufferCount = 1;
+	SubmitInfo.pCommandBuffers = &RenderPassCommandBuffers[ImageIndex];
+	SubmitInfo.pSignalSemaphores = {&Semaphores[ESemaphoreType::RenderFinished]};
+	SubmitInfo.signalSemaphoreCount = 1;
+
+	if (vkQueueSubmit(GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle, 1, &SubmitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Queue submission failed!");
+	}
+
+	GetSwapChainHandler()->
 }
 
 void RenderingInstance_SDL2_Vulkan::ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties)

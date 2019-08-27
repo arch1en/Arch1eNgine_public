@@ -13,8 +13,19 @@
 #include "RenderingSystem/Vulkan/PipelineSystem/RenderPassManager.h"
 #include "RenderingSystem/Vulkan/PipelineSystem/CommandsHandler.h"
 
+// [todo] 
+
+
+
 class RenderingInstance_SDL2_Vulkan : public I::RenderingInstance_Impl
 {
+	enum ESemaphoreType
+	{
+		ImageAvailable,
+		RenderFinished,
+		TOTAL
+	};
+
 public:
 
 	RenderingInstance_SDL2_Vulkan();
@@ -47,6 +58,7 @@ public:
 	virtual void SetSwapInterval(int Interval) override;
 	virtual void SetClearColor(Vector4<float> ClearColor) override;
 	virtual void RenderLoop() override;
+	void DrawFrame();
 	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;
 	// End I::RenderingInstance_Impl Interface
 
@@ -61,5 +73,6 @@ private:
 	std::unique_ptr<PipelineSystem> mPipelineSystem;
 	std::unique_ptr<CommandsHandler> mCommandsHandler;
 
+	VkSemaphore Semaphores[ESemaphoreType::TOTAL];
 };
 #endif
