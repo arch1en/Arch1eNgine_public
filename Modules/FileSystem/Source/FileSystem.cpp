@@ -7,9 +7,6 @@ FileSystem::FileSystem()
 {
 	char* BasePath = SDL_GetBasePath();
 
-	const char* LHS;
-	const char* RHS;
-
 	const int Position = FindOccurenceFromString(BasePath, GetPathSeparator(), 4, true);
 	char* NewRootDir = new char[Position - 4];
 	memcpy(NewRootDir, BasePath, Position);
@@ -52,7 +49,7 @@ size_t FileSystem::FindOccurenceFromString(const char* String, const char* Token
 	if (Reversed)
 	{
 		Position = strlen(String);
-		for (int i = 0; i < OccurenceNumber; i++)
+		for (size_t i = 0; i < OccurenceNumber; i++)
 		{
 			Position = SString.rfind(Token, Position - strlen(Token));
 		}
@@ -60,7 +57,7 @@ size_t FileSystem::FindOccurenceFromString(const char* String, const char* Token
 	else
 	{
 		Position = 0;
-		for (int i = 0; i < OccurenceNumber; i++)
+		for (size_t i = 0; i < OccurenceNumber; i++)
 		{
 			Position = SString.find(Token, Position + strlen(Token));
 		}

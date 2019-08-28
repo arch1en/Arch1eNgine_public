@@ -32,7 +32,9 @@ void Application::CreateApplicationWindow(RenderingInstanceType Type)
 	WindowProperties Properties;
 
 	Properties.Title = "Arch1eNgine";
-	Properties.WindowPosition.Mode = WindowPositionMode::Centered;
+	Properties.WindowPosition.Mode = WindowPositionMode::Custom;
+	Properties.WindowPosition.PositionX = 100;
+	Properties.WindowPosition.PositionY = 100;
 	Properties.Width = 640;
 	Properties.Height = 480;
 	Properties.RendererType = static_cast<WindowRendererType>(Type);
@@ -61,10 +63,12 @@ void Application::MainLoop()
 void Application::LogicLoop()
 {
 	SDL_Event Event;
-
+	
 	while(SDL_PollEvent(&Event))
 	{
-		
+		if (Event.type == SDL_QUIT)
+		{
+		}
 	}
 	// [todo] Made for SDL for now. Some kind of API binding system would be good to do here.
 

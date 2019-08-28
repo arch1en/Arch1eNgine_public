@@ -44,7 +44,6 @@ void RenderPassManager::CreateRenderPass(const VkDevice& Device, const VkFormat&
 		LogVk(LogType::Error, 0, "Render pass creation failed !");
 	}
 
-
 }
 
 void RenderPassManager::CreateFramebuffers(const FramebufferCreateInfo& CreateInfo)

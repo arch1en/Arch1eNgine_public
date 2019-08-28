@@ -15,17 +15,10 @@
 
 // [todo] 
 
-
+constexpr int MaxFramesInFlight = 2;
 
 class RenderingInstance_SDL2_Vulkan : public I::RenderingInstance_Impl
 {
-	enum ESemaphoreType
-	{
-		ImageAvailable,
-		RenderFinished,
-		TOTAL
-	};
-
 public:
 
 	RenderingInstance_SDL2_Vulkan();
@@ -39,6 +32,7 @@ public:
 	void CreateRenderPassManager();
 	void CreatePipelineSystem();
 	void CreateCommandsHandler();
+	void CreateSemaphores();
 
 	std::vector<VkLayerProperties>		CheckValidationLayersAvailability(const std::vector<const char*> DesiredLayers);
 	std::vector<VkExtensionProperties>	GetAvailableExtensions();
@@ -64,6 +58,8 @@ public:
 
 private:
 
+	size_t mCurrentFrameIndex = 0;
+
 	VkInstance InstanceHandle;
 
 	std::unique_ptr<RenderPassManager> mRenderPassManager;
@@ -73,6 +69,10 @@ private:
 	std::unique_ptr<PipelineSystem> mPipelineSystem;
 	std::unique_ptr<CommandsHandler> mCommandsHandler;
 
-	VkSemaphore Semaphores[ESemaphoreType::TOTAL];
+	std::vector<VkSemaphore> ImageAvailableSemaphores;
+	std::vector<VkSemaphore> RenderFinishedSemaphores;
+
+	void CleanUp();
+	void DestroySemaphoreArray(std::vector<VkSemaphore>& Array);
 };
 #endif

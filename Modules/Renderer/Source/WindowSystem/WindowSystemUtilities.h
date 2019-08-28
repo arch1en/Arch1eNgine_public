@@ -5,7 +5,7 @@
 
 enum class WindowPositionMode
 {
-	Centered,
+	Centered,	// [TODO] Broken in SDL2/Vulkan rendering instance. Needs fixing.
 	Custom		// Use PositionX and PositionY to set the position.
 };
 

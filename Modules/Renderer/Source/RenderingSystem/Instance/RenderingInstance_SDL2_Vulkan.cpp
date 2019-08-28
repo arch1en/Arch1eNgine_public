@@ -93,6 +93,9 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	// @todo [Urgent] Decide what to do with the logger class (maybe make it classless ?)
 	LogSystem::GetInstance()->GetVulkanLogger()->InitiateDebugMessenger(InstanceHandle);
 
+
+	// [TODO] Configurator has too much stuff in it that should be in this class (not nescesserily in this function). Move here what's nescessary.
+
 	return true;
 }
 
@@ -282,6 +285,8 @@ void RenderingInstance_SDL2_Vulkan::RenderLoop()
 			LogVk(LogType::Error, 0, "Failed to record command buffer!");
 		}
 	}
+
+	DrawFrame();
 }
 
 void RenderingInstance_SDL2_Vulkan::DrawFrame()
@@ -292,28 +297,87 @@ void RenderingInstance_SDL2_Vulkan::DrawFrame()
 
 	uint64_t Timeout = std::numeric_limits <uint64_t>::max(); // Timeout in nanoseconds. Using the maximum value of a 64bit unsigned integer disables the timeout.
 
-	vkAcquireNextImageKHR(*GetDeviceHandler()->GetLogicalDeviceHandle(), *GetSwapChainHandler()->GetSwapChainHandle(), Timeout, Semaphores[ESemaphoreType::ImageAvailable], VK_NULL_HANDLE, &ImageIndex);
+	vkAcquireNextImageKHR(*GetDeviceHandler()->GetLogicalDeviceHandle(), *GetSwapChainHandler()->GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[0], VK_NULL_HANDLE, &ImageIndex);
 
 	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+	VkSemaphore WaitSemaphores[] = { ImageAvailableSemaphores[mCurrentFrameIndex] };
+	VkSemaphore SignalSemaphores[] = { RenderFinishedSemaphores[mCurrentFrameIndex] };
 
 	VkSubmitInfo SubmitInfo = {};
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	SubmitInfo.waitSemaphoreCount = 1;
-	SubmitInfo.pWaitSemaphores = {&Semaphores[ESemaphoreType::ImageAvailable]};
+	SubmitInfo.pWaitSemaphores = WaitSemaphores;
 	SubmitInfo.pWaitDstStageMask = WaitStages;
 	SubmitInfo.commandBufferCount = 1;
 	SubmitInfo.pCommandBuffers = &RenderPassCommandBuffers[ImageIndex];
-	SubmitInfo.pSignalSemaphores = {&Semaphores[ESemaphoreType::RenderFinished]};
+	SubmitInfo.pSignalSemaphores = SignalSemaphores;
 	SubmitInfo.signalSemaphoreCount = 1;
 
-	if (vkQueueSubmit(GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle, 1, &SubmitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	const VkQueue& PresentQueue = GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle;
+
+	if (vkQueueSubmit(PresentQueue, 1, &SubmitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Queue submission failed!");
 	}
 
-	GetSwapChainHandler()->
+	VkPresentInfoKHR PresentInfo = {};
+	PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	PresentInfo.waitSemaphoreCount = 1;
+	PresentInfo.pWaitSemaphores = SignalSemaphores;
+	PresentInfo.swapchainCount = 1;
+	PresentInfo.pSwapchains = { GetSwapChainHandler()->GetSwapChainHandle() };
+	PresentInfo.pImageIndices = &ImageIndex;
+	PresentInfo.pResults = nullptr;
+
+	vkQueuePresentKHR(PresentQueue , &PresentInfo);
+
+	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % MaxFramesInFlight;
 }
 
 void RenderingInstance_SDL2_Vulkan::ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties)
 {
+}
+
+void RenderingInstance_SDL2_Vulkan::CreateSemaphores()
+{
+	Assert(ImageAvailableSemaphores.size() == 0, "Array must be empty at this point.");
+	Assert(RenderFinishedSemaphores.size() == 0, "Array must be empty at this point.");
+
+	ImageAvailableSemaphores.resize(MaxFramesInFlight);
+	RenderFinishedSemaphores.resize(MaxFramesInFlight);
+
+	VkSemaphoreCreateInfo CreateInfo = {};
+	CreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	for (int i = 0; i < ImageAvailableSemaphores.size(); i++)
+	{
+		if (vkCreateSemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), &CreateInfo, nullptr, &ImageAvailableSemaphores[i]) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Image Available Semaphores Creation failed!");
+		}
+	}
+
+	for (int i = 0; i < RenderFinishedSemaphores.size(); i++)
+	{
+		if (vkCreateSemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), &CreateInfo, nullptr, &RenderFinishedSemaphores[i]) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Rendering Finished Semaphores Creation failed!");
+		}
+	}
+}
+
+void RenderingInstance_SDL2_Vulkan::CleanUp()
+{
+	DestroySemaphoreArray(ImageAvailableSemaphores);
+	DestroySemaphoreArray(RenderFinishedSemaphores);
+}
+
+void RenderingInstance_SDL2_Vulkan::DestroySemaphoreArray(std::vector<VkSemaphore>& Array)
+{
+	for (size_t i = Array.size() - 1; i >= 0; i--)
+	{
+		vkDestroySemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), Array[i], nullptr);
+		Array.erase(Array.begin() + i);
+	}
 }

@@ -220,12 +220,11 @@ std::vector<QueueFamilyData> DeviceHandler::FilterSuitableQueueFamilies(const Vk
 	int i = 0;
 	for (const auto& QueueFamily : QueueFamiliesProperties)
 	{
-		if (	QueueFamily.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) 
-			&&	IsPresentationQueueFamilySuitable(QueueFamily, Device, Surface, i))
+		if (QueueFamily.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
 		{
 			QueueFamilyData NewProperties = {};
 			NewProperties.FamilyIndex = i;
-			NewProperties.IsPresentationSuitable = true;
+			NewProperties.IsPresentationSuitable = IsPresentationQueueFamilySuitable(QueueFamily, Device, Surface, i);;
 			QueueFamilyIndices.push_back(NewProperties);
 		}
 

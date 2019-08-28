@@ -118,6 +118,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		RenderPassCommandBufferCI.mCommandPool = InstanceVkSDL2->GetCommandsHandler()->GetCommandPool();
 
 		InstanceVkSDL2->GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
+		InstanceVkSDL2->CreateSemaphores();
 
 		return;
 	}

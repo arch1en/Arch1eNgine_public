@@ -14,6 +14,7 @@ std::vector<char> ShaderSystem::LoadShaderFromFile(const std::string& FileName)
 	if (!File.is_open())
 	{
 		LogVk(LogType::Error, 0, "File opening failed");
+		return std::vector<char>();
 	}
 
 	size_t FileSize = static_cast<size_t>(File.tellg());
