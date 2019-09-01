@@ -119,6 +119,7 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 
 		InstanceVkSDL2->GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
 		InstanceVkSDL2->CreateSemaphores();
+		InstanceVkSDL2->CreateFences();
 
 		return;
 	}

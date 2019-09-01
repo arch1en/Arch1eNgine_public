@@ -68,6 +68,7 @@ void Application::LogicLoop()
 	{
 		if (Event.type == SDL_QUIT)
 		{
+			mWindowSystem->DestroyMainWindow();
 		}
 	}
 	// [todo] Made for SDL for now. Some kind of API binding system would be good to do here.

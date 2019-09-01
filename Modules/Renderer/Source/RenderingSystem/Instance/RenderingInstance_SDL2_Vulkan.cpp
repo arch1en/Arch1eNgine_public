@@ -292,12 +292,18 @@ void RenderingInstance_SDL2_Vulkan::RenderLoop()
 void RenderingInstance_SDL2_Vulkan::DrawFrame()
 {
 	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetRenderPassManager()->GetRenderPassCommandBuffers();
+	const VkDevice* Device = GetDeviceHandler()->GetLogicalDeviceHandle();
+
+	Assert(Device, "Device must be valid at this point!");
 
 	uint32_t ImageIndex;
 
 	uint64_t Timeout = std::numeric_limits <uint64_t>::max(); // Timeout in nanoseconds. Using the maximum value of a 64bit unsigned integer disables the timeout.
 
-	vkAcquireNextImageKHR(*GetDeviceHandler()->GetLogicalDeviceHandle(), *GetSwapChainHandler()->GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[0], VK_NULL_HANDLE, &ImageIndex);
+	vkWaitForFences(*Device, 1, &InFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
+	vkResetFences(*Device, 1, &InFlightFences[mCurrentFrameIndex]);
+
+	vkAcquireNextImageKHR(*Device, *GetSwapChainHandler()->GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[0], VK_NULL_HANDLE, &ImageIndex);
 
 	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
@@ -316,7 +322,7 @@ void RenderingInstance_SDL2_Vulkan::DrawFrame()
 
 	const VkQueue& PresentQueue = GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle;
 
-	if (vkQueueSubmit(PresentQueue, 1, &SubmitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	if (vkQueueSubmit(PresentQueue, 1, &SubmitInfo, InFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Queue submission failed!");
 	}
@@ -367,10 +373,34 @@ void RenderingInstance_SDL2_Vulkan::CreateSemaphores()
 	}
 }
 
+void RenderingInstance_SDL2_Vulkan::CreateFences()
+{
+	Assert(InFlightFences.size() == 0, "Array must be empty at this point.");
+
+	InFlightFences.resize(MaxFramesInFlight);
+
+	VkFenceCreateInfo CreateInfo = {};
+	CreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	// By default Fences are created in an unsignaled state. That means vkWaitForFences will wait forever for them.
+	// We can change its state on the creation time, so that vkWaitForFences will catch it the first time before rendering.
+	CreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; 
+
+	for (int i = 0; i < InFlightFences.size(); i++)
+	{
+		if (vkCreateFence(*GetDeviceHandler()->GetLogicalDeviceHandle(), &CreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "In Flight Fences Creation failed!");
+		}
+	}
+}
+
 void RenderingInstance_SDL2_Vulkan::CleanUp()
 {
 	DestroySemaphoreArray(ImageAvailableSemaphores);
 	DestroySemaphoreArray(RenderFinishedSemaphores);
+	DestroyFenceArray(InFlightFences);
+
+	vkDeviceWaitIdle(*GetDeviceHandler()->GetLogicalDeviceHandle());
 }
 
 void RenderingInstance_SDL2_Vulkan::DestroySemaphoreArray(std::vector<VkSemaphore>& Array)
@@ -378,6 +408,15 @@ void RenderingInstance_SDL2_Vulkan::DestroySemaphoreArray(std::vector<VkSemaphor
 	for (size_t i = Array.size() - 1; i >= 0; i--)
 	{
 		vkDestroySemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), Array[i], nullptr);
+		Array.erase(Array.begin() + i);
+	}
+}
+
+void RenderingInstance_SDL2_Vulkan::DestroyFenceArray(std::vector<VkFence>& Array)
+{
+	for (size_t i = Array.size() - 1; i >= 0; i--)
+	{
+		vkDestroyFence(*GetDeviceHandler()->GetLogicalDeviceHandle(), Array[i], nullptr);
 		Array.erase(Array.begin() + i);
 	}
 }
