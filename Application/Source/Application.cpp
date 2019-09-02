@@ -53,7 +53,7 @@ void Application::CreateRenderer(RenderingInstanceType Type)
 
 void Application::MainLoop()
 {
-	while (mWindowSystem->GetMainWindow() != nullptr)
+	while (mWindowSystem->IsMainWindowAvailable())
 	{
 		LogicLoop();
 		RenderingLoop();
@@ -68,7 +68,7 @@ void Application::LogicLoop()
 	{
 		if (Event.type == SDL_QUIT)
 		{
-			mWindowSystem->DestroyMainWindow();
+			mWindowSystem->DestroyAllWindows();
 		}
 	}
 	// [todo] Made for SDL for now. Some kind of API binding system would be good to do here.

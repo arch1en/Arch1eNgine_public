@@ -30,3 +30,20 @@ I::Window_Impl* WindowSystem::GetMainWindow()
 {
 	return Windows[0].get();
 }
+
+bool WindowSystem::IsMainWindowAvailable()
+{
+	return Windows.size() > 0 && Windows[0] != nullptr;
+}
+
+void WindowSystem::DestroyAllWindows()
+{
+	for (size_t i = Windows.size(); i > 0;)
+	{
+		i = i - 1;
+		Windows[i].reset();
+		Windows[i] = nullptr;
+	}
+
+	Windows.clear();
+}

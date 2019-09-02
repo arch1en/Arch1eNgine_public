@@ -14,6 +14,8 @@ public:
 
 	void CreateNewWindow(WindowProperties aProperties);
 	I::Window_Impl* GetMainWindow();
+	bool IsMainWindowAvailable();
+	void DestroyAllWindows();
 
 private:
 

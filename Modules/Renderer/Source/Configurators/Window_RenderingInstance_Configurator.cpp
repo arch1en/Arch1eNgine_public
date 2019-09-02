@@ -64,62 +64,67 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 		DeviceHandler* pDeviceHandler = InstanceVkSDL2->GetDeviceHandler();
 		pDeviceHandler->Initiate(&CreationInfo);
 
-		SwapChainHandlerCreationInfo SwapChainCreationInfo = {};
+		SwapChainCreationInfo SwapChainCI = {};
 
 		const VkDevice* LogicalDevice = pDeviceHandler->GetLogicalDeviceHandle();
 
-		SwapChainCreationInfo.mLogicalDevice = LogicalDevice;
-		SwapChainCreationInfo.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
-		SwapChainCreationInfo.mSurface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
-		SwapChainCreationInfo.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
+		SwapChainCI.mLogicalDevice = LogicalDevice;
+		SwapChainCI.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+		SwapChainCI.mSurface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
+		SwapChainCI.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
 
-		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCreationInfo);
+		SwapChainHandlerInitiationInfo SwapChainHandlerII = {};
+
+		SwapChainHandlerII.mLogicalDevice = LogicalDevice;
+
+		InstanceVkSDL2->GetSwapChainHandler()->Initiate(SwapChainHandlerII);
+		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 
 		// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
-		InstanceVkSDL2->CreateRenderPassManager();
-		InstanceVkSDL2->GetRenderPassManager()->CreateRenderPass(*LogicalDevice, InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageFormat());
+		//InstanceVkSDL2->CreateRenderPassManager();
+		//InstanceVkSDL2->GetRenderPassManager()->CreateRenderPass(*LogicalDevice, InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageFormat());
 
-		FramebufferCreateInfo FramebufferCreationInfo = {};
+		//FramebufferCreateInfo FramebufferCreationInfo = {};
 
-		FramebufferCreationInfo.mLogicalDevice = LogicalDevice;
-		FramebufferCreationInfo.mRenderPassHandle = InstanceVkSDL2->GetRenderPassManager()->GetRenderPassHandle();
-		FramebufferCreationInfo.mSwapChainImageExtent = &InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainExtent();
-		FramebufferCreationInfo.mSwapChainImageViews = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageViews();
+		//FramebufferCreationInfo.mLogicalDevice = LogicalDevice;
+		//FramebufferCreationInfo.mRenderPassHandle = InstanceVkSDL2->GetRenderPassManager()->GetRenderPassHandle();
+		//FramebufferCreationInfo.mSwapChainImageExtent = &InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainExtent();
+		//FramebufferCreationInfo.mSwapChainImageViews = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageViews();
 
-		InstanceVkSDL2->GetRenderPassManager()->CreateFramebuffers(FramebufferCreationInfo);
+		//InstanceVkSDL2->GetRenderPassManager()->CreateFramebuffers(FramebufferCreationInfo);
 
 		// Pipeline.
-		InstanceVkSDL2->CreatePipelineSystem();
+		//InstanceVkSDL2->CreatePipelineSystem();
 		
-		PipelineSystemCreationInfo PipelineCreationInfo = {};
+		//PipelineSystemCreationInfo PipelineCreationInfo = {};
 
-		PipelineCreationInfo.mLogicalDevice = LogicalDevice;
-		PipelineCreationInfo.mImageFormat = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageFormat();
-		PipelineCreationInfo.mViewportExtent = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainExtent();
-		PipelineCreationInfo.mRenderPassHandle = InstanceVkSDL2->GetRenderPassManager()->GetRenderPassHandle();
+		//PipelineCreationInfo.mLogicalDevice = LogicalDevice;
+		//PipelineCreationInfo.mImageFormat = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainImageFormat();
+		//PipelineCreationInfo.mViewportExtent = InstanceVkSDL2->GetSwapChainHandler()->GetSwapChainExtent();
+		//PipelineCreationInfo.mRenderPassHandle = InstanceVkSDL2->GetRenderPassManager()->GetRenderPassHandle();
 
-		InstanceVkSDL2->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
+		//InstanceVkSDL2->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
 
 		// Commands (Command Pool and Command Buffers).
 
-		InstanceVkSDL2->CreateCommandsHandler();
+		//InstanceVkSDL2->CreateCommandsHandler();
 
-		CommandPoolCreateInfo CommandPoolCI = {};
+		//CommandPoolCreateInfo CommandPoolCI = {};
 
-		CommandPoolCI.mLogicalDevice = LogicalDevice;
-		CommandPoolCI.mQueueFamilyData = InstanceVkSDL2->GetDeviceHandler()->GetQueueFamilyHandler()->GetQueueFamilyData();
+		//CommandPoolCI.mLogicalDevice = LogicalDevice;
+		//CommandPoolCI.mQueueFamilyData = InstanceVkSDL2->GetDeviceHandler()->GetQueueFamilyHandler()->GetQueueFamilyData();
 
-		InstanceVkSDL2->GetCommandsHandler()->CreateCommandPool(CommandPoolCI);
+		//InstanceVkSDL2->GetCommandsHandler()->CreateCommandPool(CommandPoolCI);
 
-		RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
+		//RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
 
-		RenderPassCommandBufferCI.mLogicalDevice = LogicalDevice;
-		RenderPassCommandBufferCI.mBufferSize = InstanceVkSDL2->GetRenderPassManager()->GetFramebuffers()->size();
-		RenderPassCommandBufferCI.mCommandPool = InstanceVkSDL2->GetCommandsHandler()->GetCommandPool();
+		//RenderPassCommandBufferCI.mLogicalDevice = LogicalDevice;
+		//RenderPassCommandBufferCI.mBufferSize = InstanceVkSDL2->GetRenderPassManager()->GetFramebuffers()->size();
+		//RenderPassCommandBufferCI.mCommandPool = InstanceVkSDL2->GetCommandsHandler()->GetCommandPool();
 
-		InstanceVkSDL2->GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
-		InstanceVkSDL2->CreateSemaphores();
-		InstanceVkSDL2->CreateFences();
+		//InstanceVkSDL2->GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
+		//InstanceVkSDL2->CreateSemaphores();
+		//InstanceVkSDL2->CreateFences();
 
 		return;
 	}
