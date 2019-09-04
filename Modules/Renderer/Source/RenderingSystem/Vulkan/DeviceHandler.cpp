@@ -45,6 +45,8 @@ const QueueFamilyData* QueueFamilyHandler::GetPresentationSuitableQueueFamilyDat
 			return &QueueFamily;
 		}
 	}
+
+	return nullptr;
 }
 
 void QueueFamilyHandler::RetrieveDeviceQueueHandles(const VkDevice* LogicalDevice)

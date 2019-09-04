@@ -29,7 +29,7 @@ void SurfaceHandler::DestroySurface(const VkInstance* Instance, Surface_Base* Su
 
 void SurfaceHandler::Destroy(const VkInstance* Instance)
 {
-	for (int i = mSurfaces.size() - 1; i >= 0; i--)
+	for (int i = static_cast<int>(mSurfaces.size()) - 1; i >= 0; i--)
 	{
 		DestroySurface(Instance, mSurfaces[i].get());
 		mSurfaces[i] = nullptr;

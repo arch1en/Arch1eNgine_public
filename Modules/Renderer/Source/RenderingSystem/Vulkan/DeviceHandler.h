@@ -27,7 +27,7 @@ struct PhysicalDeviceProperties
 struct QueueFamilyData
 {
 	VkQueue QueueHandle;
-	uint32_t FamilyIndex = -1;	// [Note] Queue family indices could be aligned in the same array. It is easier to pass it to Vulkan.
+	uint32_t FamilyIndex = uint32_t(-1);	// [Note] Queue family indices could be aligned in the same array. It is easier to pass it to Vulkan.
 	float Priority = 1.f;
 	bool IsPresentationSuitable = false;
 };

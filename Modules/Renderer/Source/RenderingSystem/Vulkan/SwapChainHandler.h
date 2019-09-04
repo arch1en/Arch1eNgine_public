@@ -4,8 +4,8 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "RenderingSystem/Vulkan/PipelineSystem/PipelineSystem.h"
-#include "RenderingSystem/Vulkan/PipelineSystem/RenderPassManager.h"
+#include "RenderingSystem/Vulkan/PipelineSystem.h"
+#include "RenderingSystem/Vulkan/RenderPassManager.h"
 
 class QueueFamilyHandler;
 struct QueueFamilyData;

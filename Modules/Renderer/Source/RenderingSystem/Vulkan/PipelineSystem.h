@@ -2,7 +2,7 @@
 #define PIPELINESYSTEM_H
 
 #include <vulkan/vulkan.h>
-#include "ShaderSystem/ShaderSystem.h"
+#include "ShaderSystem.h"
 
 // REF : https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Render_passes
 

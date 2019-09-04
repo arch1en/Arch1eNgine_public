@@ -101,7 +101,7 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	if (CreationInfo.mQueueFamilyHandler->GetNumberOfQueueFamilies() > 1)
 	{
 		CreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		CreateInfo.queueFamilyIndexCount = CreationInfo.mQueueFamilyHandler->GetNumberOfQueueFamilies();
+		CreateInfo.queueFamilyIndexCount = uint32_t(CreationInfo.mQueueFamilyHandler->GetNumberOfQueueFamilies());
 		CreateInfo.pQueueFamilyIndices = (*CreationInfo.mQueueFamilyHandler->GetAlignedQueueFamiliesIndices()).data();
 	}
 	else
@@ -324,7 +324,7 @@ void SwapChainHandler::Cleanup(const VkDevice* Device)
 	GetRenderPassManager()->CleanUp(*Device, &mCommandPool);
 	GetPipelineSystem()->CleanUp(*Device);
 
-	for (int i = GetSwapChainImageViews()->size() - 1; i >= 0; i--)
+	for (int i = int(GetSwapChainImageViews()->size()) - 1; i >= 0; i--)
 	{
 		vkDestroyImageView(*Device, (*GetSwapChainImageViews())[i], nullptr);
 	}
@@ -344,7 +344,7 @@ void SwapChainHandler::Destroy(const VkDevice* Device)
 
 void SwapChainHandler::DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array)
 {
-	for (int i = Array.size() - 1; i >= 0; i--)
+	for (int i = static_cast<int>(Array.size()) - 1; i >= 0; i--)
 	{
 		vkDestroySemaphore(Device, Array[i], nullptr);
 	}
@@ -353,7 +353,7 @@ void SwapChainHandler::DestroySemaphoreArray(const VkDevice& Device, std::vector
 
 void SwapChainHandler::DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array)
 {
-	for (int i = Array.size() - 1; i >= 0; i--)
+	for (int i = static_cast<int>(Array.size()) - 1; i >= 0; i--)
 	{
 		vkDestroyFence(Device, Array[i], nullptr);
 	}

@@ -139,21 +139,6 @@ void RenderingInstance_SDL2_Vulkan::CreateSwapChainHandler()
 	mSwapChainHandler = std::make_unique<SwapChainHandler>();
 }
 
-//void RenderingInstance_SDL2_Vulkan::CreateRenderPassManager()
-//{
-//	mRenderPassManager = std::make_unique<RenderPassManager>();
-//}
-
-//void RenderingInstance_SDL2_Vulkan::CreatePipelineSystem()
-//{
-//	mPipelineSystem = std::make_unique<PipelineSystem>();
-//}
-
-//void RenderingInstance_SDL2_Vulkan::CreateCommandsHandler()
-//{
-//	mCommandsHandler = std::make_unique<CommandsHandler>();
-//}
-
 SurfaceHandler* const RenderingInstance_SDL2_Vulkan::GetSurfaceHandler() const
 {
 	return mSurfaceHandler.get();
@@ -163,21 +148,6 @@ SwapChainHandler * const RenderingInstance_SDL2_Vulkan::GetSwapChainHandler() co
 {
 	return mSwapChainHandler.get();
 }
-
-//RenderPassManager* const RenderingInstance_SDL2_Vulkan::GetRenderPassManager() const
-//{
-//	return mRenderPassManager.get();
-//}
-//
-//PipelineSystem* const RenderingInstance_SDL2_Vulkan::GetPipelineSystem() const
-//{
-//	return mPipelineSystem.get();
-//}
-//
-//CommandsHandler* const RenderingInstance_SDL2_Vulkan::GetCommandsHandler() const
-//{
-//	return mCommandsHandler.get();
-//}
 
 bool RenderingInstance_SDL2_Vulkan::AddExtensions(void* WindowHandle, std::vector<const char*>& Extensions)
 {
@@ -266,46 +236,6 @@ void RenderingInstance_SDL2_Vulkan::SetClearColor(Vector4<float> ClearColor)
 
 void RenderingInstance_SDL2_Vulkan::RenderLoop()
 {
-	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers();
-
-	//for (size_t i = 0; i < GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers()->size(); i++)
-	//{
-	//	VkCommandBufferBeginInfo CommandBufferBI = {};
-	//	CommandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	//	CommandBufferBI.flags = 0; // Optional
-	//	CommandBufferBI.pInheritanceInfo = nullptr; // Optional
-
-	//	if (vkBeginCommandBuffer(RenderPassCommandBuffers[i], &CommandBufferBI) != VK_SUCCESS)
-	//	{
-	//		LogVk(LogType::Error, 0, "Error beginning command buffer.");
-	//	}
-
-	//	VkRenderPassBeginInfo RenderPassBI = {};
-	//	RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	//	RenderPassBI.renderPass = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassHandle();
-	//	RenderPassBI.framebuffer = (*GetSwapChainHandler()->GetRenderPassManager()->GetFramebuffers())[i];
-	//	RenderPassBI.renderArea.offset = {0,0};
-	//	RenderPassBI.renderArea.extent = GetSwapChainHandler()->GetSwapChainExtent();
-
-	//	VkClearValue ClearColor = { 0.1f, 0.1f, 0.1f, 1.f };
-
-	//	RenderPassBI.clearValueCount = 1;
-	//	RenderPassBI.pClearValues = &ClearColor;
-
-	//	vkCmdBeginRenderPass((*GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers())[i], &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-
-	//	vkCmdBindPipeline(RenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *GetSwapChainHandler()->GetPipelineSystem()->GetPipelineHandle());
-
-	//	vkCmdDraw(RenderPassCommandBuffers[i], 3, 1, 0, 0);
-
-	//	vkCmdEndRenderPass(RenderPassCommandBuffers[i]);
-
-	//	if (vkEndCommandBuffer(RenderPassCommandBuffers[i]) != VK_SUCCESS)
-	//	{
-	//		LogVk(LogType::Error, 0, "Failed to record command buffer!");
-	//	}
-	//}
-
 	EDrawFrameErrorCode ErrorCode = GetSwapChainHandler()->DrawFrame(*GetDeviceHandler()->GetLogicalDeviceHandle(), GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle);
 
 	switch (ErrorCode)
@@ -330,134 +260,7 @@ void RenderingInstance_SDL2_Vulkan::ResizeCanvas(int Width, int Height)
 	GetSwapChainHandler()->SetActualSwapChainExtent({ uint32_t(Width), uint32_t(Height) });
 	GetSwapChainHandler()->RequestFrameBufferResizing();
 }
-//void RenderingInstance_SDL2_Vulkan::DrawFrame()
-//{
-//	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers();
-//	const VkDevice* Device = GetDeviceHandler()->GetLogicalDeviceHandle();
-//
-//	Assert(Device, "Device must be valid at this point!");
-//
-//	uint32_t ImageIndex;
-//
-//	uint64_t Timeout = std::numeric_limits <uint64_t>::max(); // Timeout in nanoseconds. Using the maximum value of a 64bit unsigned integer disables the timeout.
-//
-//	vkWaitForFences(*Device, 1, &InFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
-//	vkResetFences(*Device, 1, &InFlightFences[mCurrentFrameIndex]);
-//
-//	vkAcquireNextImageKHR(*Device, *GetSwapChainHandler()->GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[0], VK_NULL_HANDLE, &ImageIndex);
-//
-//	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-//
-//	VkSemaphore WaitSemaphores[] = { ImageAvailableSemaphores[mCurrentFrameIndex] };
-//	VkSemaphore SignalSemaphores[] = { RenderFinishedSemaphores[mCurrentFrameIndex] };
-//
-//	VkSubmitInfo SubmitInfo = {};
-//	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-//	SubmitInfo.waitSemaphoreCount = 1;
-//	SubmitInfo.pWaitSemaphores = WaitSemaphores;
-//	SubmitInfo.pWaitDstStageMask = WaitStages;
-//	SubmitInfo.commandBufferCount = 1;
-//	SubmitInfo.pCommandBuffers = &RenderPassCommandBuffers[ImageIndex];
-//	SubmitInfo.pSignalSemaphores = SignalSemaphores;
-//	SubmitInfo.signalSemaphoreCount = 1;
-//
-//	const VkQueue& PresentQueue = GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle;
-//
-//	if (vkQueueSubmit(PresentQueue, 1, &SubmitInfo, InFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
-//	{
-//		LogVk(LogType::Error, 0, "Queue submission failed!");
-//	}
-//
-//	VkPresentInfoKHR PresentInfo = {};
-//	PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-//	PresentInfo.waitSemaphoreCount = 1;
-//	PresentInfo.pWaitSemaphores = SignalSemaphores;
-//	PresentInfo.swapchainCount = 1;
-//	PresentInfo.pSwapchains = { GetSwapChainHandler()->GetSwapChainHandle() };
-//	PresentInfo.pImageIndices = &ImageIndex;
-//	PresentInfo.pResults = nullptr;
-//
-//	vkQueuePresentKHR(PresentQueue , &PresentInfo);
-//
-//	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % MaxFramesInFlight;
-//}
 
 void RenderingInstance_SDL2_Vulkan::ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties)
 {
 }
-
-//void RenderingInstance_SDL2_Vulkan::CreateSemaphores()
-//{
-//	Assert(ImageAvailableSemaphores.size() == 0, "Array must be empty at this point.");
-//	Assert(RenderFinishedSemaphores.size() == 0, "Array must be empty at this point.");
-//
-//	ImageAvailableSemaphores.resize(MaxFramesInFlight);
-//	RenderFinishedSemaphores.resize(MaxFramesInFlight);
-//
-//	VkSemaphoreCreateInfo CreateInfo = {};
-//	CreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-//
-//	for (int i = 0; i < ImageAvailableSemaphores.size(); i++)
-//	{
-//		if (vkCreateSemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), &CreateInfo, nullptr, &ImageAvailableSemaphores[i]) != VK_SUCCESS)
-//		{
-//			LogVk(LogType::Error, 0, "Image Available Semaphores Creation failed!");
-//		}
-//	}
-//
-//	for (int i = 0; i < RenderFinishedSemaphores.size(); i++)
-//	{
-//		if (vkCreateSemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), &CreateInfo, nullptr, &RenderFinishedSemaphores[i]) != VK_SUCCESS)
-//		{
-//			LogVk(LogType::Error, 0, "Rendering Finished Semaphores Creation failed!");
-//		}
-//	}
-//}
-
-//void RenderingInstance_SDL2_Vulkan::CreateFences()
-//{
-//	Assert(InFlightFences.size() == 0, "Array must be empty at this point.");
-//
-//	InFlightFences.resize(MaxFramesInFlight);
-//
-//	VkFenceCreateInfo CreateInfo = {};
-//	CreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-//	// By default Fences are created in an unsignaled state. That means vkWaitForFences will wait forever for them.
-//	// We can change its state on the creation time, so that vkWaitForFences will catch it the first time before rendering.
-//	CreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; 
-//
-//	for (int i = 0; i < InFlightFences.size(); i++)
-//	{
-//		if (vkCreateFence(*GetDeviceHandler()->GetLogicalDeviceHandle(), &CreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS)
-//		{
-//			LogVk(LogType::Error, 0, "In Flight Fences Creation failed!");
-//		}
-//	}
-//}
-
-void RenderingInstance_SDL2_Vulkan::CleanUp()
-{
-	//DestroySemaphoreArray(ImageAvailableSemaphores);
-	//DestroySemaphoreArray(RenderFinishedSemaphores);
-	//DestroyFenceArray(InFlightFences);
-
-	//vkDeviceWaitIdle(*GetDeviceHandler()->GetLogicalDeviceHandle());
-}
-
-//void RenderingInstance_SDL2_Vulkan::DestroySemaphoreArray(std::vector<VkSemaphore>& Array)
-//{
-//	for (size_t i = Array.size() - 1; i >= 0; i--)
-//	{
-//		vkDestroySemaphore(*GetDeviceHandler()->GetLogicalDeviceHandle(), Array[i], nullptr);
-//		Array.erase(Array.begin() + i);
-//	}
-//}
-
-//void RenderingInstance_SDL2_Vulkan::DestroyFenceArray(std::vector<VkFence>& Array)
-//{
-//	for (size_t i = Array.size() - 1; i >= 0; i--)
-//	{
-//		vkDestroyFence(*GetDeviceHandler()->GetLogicalDeviceHandle(), Array[i], nullptr);
-//		Array.erase(Array.begin() + i);
-//	}
-//}

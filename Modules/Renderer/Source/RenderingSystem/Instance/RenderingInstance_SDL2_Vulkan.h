@@ -30,11 +30,6 @@ public:
 	void CreateDeviceHandler();
 	void CreateSurfaceHandler();
 	void CreateSwapChainHandler();
-	//void CreateRenderPassManager();
-	//void CreatePipelineSystem();
-	//void CreateCommandsHandler();
-	//void CreateSemaphores();
-	//void CreateFences();
 
 	std::vector<VkLayerProperties>		CheckValidationLayersAvailability(const std::vector<const char*> DesiredLayers);
 	std::vector<VkExtensionProperties>	GetAvailableExtensions();
@@ -42,9 +37,6 @@ public:
 	DeviceHandler*		const	GetDeviceHandler() const;
 	SurfaceHandler*		const	GetSurfaceHandler() const;
 	SwapChainHandler*	const	GetSwapChainHandler() const;
-	//RenderPassManager*	const	GetRenderPassManager() const;
-	//PipelineSystem*		const	GetPipelineSystem() const;
-	//CommandsHandler*	const	GetCommandsHandler() const;
 
 	// Begin I::RenderingInstance_Impl Interface
 	virtual void Initialize() override;
@@ -60,24 +52,11 @@ public:
 
 private:
 
-	//size_t mCurrentFrameIndex = 0;
-
 	VkInstance InstanceHandle;
 
-	//std::unique_ptr<RenderPassManager> mRenderPassManager;
 	std::unique_ptr<DeviceHandler> mDeviceHandler;
 	std::unique_ptr<SwapChainHandler> mSwapChainHandler;
 	std::unique_ptr<SurfaceHandler> mSurfaceHandler;
-	//std::unique_ptr<PipelineSystem> mPipelineSystem;
-	//std::unique_ptr<CommandsHandler> mCommandsHandler;
-
-	//std::vector<VkSemaphore>	ImageAvailableSemaphores;
-	//std::vector<VkSemaphore>	RenderFinishedSemaphores;
-	//std::vector<VkFence>		InFlightFences;
-
-	void CleanUp();
-	//void DestroySemaphoreArray(std::vector<VkSemaphore>& Array);
-	//void DestroyFenceArray(std::vector<VkFence>& Array);
 
 };
 #endif
