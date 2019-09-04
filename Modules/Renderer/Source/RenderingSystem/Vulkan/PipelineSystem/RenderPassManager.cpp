@@ -88,6 +88,44 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 	{
 		LogVk(LogType::Error, 0, "Command buffer allocation failed.");
 	}
+
+	for (size_t i = 0; i < GetRenderPassCommandBuffers()->size(); i++)
+	{
+		VkCommandBufferBeginInfo CommandBufferBI = {};
+		CommandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		CommandBufferBI.flags = 0; // Optional
+		CommandBufferBI.pInheritanceInfo = nullptr; // Optional
+
+		if (vkBeginCommandBuffer((*GetRenderPassCommandBuffers())[i], &CommandBufferBI) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Error beginning command buffer.");
+		}
+
+		VkRenderPassBeginInfo RenderPassBI = {};
+		RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		RenderPassBI.renderPass = *GetRenderPassHandle();
+		RenderPassBI.framebuffer = (*GetFramebuffers())[i];
+		RenderPassBI.renderArea.offset = { 0,0 };
+		RenderPassBI.renderArea.extent = CreateInfo.mSwapChainExtent;
+
+		VkClearValue ClearColor = { 0.1f, 0.1f, 0.1f, 1.f };
+
+		RenderPassBI.clearValueCount = 1;
+		RenderPassBI.pClearValues = &ClearColor;
+
+		vkCmdBeginRenderPass(mRenderPassCommandBuffers[i], &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(mRenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *CreateInfo.mPipelineHandle);
+
+		vkCmdDraw(mRenderPassCommandBuffers[i], 3, 1, 0, 0);
+
+		vkCmdEndRenderPass(mRenderPassCommandBuffers[i]);
+
+		if (vkEndCommandBuffer(mRenderPassCommandBuffers[i]) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Failed to record command buffer!");
+		}
+	}
 }
 
 const VkRenderPass* const RenderPassManager::GetRenderPassHandle() const
@@ -100,13 +138,22 @@ const std::vector<VkFramebuffer>* RenderPassManager::GetFramebuffers() const
 	return &mFramebuffers;
 }
 
-void RenderPassManager::CleanUp(const VkDevice& Device)
+void RenderPassManager::CleanUp(const VkDevice& Device, const VkCommandPool* const CommandPool)
 {
-	vkDestroyRenderPass(Device, mRenderPass, nullptr);
+	vkFreeCommandBuffers(Device, *CommandPool, static_cast<uint32_t>(GetRenderPassCommandBuffers()->size()), GetRenderPassCommandBuffers()->data());
 	for (auto& Framebuffer : mFramebuffers)
 	{
 		vkDestroyFramebuffer(Device, Framebuffer, nullptr);
 	}
+	vkDestroyRenderPass(Device, mRenderPass, nullptr);
+}
+
+void RenderPassManager::Destroy(const VkDevice& Device, const VkCommandPool* const CommandPool)
+{
+	CleanUp(Device, CommandPool);
+
+	mRenderPassCommandBuffers.erase(mRenderPassCommandBuffers.begin(), mRenderPassCommandBuffers.end());
+	mFramebuffers.erase(mFramebuffers.begin(), mFramebuffers.end());
 }
 
 const std::vector<VkCommandBuffer>* RenderPassManager::GetRenderPassCommandBuffers() const

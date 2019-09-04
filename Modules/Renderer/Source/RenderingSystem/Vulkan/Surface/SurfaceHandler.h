@@ -13,13 +13,11 @@ class SurfaceHandler
 {
 public:
 	void CreateSurface(const SurfaceHandlerCreationData* Data);
-	void DestroySurface(Surface_Base* Surface);
-
+	void DestroySurface(const VkInstance* Instance, Surface_Base* Surface);
+	void Destroy(const VkInstance* Instance);
 	const Surface_Base* GetMainSurface() const;
 
 private:
-
-	std::shared_ptr<VkInstance> mInstanceHandleRef;
 
 	std::vector<std::unique_ptr<Surface_Base>> mSurfaces;
 };

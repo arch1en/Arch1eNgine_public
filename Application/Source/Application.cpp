@@ -38,6 +38,7 @@ void Application::CreateApplicationWindow(RenderingInstanceType Type)
 	Properties.Width = 640;
 	Properties.Height = 480;
 	Properties.RendererType = static_cast<WindowRendererType>(Type);
+	Properties.Resizeable = true;
 
 	mWindowSystem->CreateNewWindow(Properties);
 }
@@ -66,9 +67,20 @@ void Application::LogicLoop()
 	
 	while(SDL_PollEvent(&Event))
 	{
-		if (Event.type == SDL_QUIT)
+		switch (Event.type)
+		{
+		case SDL_QUIT:
 		{
 			mWindowSystem->DestroyAllWindows();
+			break;
+		}
+		case SDL_WINDOWEVENT_RESIZED:
+		{
+			int Width, Height;
+			SDL_GetWindowSize(static_cast<SDL_Window*>(mWindowSystem->GetMainWindow()->GetWindowHandle()), &Width, &Height);
+			mRenderingSystem->GetRenderingInstance()->ResizeCanvas(Width,Height);
+			break;
+		}
 		}
 	}
 	// [todo] Made for SDL for now. Some kind of API binding system would be good to do here.

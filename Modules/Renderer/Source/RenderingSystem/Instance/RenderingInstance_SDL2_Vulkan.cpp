@@ -23,7 +23,7 @@ RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
 RenderingInstance_SDL2_Vulkan::~RenderingInstance_SDL2_Vulkan()
 {
 	mSwapChainHandler->Destroy(GetDeviceHandler()->GetLogicalDeviceHandle());
-
+	mSurfaceHandler->Destroy(&InstanceHandle);
 	vkDestroyInstance(InstanceHandle, nullptr);
 }
 
@@ -97,6 +97,26 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	// [TODO] Configurator has too much stuff in it that should be in this class (not nescesserily in this function). Move here what's nescessary.
 
 	return true;
+}
+
+void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
+{
+	SwapChainCreationInfo SwapChainCI = {};
+
+	const VkDevice* LogicalDevice = GetDeviceHandler()->GetLogicalDeviceHandle();
+	const DeviceHandler* const pDeviceHandler = GetDeviceHandler();
+
+	SwapChainCI.mLogicalDevice = LogicalDevice;
+	SwapChainCI.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+	SwapChainCI.mSurface = GetSurfaceHandler()->GetMainSurface()->GetHandle();
+	SwapChainCI.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
+
+	SwapChainHandlerInitiationInfo SwapChainHandlerII = {};
+
+	SwapChainHandlerII.mLogicalDevice = LogicalDevice;
+
+	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
+	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 }
 
 void RenderingInstance_SDL2_Vulkan::CreateDeviceHandler()
@@ -248,47 +268,68 @@ void RenderingInstance_SDL2_Vulkan::RenderLoop()
 {
 	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers();
 
-	for (size_t i = 0; i < GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers()->size(); i++)
+	//for (size_t i = 0; i < GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers()->size(); i++)
+	//{
+	//	VkCommandBufferBeginInfo CommandBufferBI = {};
+	//	CommandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	//	CommandBufferBI.flags = 0; // Optional
+	//	CommandBufferBI.pInheritanceInfo = nullptr; // Optional
+
+	//	if (vkBeginCommandBuffer(RenderPassCommandBuffers[i], &CommandBufferBI) != VK_SUCCESS)
+	//	{
+	//		LogVk(LogType::Error, 0, "Error beginning command buffer.");
+	//	}
+
+	//	VkRenderPassBeginInfo RenderPassBI = {};
+	//	RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	//	RenderPassBI.renderPass = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassHandle();
+	//	RenderPassBI.framebuffer = (*GetSwapChainHandler()->GetRenderPassManager()->GetFramebuffers())[i];
+	//	RenderPassBI.renderArea.offset = {0,0};
+	//	RenderPassBI.renderArea.extent = GetSwapChainHandler()->GetSwapChainExtent();
+
+	//	VkClearValue ClearColor = { 0.1f, 0.1f, 0.1f, 1.f };
+
+	//	RenderPassBI.clearValueCount = 1;
+	//	RenderPassBI.pClearValues = &ClearColor;
+
+	//	vkCmdBeginRenderPass((*GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers())[i], &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+
+	//	vkCmdBindPipeline(RenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *GetSwapChainHandler()->GetPipelineSystem()->GetPipelineHandle());
+
+	//	vkCmdDraw(RenderPassCommandBuffers[i], 3, 1, 0, 0);
+
+	//	vkCmdEndRenderPass(RenderPassCommandBuffers[i]);
+
+	//	if (vkEndCommandBuffer(RenderPassCommandBuffers[i]) != VK_SUCCESS)
+	//	{
+	//		LogVk(LogType::Error, 0, "Failed to record command buffer!");
+	//	}
+	//}
+
+	EDrawFrameErrorCode ErrorCode = GetSwapChainHandler()->DrawFrame(*GetDeviceHandler()->GetLogicalDeviceHandle(), GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle);
+
+	switch (ErrorCode)
 	{
-		VkCommandBufferBeginInfo CommandBufferBI = {};
-		CommandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		CommandBufferBI.flags = 0; // Optional
-		CommandBufferBI.pInheritanceInfo = nullptr; // Optional
+	case EDrawFrameErrorCode::SwapChainRecreationRequired:
+	{
+		SwapChainCreationInfo SwapChainCI = {};
 
-		if (vkBeginCommandBuffer(RenderPassCommandBuffers[i], &CommandBufferBI) != VK_SUCCESS)
-		{
-			LogVk(LogType::Error, 0, "Error beginning command buffer.");
-		}
+		SwapChainCI.mLogicalDevice = GetDeviceHandler()->GetLogicalDeviceHandle();
+		SwapChainCI.mPhysicalDevice = &GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+		SwapChainCI.mSurface = GetSurfaceHandler()->GetMainSurface()->GetHandle();
+		SwapChainCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
-		VkRenderPassBeginInfo RenderPassBI = {};
-		RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		RenderPassBI.renderPass = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassHandle();
-		RenderPassBI.framebuffer = (*GetSwapChainHandler()->GetRenderPassManager()->GetFramebuffers())[i];
-		RenderPassBI.renderArea.offset = {0,0};
-		RenderPassBI.renderArea.extent = GetSwapChainHandler()->GetSwapChainExtent();
-
-		VkClearValue ClearColor = { 0.1f, 0.1f, 0.1f, 1.f };
-
-		RenderPassBI.clearValueCount = 1;
-		RenderPassBI.pClearValues = &ClearColor;
-
-		vkCmdBeginRenderPass((*GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers())[i], &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-
-		vkCmdBindPipeline(RenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *GetSwapChainHandler()->GetPipelineSystem()->GetPipelineHandle());
-
-		vkCmdDraw(RenderPassCommandBuffers[i], 3, 1, 0, 0);
-
-		vkCmdEndRenderPass(RenderPassCommandBuffers[i]);
-
-		if (vkEndCommandBuffer(RenderPassCommandBuffers[i]) != VK_SUCCESS)
-		{
-			LogVk(LogType::Error, 0, "Failed to record command buffer!");
-		}
+		GetSwapChainHandler()->ReCreateSwapChain(SwapChainCI);
+		break;
 	}
-
-	GetSwapChainHandler()->DrawFrame(*GetDeviceHandler()->GetLogicalDeviceHandle(), GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle);
+	}
 }
 
+void RenderingInstance_SDL2_Vulkan::ResizeCanvas(int Width, int Height)
+{
+	GetSwapChainHandler()->SetActualSwapChainExtent({ uint32_t(Width), uint32_t(Height) });
+	GetSwapChainHandler()->RequestFrameBufferResizing();
+}
 //void RenderingInstance_SDL2_Vulkan::DrawFrame()
 //{
 //	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetSwapChainHandler()->GetRenderPassManager()->GetRenderPassCommandBuffers();

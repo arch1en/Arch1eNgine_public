@@ -10,6 +10,11 @@ Window_SDL2_Vulkan::Window_SDL2_Vulkan(WindowProperties Properties)
 {
 	Properties.Flags |= SDL_WINDOW_VULKAN;
 
+	if (Properties.Resizeable)
+	{
+		Properties.Flags |= SDL_WINDOW_RESIZABLE;
+	}
+
 	WindowHandle = SDL_CreateWindow(
 		Properties.Title.c_str(),
 		Properties.WindowPosition.PositionX,

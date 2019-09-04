@@ -12,18 +12,18 @@ void QueueFamilyHandler::ResetQueueFamilyData(const std::vector<QueueFamilyData>
 	mCachedQueueFamilyData.erase(mCachedQueueFamilyData.begin(), mCachedQueueFamilyData.end());
 	mCachedQueueFamilyData.reserve(Data.size());
 	mCachedQueueFamilyData = Data;
+
+	// It is easier to pass family indices when they are aligned, one after another.
+	mAlignedQueueFamilyIndices.erase(mAlignedQueueFamilyIndices.begin(), mAlignedQueueFamilyIndices.end());
+	for (auto& i : mCachedQueueFamilyData)
+	{
+		mAlignedQueueFamilyIndices.push_back(i.FamilyIndex);
+	}
 }
 
-const std::vector<uint32_t> QueueFamilyHandler::GetQueueFamiliesIndices() const
+const std::vector<uint32_t>* QueueFamilyHandler::GetAlignedQueueFamiliesIndices() const
 {
-	std::vector<uint32_t> Indices;
-	Indices.reserve(mCachedQueueFamilyData.size());
-	for (const auto& i : mCachedQueueFamilyData)
-	{
-		Indices.push_back(i.FamilyIndex);
-	}
-
-	return Indices;
+	return &mAlignedQueueFamilyIndices;
 }
 
 const size_t QueueFamilyHandler::GetNumberOfQueueFamilies() const

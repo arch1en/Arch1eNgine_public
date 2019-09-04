@@ -2,11 +2,7 @@
 
 #include "LogSystem.h"
 
-void PipelineSystem::CleanUp(const VkDevice& Device)
-{
-	vkDestroyPipeline(Device, mPipelineHandle, nullptr);
-	vkDestroyPipelineLayout(Device, mPipelineLayout, nullptr);
-}
+
 
 void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo)
 {
@@ -137,6 +133,17 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	vkDestroyShaderModule(*CreationInfo.mLogicalDevice, ShaderModule_Vertex, nullptr);
 	vkDestroyShaderModule(*CreationInfo.mLogicalDevice, ShaderModule_Fragment, nullptr);
 
+}
+
+void PipelineSystem::CleanUp(const VkDevice& Device)
+{
+	vkDestroyPipeline(Device, mPipelineHandle, nullptr);
+	vkDestroyPipelineLayout(Device, mPipelineLayout, nullptr);
+}
+
+void PipelineSystem::Destroy(const VkDevice& Device)
+{
+	CleanUp(Device);
 }
 
 const VkPipeline* PipelineSystem::GetPipelineHandle() const

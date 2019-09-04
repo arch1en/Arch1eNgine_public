@@ -11,6 +11,14 @@ class QueueFamilyHandler;
 struct QueueFamilyData;
 struct QueueFamilyProperties;
 
+enum class EDrawFrameErrorCode
+{
+	OK,
+	SwapChainRecreationRequired,
+	SwapChainImageAcquisitionFailed,
+	QueueSubmissionFailed
+};
+
 struct SwapChainHandlerInitiationInfo
 {
 	const VkDevice* mLogicalDevice;
@@ -48,7 +56,7 @@ public:
 
 	void Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo);
 	void CreateSwapChain(const SwapChainCreationInfo& CreationInfo);
-	void ReCreateSwapChain(const VkDevice& Device);
+	void ReCreateSwapChain(const SwapChainCreationInfo& CreationInfo);
 	void CreateSwapChainImageView(const VkDevice& Device);
 
 	void CreateRenderPassManager();
@@ -57,7 +65,9 @@ public:
 	void CreateFences(const VkDevice* Device);
 	void CreateCommandPool(const CommandPoolCreateInfo& CreateInfo);
 
-	void DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle);
+	EDrawFrameErrorCode DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle);
+
+	void RequestFrameBufferResizing();
 
 	// We need to make sure, that the VK_KHR_SWAPCHAIN_EXTENSION_NAME extension is available before checking SwapChain adequatibility.
 	bool IsAdequate(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const;
@@ -66,11 +76,13 @@ public:
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities);
 	void RetrieveSwapChainImages(const VkDevice& Device, std::vector<VkImage>& SwapChainImages);
 
-	void Cleanup(const VkDevice& Device);
+	void Cleanup(const VkDevice* Device);
 	void Destroy(const VkDevice* Device);
 
 	const VkSwapchainKHR* GetSwapChainHandle();
 	const VkFormat GetSwapChainImageFormat() const;
+	void SetActualSwapChainExtent(VkExtent2D Extent);
+	const VkExtent2D GetActualSwapChainExtent() const;
 	const VkExtent2D GetSwapChainExtent() const;
 	const std::vector<VkImageView>* GetSwapChainImageViews() const;
 
@@ -80,11 +92,13 @@ public:
 
 private:
 
+	bool mRequestFrameBufferResizing = false;
 	size_t mCurrentFrameIndex = 0;
 
 	VkSwapchainKHR mSwapChainHandle;
 	VkFormat mSwapChainImageFormat;
-	VkExtent2D mSwapChainExtent;
+	VkExtent2D mSwapChainExtent; // Cached computed extent.
+	VkExtent2D mSwapChainActualExtent; // Proposed extent (eg. for window resizing).
 	VkCommandPool mCommandPool;
 
 	std::unique_ptr<RenderPassManager> mRenderPassManager;

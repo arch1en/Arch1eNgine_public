@@ -29,6 +29,7 @@ struct WindowProperties
 		, Height{ 0 }
 		, Flags{ 0x0 }
 		, RendererType{WindowRendererType::INVALID}
+		, Resizeable{false}
 	{}
 
 	std::string Title;
@@ -41,7 +42,8 @@ struct WindowProperties
 		int PositionY;
 
 	} WindowPosition;
-
+	
+	bool Resizeable;
 	int Flags;
 
 	WindowRendererType RendererType;

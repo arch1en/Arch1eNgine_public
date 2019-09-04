@@ -16,7 +16,9 @@ struct RenderPassCommandBufferCreateInfo
 {
 	const VkDevice* mLogicalDevice;
 	const VkCommandPool* mCommandPool;
+	const VkPipeline* mPipelineHandle;
 	size_t mBufferSize;
+	VkExtent2D mSwapChainExtent;
 };
 
 
@@ -33,7 +35,8 @@ public:
 
 	void CreateRenderPassCommandBuffers(const RenderPassCommandBufferCreateInfo& CreateInfo);
 	
-	void CleanUp(const VkDevice& Device);
+	void CleanUp(const VkDevice& Device, const VkCommandPool* const CommandPool);
+	void Destroy(const VkDevice& Device, const VkCommandPool* const CommandPool);
 private:
 
 	VkRenderPass mRenderPass;

@@ -26,6 +26,7 @@ public:
 
 	bool AddExtensions(void* WindowHandle, std::vector<const char*>& Extensions);
 	bool CreateVulkanInstance(void* WindowHandle);
+	void CreateRequiredSubsystems();
 	void CreateDeviceHandler();
 	void CreateSurfaceHandler();
 	void CreateSwapChainHandler();
@@ -53,7 +54,7 @@ public:
 	virtual void SetSwapInterval(int Interval) override;
 	virtual void SetClearColor(Vector4<float> ClearColor) override;
 	virtual void RenderLoop() override;
-	//void DrawFrame();
+	virtual void ResizeCanvas(int Width, int Height) override;
 	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;
 	// End I::RenderingInstance_Impl Interface
 

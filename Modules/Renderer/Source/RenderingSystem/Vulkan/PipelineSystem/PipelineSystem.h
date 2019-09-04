@@ -23,6 +23,7 @@ public:
 	void CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo);
 
 	void CleanUp(const VkDevice& Device);
+	void Destroy(const VkDevice& Device);
 
 	const VkPipeline* GetPipelineHandle() const;
 

@@ -61,24 +61,27 @@ void Configurator::Window_RenderingInstance::ConfigureImplementations()
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 
-		DeviceHandler* pDeviceHandler = InstanceVkSDL2->GetDeviceHandler();
-		pDeviceHandler->Initiate(&CreationInfo);
+		//DeviceHandler* pDeviceHandler = InstanceVkSDL2->GetDeviceHandler();
+		//pDeviceHandler->Initiate(&CreationInfo);
+		InstanceVkSDL2->GetDeviceHandler()->Initiate(&CreationInfo);
 
-		SwapChainCreationInfo SwapChainCI = {};
+		InstanceVkSDL2->CreateRequiredSubsystems();
 
-		const VkDevice* LogicalDevice = pDeviceHandler->GetLogicalDeviceHandle();
+		//SwapChainCreationInfo SwapChainCI = {};
 
-		SwapChainCI.mLogicalDevice = LogicalDevice;
-		SwapChainCI.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
-		SwapChainCI.mSurface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
-		SwapChainCI.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
+		//const VkDevice* LogicalDevice = pDeviceHandler->GetLogicalDeviceHandle();
 
-		SwapChainHandlerInitiationInfo SwapChainHandlerII = {};
+		//SwapChainCI.mLogicalDevice = LogicalDevice;
+		//SwapChainCI.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+		//SwapChainCI.mSurface = InstanceVkSDL2->GetSurfaceHandler()->GetMainSurface()->GetHandle();
+		//SwapChainCI.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
 
-		SwapChainHandlerII.mLogicalDevice = LogicalDevice;
+		//SwapChainHandlerInitiationInfo SwapChainHandlerII = {};
 
-		InstanceVkSDL2->GetSwapChainHandler()->Initiate(SwapChainHandlerII);
-		InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
+		//SwapChainHandlerII.mLogicalDevice = LogicalDevice;
+
+		//InstanceVkSDL2->GetSwapChainHandler()->Initiate(SwapChainHandlerII);
+		//InstanceVkSDL2->GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 
 		// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
 		//InstanceVkSDL2->CreateRenderPassManager();

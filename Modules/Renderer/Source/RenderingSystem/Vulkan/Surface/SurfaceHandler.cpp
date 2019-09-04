@@ -20,11 +20,22 @@ void SurfaceHandler::CreateSurface(const SurfaceHandlerCreationData* Data)
 	mSurfaces.push_back(std::unique_ptr<Surface_Base>(NewSurface));
 }
 
-void SurfaceHandler::DestroySurface(Surface_Base* Surface)
+void SurfaceHandler::DestroySurface(const VkInstance* Instance, Surface_Base* Surface)
 {
 	Assert(Surface != nullptr, "Surface must be valid.");
 
-	Surface->Destroy(*mInstanceHandleRef.get());
+	Surface->Destroy(*Instance);
+}
+
+void SurfaceHandler::Destroy(const VkInstance* Instance)
+{
+	for (int i = mSurfaces.size() - 1; i >= 0; i--)
+	{
+		DestroySurface(Instance, mSurfaces[i].get());
+		mSurfaces[i] = nullptr;
+	}
+
+	mSurfaces.erase(mSurfaces.begin(), mSurfaces.end());
 }
 
 const Surface_Base* SurfaceHandler::GetMainSurface() const

@@ -102,7 +102,7 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	{
 		CreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		CreateInfo.queueFamilyIndexCount = CreationInfo.mQueueFamilyHandler->GetNumberOfQueueFamilies();
-		CreateInfo.pQueueFamilyIndices = CreationInfo.mQueueFamilyHandler->GetQueueFamiliesIndices().data();
+		CreateInfo.pQueueFamilyIndices = (*CreationInfo.mQueueFamilyHandler->GetAlignedQueueFamiliesIndices()).data();
 	}
 	else
 	{
@@ -165,6 +165,8 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	RenderPassCommandBufferCI.mLogicalDevice = CreationInfo.mLogicalDevice;
 	RenderPassCommandBufferCI.mBufferSize = GetRenderPassManager()->GetFramebuffers()->size();
 	RenderPassCommandBufferCI.mCommandPool = GetCommandPool();
+	RenderPassCommandBufferCI.mPipelineHandle = GetPipelineSystem()->GetPipelineHandle();
+	RenderPassCommandBufferCI.mSwapChainExtent = GetSwapChainExtent();
 
 	GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
 }
@@ -194,42 +196,13 @@ void SwapChainHandler::CreateCommandPool(const CommandPoolCreateInfo& CreateInfo
 	}
 }
 
-void SwapChainHandler::ReCreateSwapChain(const VkDevice& Device)
+void SwapChainHandler::ReCreateSwapChain(const SwapChainCreationInfo& CreationInfo)
 {
-	vkDeviceWaitIdle(Device);
+	vkDeviceWaitIdle(*CreationInfo.mLogicalDevice);
 
-	Cleanup(Device);
+	Cleanup(CreationInfo.mLogicalDevice);
 
-	SwapChainCreationInfo SwapChainCI = {};
-
-	SwapChainCI.mLogicalDevice = &Device;
-	SwapChainCI.mPhysicalDevice = ;
-	SwapChainCI.mQueueFamilyHandler = ;
-	SwapChainCI.mSurface = ;
-
-	CreateSwapChain();
-	CreateSwapChainImageView(Device);
-	GetRenderPassManager()->CreateRenderPass(Device, GetSwapChainImageFormat());
-
-	PipelineSystemCreationInfo PipelineSystemCI = {};
-
-	PipelineSystemCI.mLogicalDevice = &Device;
-	PipelineSystemCI.mImageFormat = GetSwapChainImageFormat();
-	PipelineSystemCI.mRenderPassHandle = GetRenderPassManager()->GetRenderPassHandle();
-	PipelineSystemCI.mViewportExtent = GetSwapChainExtent();
-
-	GetPipelineSystem()->CreateGraphicsPipeline(PipelineSystemCI);
-
-	FramebufferCreateInfo FramebufferCI = {};
-
-	FramebufferCI.mLogicalDevice = &Device;
-	FramebufferCI.mRenderPassHandle = GetRenderPassManager()->GetRenderPassHandle();
-	FramebufferCI.mSwapChainImageExtent = &GetSwapChainExtent();
-	FramebufferCI.mSwapChainImageViews = GetSwapChainImageViews();
-
-	GetRenderPassManager()->CreateFramebuffers(FramebufferCI);
-
-	CreateCommandBu
+	CreateSwapChain(CreationInfo);
 }
 
 void SwapChainHandler::CreateSwapChainImageView(const VkDevice& Device)
@@ -271,8 +244,15 @@ void SwapChainHandler::RetrieveSwapChainImages(const VkDevice& Device, std::vect
 	vkGetSwapchainImagesKHR(Device, mSwapChainHandle, &ImageCount, SwapChainImages.data());
 }
 
-void SwapChainHandler::DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle)
+void SwapChainHandler::RequestFrameBufferResizing()
 {
+	mRequestFrameBufferResizing = true;
+}
+
+EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle)
+{
+	EDrawFrameErrorCode ErrorCode = EDrawFrameErrorCode::OK;
+
 	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetRenderPassManager()->GetRenderPassCommandBuffers();
 
 	Assert(Device, "Device must be valid at this point!");
@@ -284,7 +264,17 @@ void SwapChainHandler::DrawFrame(const VkDevice& Device, const VkQueue& PresentQ
 	vkWaitForFences(Device, 1, &InFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
 	vkResetFences(Device, 1, &InFlightFences[mCurrentFrameIndex]);
 
-	vkAcquireNextImageKHR(Device, *GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[0], VK_NULL_HANDLE, &ImageIndex);
+	VkResult ImageAcquisitionResult = vkAcquireNextImageKHR(Device, *GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[mCurrentFrameIndex], VK_NULL_HANDLE, &ImageIndex);
+
+	if (ImageAcquisitionResult == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		return EDrawFrameErrorCode::SwapChainRecreationRequired;
+	}
+	else if (ImageAcquisitionResult != VK_SUCCESS && ImageAcquisitionResult != VK_SUBOPTIMAL_KHR)
+	{
+		LogVk(LogType::Error, 0, "Swap Chain Image Acquisition Failed!");
+		return EDrawFrameErrorCode::SwapChainImageAcquisitionFailed;
+	}
 
 	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
@@ -304,6 +294,7 @@ void SwapChainHandler::DrawFrame(const VkDevice& Device, const VkQueue& PresentQ
 	if (vkQueueSubmit(PresentQueueHandle, 1, &SubmitInfo, InFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Queue submission failed!");
+		return EDrawFrameErrorCode::QueueSubmissionFailed;
 	}
 
 	VkPresentInfoKHR PresentInfo = {};
@@ -315,52 +306,61 @@ void SwapChainHandler::DrawFrame(const VkDevice& Device, const VkQueue& PresentQ
 	PresentInfo.pImageIndices = &ImageIndex;
 	PresentInfo.pResults = nullptr;
 
-	vkQueuePresentKHR(PresentQueueHandle, &PresentInfo);
+	VkResult QueuePresentResult = vkQueuePresentKHR(PresentQueueHandle, &PresentInfo);
+
+	if (QueuePresentResult == VK_ERROR_OUT_OF_DATE_KHR || QueuePresentResult == VK_SUBOPTIMAL_KHR || mRequestFrameBufferResizing)
+	{
+		mRequestFrameBufferResizing = false;
+		ErrorCode = EDrawFrameErrorCode::SwapChainRecreationRequired;
+	}
 
 	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % MaxFramesInFlight;
+
+	return ErrorCode;
 }
 
-void SwapChainHandler::Cleanup(const VkDevice& Device)
+void SwapChainHandler::Cleanup(const VkDevice* Device)
 {
-	GetRenderPassManager()->CleanUp(Device);
-	GetPipelineSystem()->CleanUp(Device);
+	GetRenderPassManager()->CleanUp(*Device, &mCommandPool);
+	GetPipelineSystem()->CleanUp(*Device);
 
 	for (int i = GetSwapChainImageViews()->size() - 1; i >= 0; i--)
 	{
-		vkDestroyImageView(Device, (*GetSwapChainImageViews())[i], nullptr);
+		vkDestroyImageView(*Device, (*GetSwapChainImageViews())[i], nullptr);
 	}
 
-	vkDestroySwapchainKHR(Device, mSwapChainHandle, nullptr);
-
-	DestroySemaphoreArray(Device, ImageAvailableSemaphores);
-	DestroySemaphoreArray(Device, RenderFinishedSemaphores);
-	DestroyFenceArray(Device, InFlightFences);
-
-	vkDeviceWaitIdle(Device);
-}
-
-void SwapChainHandler::DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array)
-{
-	for (size_t i = Array.size() - 1; i >= 0; i--)
-	{
-		vkDestroySemaphore(Device, Array[i], nullptr);
-		Array.erase(Array.begin() + i);
-	}
-}
-
-void SwapChainHandler::DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array)
-{
-	for (size_t i = Array.size() - 1; i >= 0; i--)
-	{
-		vkDestroyFence(Device, Array[i], nullptr);
-		Array.erase(Array.begin() + i);
-	}
+	vkDestroySwapchainKHR(*Device, mSwapChainHandle, nullptr);
 }
 
 void SwapChainHandler::Destroy(const VkDevice* Device)
 {
+	DestroySemaphoreArray(*Device, ImageAvailableSemaphores);
+	DestroySemaphoreArray(*Device, RenderFinishedSemaphores);
+	DestroyFenceArray(*Device, InFlightFences);
 
+	GetRenderPassManager()->Destroy(*Device, GetCommandPool());
+	GetPipelineSystem()->Destroy(*Device);
 }
+
+void SwapChainHandler::DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array)
+{
+	for (int i = Array.size() - 1; i >= 0; i--)
+	{
+		vkDestroySemaphore(Device, Array[i], nullptr);
+	}
+	Array.erase(Array.begin(), Array.end());
+}
+
+void SwapChainHandler::DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array)
+{
+	for (int i = Array.size() - 1; i >= 0; i--)
+	{
+		vkDestroyFence(Device, Array[i], nullptr);
+	}
+
+	Array.erase(Array.begin(), Array.end());
+}
+
 
 bool SwapChainHandler::IsAdequate(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const
 {
@@ -416,13 +416,10 @@ VkExtent2D SwapChainHandler::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& mC
 	}
 	else
 	{
-		constexpr uint32_t StandardWidth = 800;
-		constexpr uint32_t StandardHeight = 600;
+		VkExtent2D ActualExtent;
 
-		VkExtent2D ActualExtent = { StandardWidth, StandardHeight };
-
-		ActualExtent.width = std::max(mCapabilities.minImageExtent.width, std::min(mCapabilities.maxImageExtent.width, ActualExtent.width));
-		ActualExtent.height = std::max(mCapabilities.minImageExtent.height, std::min(mCapabilities.maxImageExtent.height, ActualExtent.height));
+		ActualExtent.width = std::max(mCapabilities.minImageExtent.width, std::min(mCapabilities.maxImageExtent.width, GetActualSwapChainExtent().width));
+		ActualExtent.height = std::max(mCapabilities.minImageExtent.height, std::min(mCapabilities.maxImageExtent.height, GetActualSwapChainExtent().height));
 
 		return ActualExtent;
 	}
@@ -463,6 +460,16 @@ const VkSwapchainKHR* SwapChainHandler::GetSwapChainHandle()
 const VkFormat SwapChainHandler::GetSwapChainImageFormat() const
 {
 	return mSwapChainImageFormat;
+}
+
+void SwapChainHandler::SetActualSwapChainExtent(VkExtent2D Extent)
+{
+	mSwapChainActualExtent = Extent;
+}
+
+const VkExtent2D SwapChainHandler::GetActualSwapChainExtent() const
+{
+	return mSwapChainActualExtent;
 }
 
 const VkExtent2D SwapChainHandler::GetSwapChainExtent() const
