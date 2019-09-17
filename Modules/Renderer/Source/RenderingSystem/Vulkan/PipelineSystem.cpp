@@ -137,8 +137,17 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 
 void PipelineSystem::CleanUp(const VkDevice& Device)
 {
-	vkDestroyPipeline(Device, mPipelineHandle, nullptr);
-	vkDestroyPipelineLayout(Device, mPipelineLayout, nullptr);
+	if (mPipelineHandle != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline(Device, mPipelineHandle, nullptr);
+		mPipelineHandle = VK_NULL_HANDLE;
+	}
+
+	if (mPipelineLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout(Device, mPipelineLayout, nullptr);
+		mPipelineLayout = VK_NULL_HANDLE;
+	}
 }
 
 void PipelineSystem::Destroy(const VkDevice& Device)

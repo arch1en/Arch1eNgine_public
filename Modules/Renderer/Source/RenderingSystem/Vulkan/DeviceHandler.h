@@ -60,6 +60,8 @@ public:
 
 	const QueueFamilyHandler* GetQueueFamilyHandler() const;
 
+	void Destroy();
+
 private:
 
     // Physical Devices
@@ -82,7 +84,6 @@ private:
 	void CreateLogicalDevice(const VkSurfaceKHR& Surface, const PhysicalDeviceProperties& PhysicalDevice);
 	// ~Logical Devices
 
-	void Cleanup();
 	QueueFamilyHandler mQueueFamilyHandler;
 	VkDevice LogicalDevice;
     std::vector<PhysicalDeviceProperties> DeviceProperties;

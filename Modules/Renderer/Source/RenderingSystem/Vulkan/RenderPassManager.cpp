@@ -141,18 +141,25 @@ const std::vector<VkFramebuffer>* RenderPassManager::GetFramebuffers() const
 void RenderPassManager::CleanUp(const VkDevice& Device, const VkCommandPool* const CommandPool)
 {
 	vkFreeCommandBuffers(Device, *CommandPool, static_cast<uint32_t>(GetRenderPassCommandBuffers()->size()), GetRenderPassCommandBuffers()->data());
-	for (auto& Framebuffer : mFramebuffers)
+	for (int i = int(mFramebuffers.size() - 1); i >= 0 ; i--)
 	{
-		vkDestroyFramebuffer(Device, Framebuffer, nullptr);
+		vkDestroyFramebuffer(Device, mFramebuffers[i], nullptr);
+		mFramebuffers.erase(mFramebuffers.begin() + i);
 	}
-	vkDestroyRenderPass(Device, mRenderPass, nullptr);
+	if (mRenderPass != VK_NULL_HANDLE)
+	{
+		vkDestroyRenderPass(Device, mRenderPass, nullptr);
+		mRenderPass = VK_NULL_HANDLE;
+	}
 }
 
 void RenderPassManager::Destroy(const VkDevice& Device, const VkCommandPool* const CommandPool)
 {
+	// [Arch1eN] Upon destruction, render pass command buffers must be erased
+	mRenderPassCommandBuffers.erase(mRenderPassCommandBuffers.begin(), mRenderPassCommandBuffers.end());
+
 	CleanUp(Device, CommandPool);
 
-	mRenderPassCommandBuffers.erase(mRenderPassCommandBuffers.begin(), mRenderPassCommandBuffers.end());
 	mFramebuffers.erase(mFramebuffers.begin(), mFramebuffers.end());
 }
 

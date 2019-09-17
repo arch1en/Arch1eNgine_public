@@ -15,6 +15,7 @@ public:
 
 	Logger_Vulkan();
 	void InitiateDebugMessenger(const VkInstance& Instance);
+	void DestroyDebugMessenger(const VkInstance& Instance);
 
 	void AddValidationLayer(const char* ValidationLayerName);
 	void EnableValidationLayers(bool Enable);

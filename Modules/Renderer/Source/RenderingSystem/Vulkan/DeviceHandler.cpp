@@ -307,7 +307,7 @@ const VkDevice * DeviceHandler::GetLogicalDeviceHandle() const
 	return &LogicalDevice;
 }
 
-void DeviceHandler::Cleanup()
+void DeviceHandler::Destroy()
 {
 	vkDestroyDevice(LogicalDevice, nullptr);
 }

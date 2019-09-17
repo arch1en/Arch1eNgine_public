@@ -22,8 +22,13 @@ RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
 
 RenderingInstance_SDL2_Vulkan::~RenderingInstance_SDL2_Vulkan()
 {
+	vkDeviceWaitIdle(*GetDeviceHandler()->GetLogicalDeviceHandle());
 	mSwapChainHandler->Destroy(GetDeviceHandler()->GetLogicalDeviceHandle());
+	mDeviceHandler->Destroy();
 	mSurfaceHandler->Destroy(&InstanceHandle);
+	
+	LogSystem::GetInstance()->GetVulkanLogger()->DestroyDebugMessenger(InstanceHandle);
+
 	vkDestroyInstance(InstanceHandle, nullptr);
 }
 

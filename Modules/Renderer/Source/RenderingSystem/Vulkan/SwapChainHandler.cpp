@@ -334,12 +334,17 @@ void SwapChainHandler::Cleanup(const VkDevice* Device)
 
 void SwapChainHandler::Destroy(const VkDevice* Device)
 {
+	Cleanup(Device);
+
 	DestroySemaphoreArray(*Device, ImageAvailableSemaphores);
 	DestroySemaphoreArray(*Device, RenderFinishedSemaphores);
 	DestroyFenceArray(*Device, InFlightFences);
 
 	GetRenderPassManager()->Destroy(*Device, GetCommandPool());
 	GetPipelineSystem()->Destroy(*Device);
+
+	vkDestroyCommandPool(*Device, *GetCommandPool(), nullptr);
+	mCommandPool = VK_NULL_HANDLE;
 }
 
 void SwapChainHandler::DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array)

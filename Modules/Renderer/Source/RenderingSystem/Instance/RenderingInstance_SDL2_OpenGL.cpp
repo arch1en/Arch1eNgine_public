@@ -51,11 +51,6 @@ void RenderingInstance_SDL2_OpenGL::SetSwapInterval(int Interval)
 	SDL_GL_SetSwapInterval(Interval);
 }
 
-void RenderingInstance_SDL2_OpenGL::RenderLoop()
-{
-
-}
-
 void RenderingInstance_SDL2_OpenGL::SetClearColor(Vector4<float> ClearColor)
 {
 	glClearColor(ClearColor.x, ClearColor.y, ClearColor.z, ClearColor.w);

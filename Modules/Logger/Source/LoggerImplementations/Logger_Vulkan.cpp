@@ -36,6 +36,11 @@ void Logger_Vulkan::InitiateDebugMessenger(const VkInstance& Instance)
 	}
 }
 
+void Logger_Vulkan::DestroyDebugMessenger(const VkInstance& Instance)
+{
+	DestroyDebugUtilsMessenger(Instance, DebugMessengerHandle, nullptr);
+}
+
 void Logger_Vulkan::AddValidationLayer(const char* ValidationLayerName)
 {
 	ValidationLayers.push_back(ValidationLayerName);
