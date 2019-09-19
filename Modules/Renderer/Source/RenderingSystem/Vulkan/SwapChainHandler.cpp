@@ -12,6 +12,12 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 	CreatePipelineSystem();
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
 	CreateFences(InitiationInfo.mLogicalDevice);
+
+	CommandPoolCreateInfo CommandPoolCI = {};
+	CommandPoolCI.mLogicalDevice = InitiationInfo.mLogicalDevice;
+	CommandPoolCI.mQueueFamilyData = InitiationInfo.mQueueFamilyHandler->GetQueueFamilyData();
+
+	CreateCommandPool(CommandPoolCI);
 }
 
 void SwapChainHandler::CreateRenderPassManager()
@@ -154,11 +160,7 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 
 	GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
 
-	CommandPoolCreateInfo CommandPoolCI = {};
-	CommandPoolCI.mLogicalDevice = CreationInfo.mLogicalDevice;
-	CommandPoolCI.mQueueFamilyData = CreationInfo.mQueueFamilyHandler->GetQueueFamilyData();
 
-	CreateCommandPool(CommandPoolCI);
 
 	RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
 

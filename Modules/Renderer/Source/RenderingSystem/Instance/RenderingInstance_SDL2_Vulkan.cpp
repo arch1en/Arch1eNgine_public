@@ -119,6 +119,7 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	SwapChainHandlerInitiationInfo SwapChainHandlerII = {};
 
 	SwapChainHandlerII.mLogicalDevice = LogicalDevice;
+	SwapChainHandlerII.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
 
 	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);

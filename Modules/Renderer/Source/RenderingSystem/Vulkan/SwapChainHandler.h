@@ -22,6 +22,7 @@ enum class EDrawFrameErrorCode
 struct SwapChainHandlerInitiationInfo
 {
 	const VkDevice* mLogicalDevice;
+	const QueueFamilyHandler* mQueueFamilyHandler;
 };
 
 struct SwapChainCreationInfo
