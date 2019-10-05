@@ -11,4 +11,3 @@ require("BuildSystem/Project_Tests")
 workspace("Arch1eNgine")
 
 SetupApplicationProject()
-SetupTestsProject()

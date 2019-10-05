@@ -10,6 +10,11 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 {
 	CreateRenderPassManager();
 	CreatePipelineSystem();
+	CreateMemoryManager();
+
+	BufferCreationInfo BufferCI = {};
+	BufferCI.mLogicalDevice = InitiationInfo.mLogicalDevice;
+
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
 	CreateFences(InitiationInfo.mLogicalDevice);
 
@@ -18,6 +23,11 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 	CommandPoolCI.mQueueFamilyData = InitiationInfo.mQueueFamilyHandler->GetQueueFamilyData();
 
 	CreateCommandPool(CommandPoolCI);
+}
+
+void SwapChainHandler::PrepareMemory(const BufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
+{
+	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Vertices);
 }
 
 void SwapChainHandler::CreateRenderPassManager()
@@ -30,28 +40,33 @@ void SwapChainHandler::CreatePipelineSystem()
 	mPipelineSystem = std::make_unique<PipelineSystem>();
 }
 
+void SwapChainHandler::CreateMemoryManager()
+{
+	mMemoryManager = std::make_unique<MemoryManager>();
+}
+
 void SwapChainHandler::CreateSemaphores(const VkDevice* Device)
 {
-	Assert(ImageAvailableSemaphores.size() == 0, "Array must be empty at this point.");
-	Assert(RenderFinishedSemaphores.size() == 0, "Array must be empty at this point.");
+	Assert(mImageAvailableSemaphores.size() == 0, "Array must be empty at this point.");
+	Assert(mRenderFinishedSemaphores.size() == 0, "Array must be empty at this point.");
 
-	ImageAvailableSemaphores.resize(MaxFramesInFlight);
-	RenderFinishedSemaphores.resize(MaxFramesInFlight);
+	mImageAvailableSemaphores.resize(MaxFramesInFlight);
+	mRenderFinishedSemaphores.resize(MaxFramesInFlight);
 
 	VkSemaphoreCreateInfo CreateInfo = {};
 	CreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	for (int i = 0; i < ImageAvailableSemaphores.size(); i++)
+	for (int i = 0; i < mImageAvailableSemaphores.size(); i++)
 	{
-		if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &ImageAvailableSemaphores[i]) != VK_SUCCESS)
+		if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS)
 		{
 			LogVk(LogType::Error, 0, "Image Available Semaphores Creation failed!");
 		}
 	}
 
-	for (int i = 0; i < RenderFinishedSemaphores.size(); i++)
+	for (int i = 0; i < mRenderFinishedSemaphores.size(); i++)
 	{
-		if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &RenderFinishedSemaphores[i]) != VK_SUCCESS)
+		if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS)
 		{
 			LogVk(LogType::Error, 0, "Rendering Finished Semaphores Creation failed!");
 		}
@@ -60,9 +75,9 @@ void SwapChainHandler::CreateSemaphores(const VkDevice* Device)
 
 void SwapChainHandler::CreateFences(const VkDevice* Device)
 {
-	Assert(InFlightFences.size() == 0, "Array must be empty at this point.");
+	Assert(mInFlightFences.size() == 0, "Array must be empty at this point.");
 
-	InFlightFences.resize(MaxFramesInFlight);
+	mInFlightFences.resize(MaxFramesInFlight);
 
 	VkFenceCreateInfo CreateInfo = {};
 	CreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -70,9 +85,9 @@ void SwapChainHandler::CreateFences(const VkDevice* Device)
 	// We can change its state on the creation time, so that vkWaitForFences will catch it the first time before rendering.
 	CreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (int i = 0; i < InFlightFences.size(); i++)
+	for (int i = 0; i < mInFlightFences.size(); i++)
 	{
-		if (vkCreateFence(*Device, &CreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS)
+		if (vkCreateFence(*Device, &CreateInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS)
 		{
 			LogVk(LogType::Error, 0, "In Flight Fences Creation failed!");
 		}
@@ -157,10 +172,9 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	PipelineCreationInfo.mImageFormat = GetSwapChainImageFormat();
 	PipelineCreationInfo.mViewportExtent = GetSwapChainExtent();
 	PipelineCreationInfo.mRenderPassHandle = GetRenderPassManager()->GetRenderPassHandle();
+	PipelineCreationInfo.mMemoryManager = CreationInfo.mMemoryManager;
 
 	GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
-
-
 
 	RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
 
@@ -169,6 +183,8 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	RenderPassCommandBufferCI.mCommandPool = GetCommandPool();
 	RenderPassCommandBufferCI.mPipelineHandle = GetPipelineSystem()->GetPipelineHandle();
 	RenderPassCommandBufferCI.mSwapChainExtent = GetSwapChainExtent();
+	// [TODO] This will need a refactoring.
+	RenderPassCommandBufferCI.mBufferData = (*GetMemoryManager()->GetBufferData())[0].get();
 
 	GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
 }
@@ -263,10 +279,10 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 
 	uint64_t Timeout = std::numeric_limits <uint64_t>::max(); // Timeout in nanoseconds. Using the maximum value of a 64bit unsigned integer disables the timeout.
 
-	vkWaitForFences(Device, 1, &InFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
-	vkResetFences(Device, 1, &InFlightFences[mCurrentFrameIndex]);
+	vkWaitForFences(Device, 1, &mInFlightFences[mCurrentFrameIndex], VK_TRUE, UINT64_MAX);
+	vkResetFences(Device, 1, &mInFlightFences[mCurrentFrameIndex]);
 
-	VkResult ImageAcquisitionResult = vkAcquireNextImageKHR(Device, *GetSwapChainHandle(), Timeout, ImageAvailableSemaphores[mCurrentFrameIndex], VK_NULL_HANDLE, &ImageIndex);
+	VkResult ImageAcquisitionResult = vkAcquireNextImageKHR(Device, *GetSwapChainHandle(), Timeout, mImageAvailableSemaphores[mCurrentFrameIndex], VK_NULL_HANDLE, &ImageIndex);
 
 	if (ImageAcquisitionResult == VK_ERROR_OUT_OF_DATE_KHR)
 	{
@@ -280,8 +296,8 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 
 	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-	VkSemaphore WaitSemaphores[] = { ImageAvailableSemaphores[mCurrentFrameIndex] };
-	VkSemaphore SignalSemaphores[] = { RenderFinishedSemaphores[mCurrentFrameIndex] };
+	VkSemaphore WaitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrameIndex] };
+	VkSemaphore SignalSemaphores[] = { mRenderFinishedSemaphores[mCurrentFrameIndex] };
 
 	VkSubmitInfo SubmitInfo = {};
 	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -293,7 +309,7 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 	SubmitInfo.pSignalSemaphores = SignalSemaphores;
 	SubmitInfo.signalSemaphoreCount = 1;
 
-	if (vkQueueSubmit(PresentQueueHandle, 1, &SubmitInfo, InFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
+	if (vkQueueSubmit(PresentQueueHandle, 1, &SubmitInfo, mInFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Queue submission failed!");
 		return EDrawFrameErrorCode::QueueSubmissionFailed;
@@ -338,12 +354,13 @@ void SwapChainHandler::Destroy(const VkDevice* Device)
 {
 	Cleanup(Device);
 
-	DestroySemaphoreArray(*Device, ImageAvailableSemaphores);
-	DestroySemaphoreArray(*Device, RenderFinishedSemaphores);
-	DestroyFenceArray(*Device, InFlightFences);
+	DestroySemaphoreArray(*Device, mImageAvailableSemaphores);
+	DestroySemaphoreArray(*Device, mRenderFinishedSemaphores);
+	DestroyFenceArray(*Device, mInFlightFences);
 
 	GetRenderPassManager()->Destroy(*Device, GetCommandPool());
 	GetPipelineSystem()->Destroy(*Device);
+	GetMemoryManager()->Destroy(*Device);
 
 	vkDestroyCommandPool(*Device, *GetCommandPool(), nullptr);
 	mCommandPool = VK_NULL_HANDLE;
@@ -497,6 +514,11 @@ RenderPassManager* const SwapChainHandler::GetRenderPassManager() const
 PipelineSystem* const SwapChainHandler::GetPipelineSystem() const
 {
 	return mPipelineSystem.get();
+}
+
+MemoryManager* const SwapChainHandler::GetMemoryManager() const
+{
+	return mMemoryManager.get();
 }
 
 const VkCommandPool* const SwapChainHandler::GetCommandPool() const

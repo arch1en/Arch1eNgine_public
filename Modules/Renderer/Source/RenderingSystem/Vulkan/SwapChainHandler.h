@@ -6,6 +6,7 @@
 
 #include "RenderingSystem/Vulkan/PipelineSystem.h"
 #include "RenderingSystem/Vulkan/RenderPassManager.h"
+#include "MemoryManager.h"
 
 class QueueFamilyHandler;
 struct QueueFamilyData;
@@ -21,16 +22,17 @@ enum class EDrawFrameErrorCode
 
 struct SwapChainHandlerInitiationInfo
 {
-	const VkDevice* mLogicalDevice;
-	const QueueFamilyHandler* mQueueFamilyHandler;
+	const VkDevice* mLogicalDevice = nullptr;
+	const QueueFamilyHandler* mQueueFamilyHandler = nullptr;
 };
 
 struct SwapChainCreationInfo
 {
-	const VkPhysicalDevice* mPhysicalDevice;
-	const VkDevice*	mLogicalDevice;
-	const VkSurfaceKHR* mSurface;
-	const QueueFamilyHandler* mQueueFamilyHandler;
+	const VkPhysicalDevice* mPhysicalDevice = nullptr;
+	const VkDevice*	mLogicalDevice = nullptr;
+	const VkSurfaceKHR* mSurface = nullptr;
+	const QueueFamilyHandler* mQueueFamilyHandler = nullptr;
+	const MemoryManager* mMemoryManager = nullptr;
 };
 
 struct SwapChainSupportDetails
@@ -42,8 +44,8 @@ struct SwapChainSupportDetails
 
 struct CommandPoolCreateInfo
 {
-	const VkDevice* mLogicalDevice;
-	const std::vector<QueueFamilyData>* mQueueFamilyData;
+	const VkDevice* mLogicalDevice = nullptr;
+	const std::vector<QueueFamilyData>* mQueueFamilyData = nullptr;
 };
 
 constexpr int MaxFramesInFlight = 2;
@@ -56,12 +58,15 @@ public:
 	virtual ~SwapChainHandler() {}
 
 	void Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo);
+	void PrepareMemory(const BufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices);
 	void CreateSwapChain(const SwapChainCreationInfo& CreationInfo);
 	void ReCreateSwapChain(const SwapChainCreationInfo& CreationInfo);
 	void CreateSwapChainImageView(const VkDevice& Device);
 
 	void CreateRenderPassManager();
 	void CreatePipelineSystem();
+	void CreateMemoryManager();
+
 	void CreateSemaphores(const VkDevice* Device);
 	void CreateFences(const VkDevice* Device);
 	void CreateCommandPool(const CommandPoolCreateInfo& CreateInfo);
@@ -89,6 +94,8 @@ public:
 
 	RenderPassManager*	const	GetRenderPassManager() const;
 	PipelineSystem*		const	GetPipelineSystem() const;
+	MemoryManager*		const	GetMemoryManager() const;
+
 	const VkCommandPool*		const	GetCommandPool() const;
 
 private:
@@ -104,18 +111,20 @@ private:
 
 	std::unique_ptr<RenderPassManager> mRenderPassManager;
 	std::unique_ptr<PipelineSystem> mPipelineSystem;
+	std::unique_ptr<MemoryManager> mMemoryManager;
 
 	std::vector<VkImage> mSwapChainImages;
 	std::vector<VkImageView> mSwapChainImageViews;
 
-	std::vector<VkSemaphore>	ImageAvailableSemaphores;
-	std::vector<VkSemaphore>	RenderFinishedSemaphores;
-	std::vector<VkFence>		InFlightFences;
+	std::vector<VkSemaphore>	mImageAvailableSemaphores;
+	std::vector<VkSemaphore>	mRenderFinishedSemaphores;
+	std::vector<VkFence>		mInFlightFences;
 
 	const SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const;
 
 	void DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array);
 	void DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array);
+
 };
 
 #endif

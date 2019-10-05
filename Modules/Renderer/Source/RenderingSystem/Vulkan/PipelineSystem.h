@@ -6,12 +6,15 @@
 
 // REF : https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Render_passes
 
+struct MemoryManager;
+
 struct PipelineSystemCreationInfo
 {
 	const VkDevice* mLogicalDevice;
 	VkExtent2D mViewportExtent;
 	VkFormat mImageFormat;
 	const VkRenderPass* mRenderPassHandle;
+	const MemoryManager* mMemoryManager;
 };
 
 class PipelineSystem

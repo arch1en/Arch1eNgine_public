@@ -1,8 +1,7 @@
 #include "PipelineSystem.h"
 
 #include "LogSystem.h"
-
-
+#include "MemoryManager.h"
 
 void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo)
 {
@@ -26,10 +25,15 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 
 	mShaderStages = { ShaderStageInfo_Vertex, ShaderStageInfo_Fragment };
 
+	const VkVertexInputBindingDescription const BindingDescription = CreationInfo.mMemoryManager->GetBindingDescription<Vertex>();
+	const std::vector<VkVertexInputAttributeDescription> const AttributeDescriptions = CreationInfo.mMemoryManager->GetAttributeDescription<Vertex>();
+
 	VkPipelineVertexInputStateCreateInfo VertexInputInfo = {};
 	VertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	VertexInputInfo.vertexBindingDescriptionCount = 0;
-	VertexInputInfo.vertexAttributeDescriptionCount = 0;
+	VertexInputInfo.vertexBindingDescriptionCount = 1;
+	VertexInputInfo.vertexAttributeDescriptionCount = AttributeDescriptions.size();
+	VertexInputInfo.pVertexBindingDescriptions = &BindingDescription;
+	VertexInputInfo.pVertexAttributeDescriptions = AttributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo InputAssembly = {};
 	InputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

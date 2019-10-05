@@ -1,5 +1,6 @@
 #include "RenderPassManager.h"
 #include "LogSystem.h"
+#include "VulkanUtilities.h"
 
 void RenderPassManager::CreateRenderPass(const VkDevice& Device, const VkFormat& ImageFormat)
 {
@@ -115,9 +116,13 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 
 		vkCmdBeginRenderPass(mRenderPassCommandBuffers[i], &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBindPipeline(mRenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *CreateInfo.mPipelineHandle);
+			vkCmdBindPipeline(mRenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *CreateInfo.mPipelineHandle);
 
-		vkCmdDraw(mRenderPassCommandBuffers[i], 3, 1, 0, 0);
+			VkBuffer VertexBuffers[] = { CreateInfo.mBufferData->mBuffer };
+			VkDeviceSize Offsets[] = { 0 };
+			vkCmdBindVertexBuffers(mRenderPassCommandBuffers[i], 0, 1, VertexBuffers, Offsets);
+
+			vkCmdDraw(mRenderPassCommandBuffers[i], static_cast<uint32_t>(CreateInfo.mBufferData->mVertices.size()), 1, 0, 0);
 
 		vkCmdEndRenderPass(mRenderPassCommandBuffers[i]);
 

@@ -26,7 +26,7 @@ RenderingInstance_SDL2_Vulkan::~RenderingInstance_SDL2_Vulkan()
 	mSwapChainHandler->Destroy(GetDeviceHandler()->GetLogicalDeviceHandle());
 	mDeviceHandler->Destroy();
 	mSurfaceHandler->Destroy(&InstanceHandle);
-	
+
 	LogSystem::GetInstance()->GetVulkanLogger()->DestroyDebugMessenger(InstanceHandle);
 
 	vkDestroyInstance(InstanceHandle, nullptr);
@@ -109,19 +109,33 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	SwapChainCreationInfo SwapChainCI = {};
 
 	const VkDevice* LogicalDevice = GetDeviceHandler()->GetLogicalDeviceHandle();
-	const DeviceHandler* const pDeviceHandler = GetDeviceHandler();
+	const VkPhysicalDevice* PhysicalDevice = &GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
 
 	SwapChainCI.mLogicalDevice = LogicalDevice;
-	SwapChainCI.mPhysicalDevice = &pDeviceHandler->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+	SwapChainCI.mPhysicalDevice = PhysicalDevice;
 	SwapChainCI.mSurface = GetSurfaceHandler()->GetMainSurface()->GetHandle();
-	SwapChainCI.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
+	SwapChainCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
 	SwapChainHandlerInitiationInfo SwapChainHandlerII = {};
 
 	SwapChainHandlerII.mLogicalDevice = LogicalDevice;
-	SwapChainHandlerII.mQueueFamilyHandler = pDeviceHandler->GetQueueFamilyHandler();
+	SwapChainHandlerII.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
 	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
+
+	BufferCreationInfo BufferCI = {};
+	BufferCI.mLogicalDevice = LogicalDevice;
+	BufferCI.mPhysicalDevice = PhysicalDevice;
+
+	// [Temp]
+	std::vector<Vertex> Vertices =
+	{
+		{{0.f, -.5f, .0f},{1.f, 1.f, 1.f}},
+		{{.5f, .5f, .0f},{.0f, 1.f, .0f}},
+		{{-.5f, .5f, .0f},{.0f, .0f, 1.f}}
+	};
+
+	GetSwapChainHandler()->PrepareMemory(BufferCI, Vertices);
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 }
 
@@ -214,10 +228,6 @@ std::vector<VkLayerProperties> RenderingInstance_SDL2_Vulkan::CheckValidationLay
 	return AvailableDesiredLayers;
 }
 
-void RenderingInstance_SDL2_Vulkan::Initialize()
-{
-}
-
 const std::string RenderingInstance_SDL2_Vulkan::GetImplementationType() const
 {
 	return "SDL2/Vulkan";
@@ -226,18 +236,6 @@ const std::string RenderingInstance_SDL2_Vulkan::GetImplementationType() const
 void* RenderingInstance_SDL2_Vulkan::GetRenderingInstanceHandle()
 {
 	return &InstanceHandle;
-}
-
-void RenderingInstance_SDL2_Vulkan::SetRenderingInstanceHandle(void * Handle)
-{
-}
-
-void RenderingInstance_SDL2_Vulkan::SetSwapInterval(int Interval)
-{
-}
-
-void RenderingInstance_SDL2_Vulkan::SetClearColor(Vector4<float> ClearColor)
-{
 }
 
 void RenderingInstance_SDL2_Vulkan::RenderLoop()
@@ -265,8 +263,4 @@ void RenderingInstance_SDL2_Vulkan::ResizeCanvas(int Width, int Height)
 {
 	GetSwapChainHandler()->SetActualSwapChainExtent({ uint32_t(Width), uint32_t(Height) });
 	GetSwapChainHandler()->RequestFrameBufferResizing();
-}
-
-void RenderingInstance_SDL2_Vulkan::ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties)
-{
 }
