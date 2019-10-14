@@ -2,61 +2,75 @@
 
 #include "LogSystem.h"
 
-void MemoryManager::CreateBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
+(
+	const VkDevice* LogicalDevice,
+	const VkPhysicalDevice* PhysicalDevice,
+	VkDeviceSize DataSize,
+	VkBufferUsageFlags UsageFlags,
+	VkMemoryPropertyFlags MemoryPropertyFlagBits
+)
 {
-	std::unique_ptr<BufferData> NewBufferData(new BufferData);
+	BufferData* NewBufferData = new BufferData;
 
 	NewBufferData->mBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	NewBufferData->mBufferCreateInfo.pNext = nullptr;
-	NewBufferData->mBufferCreateInfo.size = sizeof(Vertices[0]) * Vertices.size();
-	NewBufferData->mBufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	NewBufferData->mBufferCreateInfo.size = DataSize;
+	NewBufferData->mBufferCreateInfo.usage = UsageFlags;
 	NewBufferData->mBufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	NewBufferData->mVertices = Vertices;
 
-	if (vkCreateBuffer(*CreationInfo.mLogicalDevice, &NewBufferData->mBufferCreateInfo, nullptr, &NewBufferData->mBuffer) != VK_SUCCESS)
+	if (vkCreateBuffer(*LogicalDevice, &NewBufferData->mBufferCreateInfo, nullptr, &NewBufferData->mBuffer) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Failed to create vertex buffer!");
 	}
 
-	AllocateMemory(*CreationInfo.mLogicalDevice, *CreationInfo.mPhysicalDevice, NewBufferData->mBuffer, NewBufferData->mBufferMemory);
-	MapMemory(*CreationInfo.mLogicalDevice, Vertices.data(), NewBufferData->mBuffer, NewBufferData->mBufferCreateInfo, NewBufferData->mBufferMemory);
+	// Allocate memory
 
-	mBufferData.push_back(std::move(NewBufferData));
-}
-
-void MemoryManager::AllocateMemory(const VkDevice& LogicalDevice, const VkPhysicalDevice& PhysicalDevice, const VkBuffer& Buffer, VkDeviceMemory& BufferMemory)
-{
 	VkMemoryRequirements MemoryRequirements;
-	vkGetBufferMemoryRequirements(LogicalDevice, Buffer, &MemoryRequirements);
+	vkGetBufferMemoryRequirements(*LogicalDevice, NewBufferData->mBuffer, &MemoryRequirements);
 
 	VkMemoryAllocateInfo AllocateInfo = {};
 	AllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	AllocateInfo.allocationSize = MemoryRequirements.size;
-	AllocateInfo.memoryTypeIndex = FindMemoryType(PhysicalDevice, MemoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	AllocateInfo.memoryTypeIndex = FindMemoryType(*PhysicalDevice, MemoryRequirements.memoryTypeBits, MemoryPropertyFlagBits); //VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	if (vkAllocateMemory(LogicalDevice, &AllocateInfo, nullptr, &BufferMemory) == VK_SUCCESS)
+	if (vkAllocateMemory(*LogicalDevice, &AllocateInfo, nullptr, &NewBufferData->mBufferMemory) == VK_SUCCESS)
 	{
 		// 0 is the offset within the region of memory.
 		// Since this memory is allocated specifically for this the vertex buffer, the offset is simply 0. 
 		// If the offset is non-zero, then it is required to be divisible by memRequirements.alignment.
-		vkBindBufferMemory(LogicalDevice, Buffer, BufferMemory, 0);
+		vkBindBufferMemory(*LogicalDevice, NewBufferData->mBuffer, NewBufferData->mBufferMemory, 0);
 	}
 	else
 	{
 		LogVk(LogType::Error, 0, "Buffer memory allocation failed!");
 	}
+
+	return std::unique_ptr<BufferData>(NewBufferData);
 }
 
-void MemoryManager::MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkBufferCreateInfo& BufferCreateInfo, VkDeviceMemory& BufferMemory)
+std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
-	void* Data = nullptr;
+	std::unique_ptr<BufferData> NewBufferData = CreateBufferInternal
+	(
+		CreationInfo.mLogicalDevice,
+		CreationInfo.mPhysicalDevice,
+		CreationInfo.mDataSize,
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
 
-	vkMapMemory(LogicalDevice, BufferMemory, 0, BufferCreateInfo.size, 0, &Data);
-		memcpy(Data, BufferData, size_t(BufferCreateInfo.size));
-	vkUnmapMemory(LogicalDevice, BufferMemory);
+	MapMemory(*CreationInfo.mLogicalDevice, Vertices.data(), NewBufferData->mBuffer, NewBufferData->mBufferCreateInfo, NewBufferData->mBufferMemory);
+
+	VertexBufferData* NewVertexBufferData = new VertexBufferData;
+
+	NewVertexBufferData->mBufferData = *NewBufferData;
+	NewVertexBufferData->mVertices = Vertices;
+
+	return std::unique_ptr<VertexBufferData>(NewVertexBufferData);
 }
 
-uint32_t MemoryManager::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties)
+uint32_t BufferFactory::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties)
 {
 	VkPhysicalDeviceMemoryProperties MemoryProperties;
 	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &MemoryProperties);
@@ -72,6 +86,34 @@ uint32_t MemoryManager::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, u
 	LogVk(LogType::Error, 0, "Suitable memory type finding failure!");
 }
 
+void BufferFactory::MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkBufferCreateInfo& BufferCreateInfo, VkDeviceMemory& BufferMemory)
+{
+	void* Data = nullptr;
+
+	vkMapMemory(LogicalDevice, BufferMemory, 0, BufferCreateInfo.size, 0, &Data);
+		memcpy(Data, BufferData, size_t(BufferCreateInfo.size));
+	vkUnmapMemory(LogicalDevice, BufferMemory);
+}
+
+// Memory Manager
+
+MemoryManager::MemoryManager()
+	: mBufferFactory{ new BufferFactory }
+{}
+
+void MemoryManager::CreateBuffer(const BufferCreationInfo& CreationInfo)
+{
+	//GetBufferFactory()->CreateBuffer(CreationInfo);
+
+	
+}
+
+void MemoryManager::CreateBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+{
+	std::unique_ptr<VertexBufferData> Data = GetBufferFactory()->CreateVertexBuffer(CreationInfo, Vertices);
+	mVertexBufferData.push_back(std::move(Data));
+}
+
 void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 {
 	for (int i = int(mBufferData.size()) - 1; i >= 0; i--)
@@ -81,11 +123,25 @@ void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 	}
 
 	mBufferData.erase(mBufferData.begin(), mBufferData.end());
+
+	// [TODO] Merge above and below code.
+	for (int i = int(mVertexBufferData.size()) - 1; i >= 0; i--)
+	{
+		vkDestroyBuffer(mLogicalDevice, mVertexBufferData[i]->mBufferData.mBuffer, nullptr);
+		vkFreeMemory(mLogicalDevice, mVertexBufferData[i]->mBufferData.mBufferMemory, nullptr);
+	}
+
+	mVertexBufferData.erase(mVertexBufferData.begin(), mVertexBufferData.end());
 }
 
 const std::vector<std::unique_ptr<BufferData>>* const MemoryManager::GetBufferData() const
 {
 	return &mBufferData;
+}
+
+const std::vector<std::unique_ptr<VertexBufferData>>* const MemoryManager::GetVertexBufferData() const
+{
+	return &mVertexBufferData;
 }
 
 template<>
@@ -114,4 +170,9 @@ const std::vector<VkVertexInputAttributeDescription> MemoryManager::GetAttribute
 	AttributeDescriptions.push_back(ColorAttributeDescription);
 
 	return AttributeDescriptions;
+}
+
+BufferFactory* const MemoryManager::GetBufferFactory() const
+{
+	return mBufferFactory.get();
 }

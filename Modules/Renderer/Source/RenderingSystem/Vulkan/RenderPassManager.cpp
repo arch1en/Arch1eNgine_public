@@ -118,11 +118,11 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 
 			vkCmdBindPipeline(mRenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *CreateInfo.mPipelineHandle);
 
-			VkBuffer VertexBuffers[] = { CreateInfo.mBufferData->mBuffer };
+			VkBuffer VertexBuffers[] = { CreateInfo.mVertexBufferData->mBufferData.mBuffer };
 			VkDeviceSize Offsets[] = { 0 };
 			vkCmdBindVertexBuffers(mRenderPassCommandBuffers[i], 0, 1, VertexBuffers, Offsets);
 
-			vkCmdDraw(mRenderPassCommandBuffers[i], static_cast<uint32_t>(CreateInfo.mBufferData->mVertices.size()), 1, 0, 0);
+			vkCmdDraw(mRenderPassCommandBuffers[i], static_cast<uint32_t>(CreateInfo.mVertexBufferData->mVertices.size()), 1, 0, 0);
 
 		vkCmdEndRenderPass(mRenderPassCommandBuffers[i]);
 

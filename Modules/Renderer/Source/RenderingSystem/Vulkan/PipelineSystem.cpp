@@ -25,13 +25,13 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 
 	mShaderStages = { ShaderStageInfo_Vertex, ShaderStageInfo_Fragment };
 
-	const VkVertexInputBindingDescription const BindingDescription = CreationInfo.mMemoryManager->GetBindingDescription<Vertex>();
-	const std::vector<VkVertexInputAttributeDescription> const AttributeDescriptions = CreationInfo.mMemoryManager->GetAttributeDescription<Vertex>();
+	const VkVertexInputBindingDescription BindingDescription = CreationInfo.mMemoryManager->GetBindingDescription<Vertex>();
+	const std::vector<VkVertexInputAttributeDescription> AttributeDescriptions = CreationInfo.mMemoryManager->GetAttributeDescription<Vertex>();
 
 	VkPipelineVertexInputStateCreateInfo VertexInputInfo = {};
 	VertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	VertexInputInfo.vertexBindingDescriptionCount = 1;
-	VertexInputInfo.vertexAttributeDescriptionCount = AttributeDescriptions.size();
+	VertexInputInfo.vertexAttributeDescriptionCount = uint32_t(AttributeDescriptions.size());
 	VertexInputInfo.pVertexBindingDescriptions = &BindingDescription;
 	VertexInputInfo.pVertexAttributeDescriptions = AttributeDescriptions.data();
 

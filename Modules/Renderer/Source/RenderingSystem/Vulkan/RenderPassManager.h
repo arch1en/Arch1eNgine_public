@@ -4,7 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-struct BufferData;
+struct VertexBufferData;
 
 struct FramebufferCreateInfo
 {
@@ -21,7 +21,7 @@ struct RenderPassCommandBufferCreateInfo
 	const VkPipeline* mPipelineHandle;
 	size_t mBufferSize;
 	VkExtent2D mSwapChainExtent;
-	const BufferData* mBufferData;
+	const VertexBufferData* mVertexBufferData;
 };
 
 class RenderPassManager

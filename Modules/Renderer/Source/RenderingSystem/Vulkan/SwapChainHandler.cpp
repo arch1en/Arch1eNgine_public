@@ -184,7 +184,7 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	RenderPassCommandBufferCI.mPipelineHandle = GetPipelineSystem()->GetPipelineHandle();
 	RenderPassCommandBufferCI.mSwapChainExtent = GetSwapChainExtent();
 	// [TODO] This will need a refactoring.
-	RenderPassCommandBufferCI.mBufferData = (*GetMemoryManager()->GetBufferData())[0].get();
+	RenderPassCommandBufferCI.mVertexBufferData = (*GetMemoryManager()->GetVertexBufferData())[0].get();
 
 	GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
 }

@@ -6,7 +6,7 @@
 
 // REF : https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Render_passes
 
-struct MemoryManager;
+class MemoryManager;
 
 struct PipelineSystemCreationInfo
 {
