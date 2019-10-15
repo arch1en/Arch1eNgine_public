@@ -123,9 +123,11 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 
 	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
 
-	BufferCreationInfo BufferCI = {};
-	BufferCI.mLogicalDevice = LogicalDevice;
-	BufferCI.mPhysicalDevice = PhysicalDevice;
+	VertexBufferCreationInfo BufferCI = {};
+	BufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
+	BufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
+	BufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
+
 	// [Temp]
 	std::vector<Vertex> Vertices =
 	{
@@ -134,9 +136,9 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 		{{-.5f, .5f, .0f},{.0f, .0f, 1.f}}
 	};
 
-	BufferCI.mDataSize = sizeof(Vertices[0]) * Vertices.size();
+	BufferCI.mBufferCreationInfo.mDataSize = sizeof(Vertices[0]) * Vertices.size();
 
-	GetSwapChainHandler()->PrepareMemory(BufferCI, Vertices);
+	GetSwapChainHandler()->PrepareVertexMemory(BufferCI, Vertices);
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 }
 

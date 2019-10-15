@@ -1,5 +1,7 @@
 #include "MemoryManager.h"
 
+#include "DeviceHandler.h"
+
 #include "LogSystem.h"
 
 std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
@@ -49,22 +51,36 @@ std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
 	return std::unique_ptr<BufferData>(NewBufferData);
 }
 
-std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
-	std::unique_ptr<BufferData> NewBufferData = CreateBufferInternal
+	std::unique_ptr<BufferData> StagingBuffer = CreateBufferInternal
 	(
-		CreationInfo.mLogicalDevice,
-		CreationInfo.mPhysicalDevice,
-		CreationInfo.mDataSize,
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		CreationInfo.mBufferCreationInfo.mLogicalDevice,
+		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
+		CreationInfo.mBufferCreationInfo.mDataSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
-	MapMemory(*CreationInfo.mLogicalDevice, Vertices.data(), NewBufferData->mBuffer, NewBufferData->mBufferCreateInfo, NewBufferData->mBufferMemory);
+	MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, StagingBuffer->mBufferCreateInfo, StagingBuffer->mBufferMemory);
+
+	std::unique_ptr<BufferData> VertexBuffer = CreateBufferInternal
+	(
+		CreationInfo.mBufferCreationInfo.mLogicalDevice,
+		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
+		CreationInfo.mBufferCreationInfo.mDataSize,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
+
+	CopyBuffer(CreationInfo.mBufferCreationInfo.mLogicalDevice, CreationInfo.mQueueFamilyHandler, StagingBuffer->mBuffer, VertexBuffer->mBuffer, CreationInfo.mBufferCreationInfo.mDataSize);
+
+	vkDestroyBuffer(*CreationInfo.mBufferCreationInfo.mLogicalDevice, StagingBuffer->mBuffer, nullptr);
+	vkFreeMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, StagingBuffer->mBufferMemory, nullptr);
 
 	VertexBufferData* NewVertexBufferData = new VertexBufferData;
 
-	NewVertexBufferData->mBufferData = *NewBufferData;
+	NewVertexBufferData->mBufferData = *VertexBuffer;
 	NewVertexBufferData->mVertices = Vertices;
 
 	return std::unique_ptr<VertexBufferData>(NewVertexBufferData);
@@ -108,7 +124,7 @@ void MemoryManager::CreateBuffer(const BufferCreationInfo& CreationInfo)
 	
 }
 
-void MemoryManager::CreateBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+void MemoryManager::CreateBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
 	std::unique_ptr<VertexBufferData> Data = GetBufferFactory()->CreateVertexBuffer(CreationInfo, Vertices);
 	mVertexBufferData.push_back(std::move(Data));
@@ -175,4 +191,52 @@ const std::vector<VkVertexInputAttributeDescription> MemoryManager::GetAttribute
 BufferFactory* const MemoryManager::GetBufferFactory() const
 {
 	return mBufferFactory.get();
+}
+
+void BufferFactory::CopyBuffer(const VkDevice* LogicalDevice, const QueueFamilyHandler* QueueFamilyHandler, VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size)
+{
+	const VkQueue& GraphicsQueue = QueueFamilyHandler->GetPresentationSuitableQueueFamilyData()->QueueHandle;
+
+	// [Todo] Command pool should be initialized and used for the longer period of time, instead of destroyed right after loading data to the device.
+	VkCommandPoolCreateInfo CommandPoolCI = {};
+	CommandPoolCI.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CommandPoolCI.queueFamilyIndex = QueueFamilyHandler->GetPresentationSuitableQueueFamilyData()->FamilyIndex;
+
+	vkCreateCommandPool(*LogicalDevice, &CommandPoolCI, nullptr, &mMemoryOperationsCommandPool);
+
+	VkCommandBufferAllocateInfo AllocInfo = {};
+	AllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	AllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	AllocInfo.commandPool = mMemoryOperationsCommandPool;
+	AllocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer CommandBuffer;
+	vkAllocateCommandBuffers(*LogicalDevice, &AllocInfo, &CommandBuffer);
+
+	VkCommandBufferBeginInfo BeginInfo = {};
+	BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	BeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(CommandBuffer, &BeginInfo);
+
+		VkBufferCopy CopyRegion = {};
+		CopyRegion.srcOffset = 0; // Optional
+		CopyRegion.dstOffset = 0; // Optional
+		CopyRegion.size = Size;
+
+		vkCmdCopyBuffer(CommandBuffer, SrcBuffer, DstBuffer, 1, &CopyRegion);
+
+	vkEndCommandBuffer(CommandBuffer);
+
+	VkSubmitInfo SubmitInfo = {};
+
+	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	SubmitInfo.commandBufferCount = 1;
+	SubmitInfo.pCommandBuffers = &CommandBuffer;
+
+	vkQueueSubmit(GraphicsQueue, 1, &SubmitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(GraphicsQueue);
+
+	vkFreeCommandBuffers(*LogicalDevice, mMemoryOperationsCommandPool, 1, &CommandBuffer);
+	vkDestroyCommandPool(*LogicalDevice, mMemoryOperationsCommandPool, nullptr);
 }

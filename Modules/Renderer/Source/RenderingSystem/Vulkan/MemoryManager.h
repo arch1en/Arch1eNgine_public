@@ -7,6 +7,8 @@
 #include "GeometrySystem/Vertex.h"
 #include "VulkanUtilities.h"
 
+class QueueFamilyHandler;
+
 struct BufferCreationInfo
 {
 	const VkDevice* mLogicalDevice = nullptr;
@@ -14,14 +16,21 @@ struct BufferCreationInfo
 	VkDeviceSize mDataSize;
 };
 
+struct VertexBufferCreationInfo
+{
+	BufferCreationInfo mBufferCreationInfo;
+	const QueueFamilyHandler* mQueueFamilyHandler = nullptr;
+};
+
 class BufferFactory
 {
 public:
 
-	//std::unique_ptr<BufferData>			CreateBuffer(const BufferCreationInfo& CreationInfo);
-	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
 
 private:
+
+	VkCommandPool mMemoryOperationsCommandPool;
 
 	void MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkBufferCreateInfo& BufferCreateInfo, VkDeviceMemory& BufferMemory);
 	uint32_t FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties);
@@ -34,6 +43,8 @@ private:
 		VkBufferUsageFlags UsageFlags,
 		VkMemoryPropertyFlags MemoryPropertyFlagBits
 	);
+
+	void CopyBuffer(const VkDevice* LogicalDevice, const QueueFamilyHandler* GraphicsQueue, VkBuffer SrcBuffer, VkBuffer DstBuffer, VkDeviceSize Size);
 
 };
 
@@ -61,7 +72,7 @@ public:
 	const std::vector<VkVertexInputAttributeDescription> GetAttributeDescription() const;
 
 	void CreateBuffer(const BufferCreationInfo& CreationInfo);
-	void CreateBuffer(const BufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertice);
+	void CreateBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertice);
 
 	const std::vector<std::unique_ptr<BufferData>>* const GetBufferData() const;
 	const std::vector<std::unique_ptr<VertexBufferData>>* const GetVertexBufferData() const;
@@ -71,7 +82,6 @@ public:
 private:
 
 	BufferFactory* const GetBufferFactory() const;
-
 	std::unique_ptr<BufferFactory> mBufferFactory;
 
 	std::vector<VkVertexInputBindingDescription> mBindingDescriptions;

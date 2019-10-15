@@ -12,9 +12,6 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 	CreatePipelineSystem();
 	CreateMemoryManager();
 
-	BufferCreationInfo BufferCI = {};
-	BufferCI.mLogicalDevice = InitiationInfo.mLogicalDevice;
-
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
 	CreateFences(InitiationInfo.mLogicalDevice);
 
@@ -25,7 +22,7 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 	CreateCommandPool(CommandPoolCI);
 }
 
-void SwapChainHandler::PrepareMemory(const BufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
+void SwapChainHandler::PrepareVertexMemory(const VertexBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
 {
 	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Vertices);
 }
