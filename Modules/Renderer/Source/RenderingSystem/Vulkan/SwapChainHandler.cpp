@@ -10,7 +10,7 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 {
 	CreateRenderPassManager();
 	CreatePipelineSystem();
-	CreateMemoryManager();
+	CreateMemoryManager(*InitiationInfo.mLogicalDevice, InitiationInfo.mQueueFamilyHandler);
 
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
 	CreateFences(InitiationInfo.mLogicalDevice);
@@ -37,9 +37,9 @@ void SwapChainHandler::CreatePipelineSystem()
 	mPipelineSystem = std::make_unique<PipelineSystem>();
 }
 
-void SwapChainHandler::CreateMemoryManager()
+void SwapChainHandler::CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
 {
-	mMemoryManager = std::make_unique<MemoryManager>();
+	mMemoryManager = std::make_unique<MemoryManager>(LogicalDevice, QFH);
 }
 
 void SwapChainHandler::CreateSemaphores(const VkDevice* Device)

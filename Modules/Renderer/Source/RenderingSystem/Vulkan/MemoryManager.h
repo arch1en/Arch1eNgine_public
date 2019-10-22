@@ -26,7 +26,9 @@ class BufferFactory
 {
 public:
 
+	void Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
 	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	void Destroy(const VkDevice& LogicalDevice);
 
 private:
 
@@ -52,7 +54,8 @@ class MemoryManager
 {
 public:
 
-	MemoryManager();
+	MemoryManager() = delete;
+	MemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
 
 	// Describes at which rate to load data from memory throughout the vertices.
 	template <class T>
@@ -71,7 +74,7 @@ public:
 	template <class T>
 	const std::vector<VkVertexInputAttributeDescription> GetAttributeDescription() const;
 
-	void CreateBuffer(const BufferCreationInfo& CreationInfo);
+	void CreateBuffer(const BufferCreationInfo& CreationInfo) {}
 	void CreateBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertice);
 
 	const std::vector<std::unique_ptr<BufferData>>* const GetBufferData() const;

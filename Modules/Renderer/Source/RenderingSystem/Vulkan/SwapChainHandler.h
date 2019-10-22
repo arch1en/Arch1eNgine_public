@@ -65,7 +65,7 @@ public:
 
 	void CreateRenderPassManager();
 	void CreatePipelineSystem();
-	void CreateMemoryManager();
+	void CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
 
 	void CreateSemaphores(const VkDevice* Device);
 	void CreateFences(const VkDevice* Device);

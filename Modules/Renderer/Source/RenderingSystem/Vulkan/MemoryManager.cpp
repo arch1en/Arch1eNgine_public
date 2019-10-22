@@ -4,6 +4,15 @@
 
 #include "LogSystem.h"
 
+void BufferFactory::Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
+{
+	VkCommandPoolCreateInfo CommandPoolCI = {};
+	CommandPoolCI.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	CommandPoolCI.queueFamilyIndex = QFH->GetPresentationSuitableQueueFamilyData()->FamilyIndex;
+
+	vkCreateCommandPool(LogicalDevice, &CommandPoolCI, nullptr, &mMemoryOperationsCommandPool);
+}
+
 std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
 (
 	const VkDevice* LogicalDevice,
@@ -49,6 +58,11 @@ std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
 	}
 
 	return std::unique_ptr<BufferData>(NewBufferData);
+}
+
+void BufferFactory::Destroy(const VkDevice& LogicalDevice)
+{
+	vkDestroyCommandPool(LogicalDevice, mMemoryOperationsCommandPool, nullptr);
 }
 
 std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
@@ -113,15 +127,10 @@ void BufferFactory::MapMemory(const VkDevice& LogicalDevice, const void* BufferD
 
 // Memory Manager
 
-MemoryManager::MemoryManager()
+MemoryManager::MemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
 	: mBufferFactory{ new BufferFactory }
-{}
-
-void MemoryManager::CreateBuffer(const BufferCreationInfo& CreationInfo)
 {
-	//GetBufferFactory()->CreateBuffer(CreationInfo);
-
-	
+	mBufferFactory->Initiate(LogicalDevice, QFH);
 }
 
 void MemoryManager::CreateBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
@@ -148,6 +157,8 @@ void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 	}
 
 	mVertexBufferData.erase(mVertexBufferData.begin(), mVertexBufferData.end());
+
+	GetBufferFactory()->Destroy(mLogicalDevice);
 }
 
 const std::vector<std::unique_ptr<BufferData>>* const MemoryManager::GetBufferData() const
@@ -197,13 +208,6 @@ void BufferFactory::CopyBuffer(const VkDevice* LogicalDevice, const QueueFamilyH
 {
 	const VkQueue& GraphicsQueue = QueueFamilyHandler->GetPresentationSuitableQueueFamilyData()->QueueHandle;
 
-	// [Todo] Command pool should be initialized and used for the longer period of time, instead of destroyed right after loading data to the device.
-	VkCommandPoolCreateInfo CommandPoolCI = {};
-	CommandPoolCI.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	CommandPoolCI.queueFamilyIndex = QueueFamilyHandler->GetPresentationSuitableQueueFamilyData()->FamilyIndex;
-
-	vkCreateCommandPool(*LogicalDevice, &CommandPoolCI, nullptr, &mMemoryOperationsCommandPool);
-
 	VkCommandBufferAllocateInfo AllocInfo = {};
 	AllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	AllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -238,5 +242,4 @@ void BufferFactory::CopyBuffer(const VkDevice* LogicalDevice, const QueueFamilyH
 	vkQueueWaitIdle(GraphicsQueue);
 
 	vkFreeCommandBuffers(*LogicalDevice, mMemoryOperationsCommandPool, 1, &CommandBuffer);
-	vkDestroyCommandPool(*LogicalDevice, mMemoryOperationsCommandPool, nullptr);
 }
