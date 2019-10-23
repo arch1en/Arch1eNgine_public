@@ -16,7 +16,7 @@ struct BufferCreationInfo
 	VkDeviceSize mDataSize;
 };
 
-struct VertexBufferCreationInfo
+struct GeneralBufferCreationInfo
 {
 	BufferCreationInfo mBufferCreationInfo;
 	const QueueFamilyHandler* mQueueFamilyHandler = nullptr;
@@ -27,7 +27,8 @@ class BufferFactory
 public:
 
 	void Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
-	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	std::unique_ptr<IndexBufferData>	CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
 	void Destroy(const VkDevice& LogicalDevice);
 
 private:
@@ -75,10 +76,11 @@ public:
 	const std::vector<VkVertexInputAttributeDescription> GetAttributeDescription() const;
 
 	void CreateBuffer(const BufferCreationInfo& CreationInfo) {}
-	void CreateBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertice);
+	void CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	void CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
 
-	const std::vector<std::unique_ptr<BufferData>>* const GetBufferData() const;
 	const std::vector<std::unique_ptr<VertexBufferData>>* const GetVertexBufferData() const;
+	const std::vector<std::unique_ptr<IndexBufferData>>* const GetIndexBufferData() const;
 
 	void Destroy(const VkDevice& mLogicalDevice);
 
@@ -90,10 +92,9 @@ private:
 	std::vector<VkVertexInputBindingDescription> mBindingDescriptions;
 	std::vector< VkVertexInputAttributeDescription> mAttributeDescriptions;
 
-	std::vector<std::unique_ptr<BufferData>> mBufferData;
-
 	// Specialized Buffers.
 	std::vector<std::unique_ptr<VertexBufferData>> mVertexBufferData;
+	std::vector<std::unique_ptr<IndexBufferData>> mIndexBufferData;
 
 };
 

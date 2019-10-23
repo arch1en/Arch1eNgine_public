@@ -122,7 +122,11 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 			VkDeviceSize Offsets[] = { 0 };
 			vkCmdBindVertexBuffers(mRenderPassCommandBuffers[i], 0, 1, VertexBuffers, Offsets);
 
-			vkCmdDraw(mRenderPassCommandBuffers[i], static_cast<uint32_t>(CreateInfo.mVertexBufferData->mVertices.size()), 1, 0, 0);
+			// [TODO] Needs change to distinct UINT16 and UINT32 index buffer type.
+			VkBuffer IndexBuffers[] = { CreateInfo.mIndexBufferData->mBufferData.mBuffer };
+			vkCmdBindIndexBuffer(mRenderPassCommandBuffers[i], *IndexBuffers, 0, VK_INDEX_TYPE_UINT16);
+
+			vkCmdDrawIndexed(mRenderPassCommandBuffers[i], static_cast<uint32_t>(CreateInfo.mIndexBufferData->mIndices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(mRenderPassCommandBuffers[i]);
 

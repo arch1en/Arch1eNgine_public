@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.h>
 
 struct VertexBufferData;
+struct IndexBufferData;
 
 struct FramebufferCreateInfo
 {
@@ -22,6 +23,7 @@ struct RenderPassCommandBufferCreateInfo
 	size_t mBufferSize;
 	VkExtent2D mSwapChainExtent;
 	const VertexBufferData* mVertexBufferData;
+	const IndexBufferData* mIndexBufferData;
 };
 
 class RenderPassManager

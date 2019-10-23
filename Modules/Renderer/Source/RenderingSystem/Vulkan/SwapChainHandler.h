@@ -58,7 +58,8 @@ public:
 	virtual ~SwapChainHandler() {}
 
 	void Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo);
-	void PrepareVertexMemory(const VertexBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices);
+	void PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices);
+	void PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<uint16_t> Indices);
 	void CreateSwapChain(const SwapChainCreationInfo& CreationInfo);
 	void ReCreateSwapChain(const SwapChainCreationInfo& CreationInfo);
 	void CreateSwapChainImageView(const VkDevice& Device);

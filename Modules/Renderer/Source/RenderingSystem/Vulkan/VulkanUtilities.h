@@ -16,4 +16,10 @@ struct VertexBufferData
 	std::vector<Vertex> mVertices;
 };
 
+struct IndexBufferData
+{
+	BufferData mBufferData;
+	std::vector<uint16_t> mIndices;
+};
+
 #endif // VULKANUTILITIES_H

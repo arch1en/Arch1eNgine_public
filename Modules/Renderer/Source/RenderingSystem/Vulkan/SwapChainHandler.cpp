@@ -22,9 +22,14 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 	CreateCommandPool(CommandPoolCI);
 }
 
-void SwapChainHandler::PrepareVertexMemory(const VertexBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
+void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
 {
 	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Vertices);
+}
+
+void SwapChainHandler::PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<uint16_t> Indices)
+{
+	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Indices);
 }
 
 void SwapChainHandler::CreateRenderPassManager()
@@ -182,6 +187,7 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	RenderPassCommandBufferCI.mSwapChainExtent = GetSwapChainExtent();
 	// [TODO] This will need a refactoring.
 	RenderPassCommandBufferCI.mVertexBufferData = (*GetMemoryManager()->GetVertexBufferData())[0].get();
+	RenderPassCommandBufferCI.mIndexBufferData = (*GetMemoryManager()->GetIndexBufferData())[0].get();
 
 	GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
 }

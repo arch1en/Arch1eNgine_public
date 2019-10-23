@@ -123,22 +123,39 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 
 	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
 
-	VertexBufferCreationInfo BufferCI = {};
-	BufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
-	BufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
-	BufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
+	// [Temp] Vertex Preparation.
+	GeneralBufferCreationInfo VertexBufferCI = {};
+	VertexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
+	VertexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
+	VertexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
-	// [Temp]
 	std::vector<Vertex> Vertices =
 	{
-		{{0.f, -.5f, .0f},{1.f, 1.f, 1.f}},
-		{{.5f, .5f, .0f},{.0f, 1.f, .0f}},
-		{{-.5f, .5f, .0f},{.0f, .0f, 1.f}}
+		{{-0.5f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
+		{{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}},
+		{{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}},
+		{{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}}
 	};
 
-	BufferCI.mBufferCreationInfo.mDataSize = sizeof(Vertices[0]) * Vertices.size();
+	VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(Vertices[0]) * Vertices.size();
+	// ~[Temp] Vertex Preparation.
 
-	GetSwapChainHandler()->PrepareVertexMemory(BufferCI, Vertices);
+	// [Temp] Index Preparation.
+	GeneralBufferCreationInfo IndexBufferCI = {};
+	IndexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
+	IndexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
+	IndexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
+
+	std::vector<uint16_t> Indices =
+	{
+		0, 1, 2, 2, 3, 0
+	};
+
+	IndexBufferCI.mBufferCreationInfo.mDataSize = sizeof(Indices[0]) * Indices.size();
+	// ~[Temp] Index Preparation.
+
+	GetSwapChainHandler()->PrepareVertexMemory(VertexBufferCI, Vertices);
+	GetSwapChainHandler()->PrepareIndexMemory(IndexBufferCI, Indices);
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 }
 

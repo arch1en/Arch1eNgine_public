@@ -65,7 +65,7 @@ void BufferFactory::Destroy(const VkDevice& LogicalDevice)
 	vkDestroyCommandPool(LogicalDevice, mMemoryOperationsCommandPool, nullptr);
 }
 
-std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
 	std::unique_ptr<BufferData> StagingBuffer = CreateBufferInternal
 	(
@@ -98,6 +98,41 @@ std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const Vertex
 	NewVertexBufferData->mVertices = Vertices;
 
 	return std::unique_ptr<VertexBufferData>(NewVertexBufferData);
+}
+
+std::unique_ptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Vertices)
+{
+	std::unique_ptr<BufferData> StagingBuffer = CreateBufferInternal
+	(
+		CreationInfo.mBufferCreationInfo.mLogicalDevice,
+		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
+		CreationInfo.mBufferCreationInfo.mDataSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
+
+	MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, StagingBuffer->mBufferCreateInfo, StagingBuffer->mBufferMemory);
+
+	std::unique_ptr<BufferData> IndexBuffer = CreateBufferInternal
+	(
+		CreationInfo.mBufferCreationInfo.mLogicalDevice,
+		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
+		CreationInfo.mBufferCreationInfo.mDataSize,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
+
+	CopyBuffer(CreationInfo.mBufferCreationInfo.mLogicalDevice, CreationInfo.mQueueFamilyHandler, StagingBuffer->mBuffer, IndexBuffer->mBuffer, CreationInfo.mBufferCreationInfo.mDataSize);
+
+	vkDestroyBuffer(*CreationInfo.mBufferCreationInfo.mLogicalDevice, StagingBuffer->mBuffer, nullptr);
+	vkFreeMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, StagingBuffer->mBufferMemory, nullptr);
+
+	IndexBufferData* NewIndexBufferData = new IndexBufferData;
+
+	NewIndexBufferData->mBufferData = *IndexBuffer;
+	NewIndexBufferData->mIndices = Vertices;
+
+	return std::unique_ptr<IndexBufferData>(NewIndexBufferData);
 }
 
 uint32_t BufferFactory::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties)
@@ -133,21 +168,20 @@ MemoryManager::MemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHan
 	mBufferFactory->Initiate(LogicalDevice, QFH);
 }
 
-void MemoryManager::CreateBuffer(const VertexBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+void MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
 	std::unique_ptr<VertexBufferData> Data = GetBufferFactory()->CreateVertexBuffer(CreationInfo, Vertices);
 	mVertexBufferData.push_back(std::move(Data));
 }
 
+void MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices)
+{
+	std::unique_ptr<IndexBufferData> Data = GetBufferFactory()->CreateIndexBuffer(CreationInfo, Indices);
+	mIndexBufferData.push_back(std::move(Data));
+}
+
 void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 {
-	for (int i = int(mBufferData.size()) - 1; i >= 0; i--)
-	{
-		vkDestroyBuffer(mLogicalDevice, mBufferData[i]->mBuffer, nullptr);
-		vkFreeMemory(mLogicalDevice, mBufferData[i]->mBufferMemory, nullptr);
-	}
-
-	mBufferData.erase(mBufferData.begin(), mBufferData.end());
 
 	// [TODO] Merge above and below code.
 	for (int i = int(mVertexBufferData.size()) - 1; i >= 0; i--)
@@ -158,18 +192,27 @@ void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 
 	mVertexBufferData.erase(mVertexBufferData.begin(), mVertexBufferData.end());
 
-	GetBufferFactory()->Destroy(mLogicalDevice);
-}
+	for (int i = int(mIndexBufferData.size()) - 1; i >= 0; i--)
+	{
+		vkDestroyBuffer(mLogicalDevice, mIndexBufferData[i]->mBufferData.mBuffer, nullptr);
+		vkFreeMemory(mLogicalDevice, mIndexBufferData[i]->mBufferData.mBufferMemory, nullptr);
+	}
 
-const std::vector<std::unique_ptr<BufferData>>* const MemoryManager::GetBufferData() const
-{
-	return &mBufferData;
+	mIndexBufferData.erase(mIndexBufferData.begin(), mIndexBufferData.end());
+
+	GetBufferFactory()->Destroy(mLogicalDevice);
 }
 
 const std::vector<std::unique_ptr<VertexBufferData>>* const MemoryManager::GetVertexBufferData() const
 {
 	return &mVertexBufferData;
 }
+
+const std::vector<std::unique_ptr<IndexBufferData>>* const MemoryManager::GetIndexBufferData() const
+{
+	return &mIndexBufferData;
+}
+
 
 template<>
 const std::vector<VkVertexInputAttributeDescription> MemoryManager::GetAttributeDescription<Vertex>() const
