@@ -139,6 +139,43 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 
 }
 
+void PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts)
+{
+	VkPipelineLayoutCreateInfo PipelineLayoutInfo = {};
+	PipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	PipelineLayoutInfo.setLayoutCount = DescriptorSetLayouts->size(); // Optional
+	PipelineLayoutInfo.pSetLayouts = DescriptorSetLayouts->data(); // Optional
+	PipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
+	PipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+
+	if (vkCreatePipelineLayout(Device, &PipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Pipeline layout creation failed !");
+	}
+}
+
+void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
+{
+	VkDescriptorSetLayoutBinding LayoutBindingUBO = {};
+	LayoutBindingUBO.binding = 0;
+	LayoutBindingUBO.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	LayoutBindingUBO.descriptorCount = 1;
+	LayoutBindingUBO.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	LayoutBindingUBO.pImmutableSamplers = nullptr; // Optional
+
+	VkDescriptorSetLayoutCreateInfo LayoutCI = {};
+	LayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	LayoutCI.bindingCount = 1;
+	LayoutCI.pBindings = &LayoutBindingUBO;
+
+	VkDescriptorSetLayout NewLayout;
+
+	if (vkCreateDescriptorSetLayout(Device, &LayoutCI, nullptr, &NewLayout) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Descriptor set layout creation failed!");
+	}
+}
+
 void PipelineSystem::CleanUp(const VkDevice& Device)
 {
 	if (mPipelineHandle != VK_NULL_HANDLE)
@@ -157,6 +194,13 @@ void PipelineSystem::CleanUp(const VkDevice& Device)
 void PipelineSystem::Destroy(const VkDevice& Device)
 {
 	CleanUp(Device);
+
+	for (auto& i : mDescriptorSetLayouts)
+	{
+		vkDestroyDescriptorSetLayout(Device, i, nullptr);
+	}
+
+	mDescriptorSetLayouts.erase(mDescriptorSetLayouts.begin(), mDescriptorSetLayouts.end());
 }
 
 const VkPipeline* PipelineSystem::GetPipelineHandle() const

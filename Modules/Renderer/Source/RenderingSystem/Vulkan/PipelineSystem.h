@@ -21,7 +21,8 @@ class PipelineSystem
 {
 public:
 
-	void CreatePipelineLayout(const VkDevice& Device);
+	void CreateDescriptorSetLayout(const VkDevice& Device);
+	void CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts);
 
 	void CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo);
 
@@ -38,7 +39,7 @@ private:
 	VkPipeline mPipelineHandle;
 
 	std::vector<VkPipelineShaderStageCreateInfo> mShaderStages;
-
+	std::vector<VkDescriptorSetLayout> mDescriptorSetLayouts;
 };
 
 #endif

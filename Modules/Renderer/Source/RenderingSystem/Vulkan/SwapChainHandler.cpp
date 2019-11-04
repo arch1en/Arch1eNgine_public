@@ -2,9 +2,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <chrono>
+
+#include <glm/glm.hpp>
 
 #include "LogSystem.h"
 #include "DeviceHandler.h" // CIRCULAR DEPENDENCY !
+#include "VulkanUtilities.h"
 
 void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo)
 {
@@ -168,6 +172,14 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 
 	GetRenderPassManager()->CreateFramebuffers(FramebufferCreationInfo);
 
+	GeneralBufferCreationInfo UniformBufferCI = {};
+	UniformBufferCI.mBufferCreationInfo.mLogicalDevice = CreationInfo.mLogicalDevice;
+	UniformBufferCI.mBufferCreationInfo.mPhysicalDevice = CreationInfo.mPhysicalDevice;
+	UniformBufferCI.mBufferCreationInfo.mDataSize = sizeof(UniformBufferObject);
+	UniformBufferCI.mQueueFamilyHandler = CreationInfo.mQueueFamilyHandler;
+
+	GetMemoryManager()->CreateUniformBuffers(UniformBufferCI, mSwapChainImages.size());
+
 	PipelineSystemCreationInfo PipelineCreationInfo = {};
 
 	PipelineCreationInfo.mLogicalDevice = CreationInfo.mLogicalDevice;
@@ -297,6 +309,13 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 		return EDrawFrameErrorCode::SwapChainImageAcquisitionFailed;
 	}
 
+	// @todo : This is temporary. Time should be taken from the rendering loop.
+	static auto StartTime = std::chrono::high_resolution_clock::now();
+	auto CurrentTime = std::chrono::high_resolution_clock::now();
+	float Time = std::chrono::duration<float, std::chrono::seconds::period>(CurrentTime - StartTime).count();
+
+	GetMemoryManager()->UpdateUniformBuffer(&Device, Time, ImageIndex, mSwapChainExtent);
+
 	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 	VkSemaphore WaitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrameIndex] };
@@ -344,6 +363,7 @@ void SwapChainHandler::Cleanup(const VkDevice* Device)
 {
 	GetRenderPassManager()->CleanUp(*Device, &mCommandPool);
 	GetPipelineSystem()->CleanUp(*Device);
+	GetMemoryManager()->CleanUp(*Device);
 
 	for (int i = int(GetSwapChainImageViews()->size()) - 1; i >= 0; i--)
 	{

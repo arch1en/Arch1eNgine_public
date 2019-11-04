@@ -2,6 +2,8 @@
 
 #include "DeviceHandler.h"
 
+#include <glm/gtx/transform.hpp>
+
 #include "LogSystem.h"
 
 void BufferFactory::Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
@@ -24,13 +26,15 @@ std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
 {
 	BufferData* NewBufferData = new BufferData;
 
-	NewBufferData->mBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	NewBufferData->mBufferCreateInfo.pNext = nullptr;
-	NewBufferData->mBufferCreateInfo.size = DataSize;
-	NewBufferData->mBufferCreateInfo.usage = UsageFlags;
-	NewBufferData->mBufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	VkBufferCreateInfo BufferCI = {};
 
-	if (vkCreateBuffer(*LogicalDevice, &NewBufferData->mBufferCreateInfo, nullptr, &NewBufferData->mBuffer) != VK_SUCCESS)
+	BufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	BufferCI.pNext = nullptr;
+	BufferCI.size = DataSize;
+	BufferCI.usage = UsageFlags;
+	BufferCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateBuffer(*LogicalDevice, &BufferCI, nullptr, &NewBufferData->mBuffer) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Failed to create vertex buffer!");
 	}
@@ -76,7 +80,7 @@ std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const Genera
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
-	MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, StagingBuffer->mBufferCreateInfo, StagingBuffer->mBufferMemory);
+	MemoryManagementMethods::MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, CreationInfo.mBufferCreationInfo.mDataSize, StagingBuffer->mBufferMemory);
 
 	std::unique_ptr<BufferData> VertexBuffer = CreateBufferInternal
 	(
@@ -111,7 +115,7 @@ std::unique_ptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralB
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	);
 
-	MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, StagingBuffer->mBufferCreateInfo, StagingBuffer->mBufferMemory);
+	MemoryManagementMethods::MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, CreationInfo.mBufferCreationInfo.mDataSize, StagingBuffer->mBufferMemory);
 
 	std::unique_ptr<BufferData> IndexBuffer = CreateBufferInternal
 	(
@@ -135,6 +139,19 @@ std::unique_ptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralB
 	return std::unique_ptr<IndexBufferData>(NewIndexBufferData);
 }
 
+std::unique_ptr<BufferData>	BufferFactory::CreateGeneralBuffer(const GeneralBufferCreationInfo& CreationInfo)
+{
+	return CreateBufferInternal
+	(
+		CreationInfo.mBufferCreationInfo.mLogicalDevice,
+		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
+		CreationInfo.mBufferCreationInfo.mDataSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
+
+}
+
 uint32_t BufferFactory::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties)
 {
 	VkPhysicalDeviceMemoryProperties MemoryProperties;
@@ -151,12 +168,12 @@ uint32_t BufferFactory::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, u
 	LogVk(LogType::Error, 0, "Suitable memory type finding failure!");
 }
 
-void BufferFactory::MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkBufferCreateInfo& BufferCreateInfo, VkDeviceMemory& BufferMemory)
+void MemoryManagementMethods::MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkDeviceSize& MemorySize, VkDeviceMemory& BufferMemory)
 {
 	void* Data = nullptr;
 
-	vkMapMemory(LogicalDevice, BufferMemory, 0, BufferCreateInfo.size, 0, &Data);
-		memcpy(Data, BufferData, size_t(BufferCreateInfo.size));
+	vkMapMemory(LogicalDevice, BufferMemory, 0, MemorySize, 0, &Data);
+		memcpy(Data, BufferData, size_t(MemorySize));
 	vkUnmapMemory(LogicalDevice, BufferMemory);
 }
 
@@ -180,8 +197,47 @@ void MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, 
 	mIndexBufferData.push_back(std::move(Data));
 }
 
+void MemoryManager::CreateUniformBuffers(const GeneralBufferCreationInfo& CreationInfo, uint8_t SwapChainImagesNum)
+{
+	mUniformBufferData.resize(SwapChainImagesNum);
+
+	for (int i = 0; i < SwapChainImagesNum; i++)
+	{
+		std::unique_ptr<BufferData> Data = GetBufferFactory()->CreateGeneralBuffer(CreationInfo);
+		mUniformBufferData[i] = std::move(Data);
+	}
+
+}
+
+void MemoryManager::UpdateUniformBuffer(const VkDevice* LogicalDevice, float DeltaTime, uint32_t ImageIndex, VkExtent2D ViewportExtent)
+{
+	// @temp
+	const float FOV = 45.f;
+
+	UniformBufferObject UBO = {};
+	UBO.Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
+	UBO.View = glm::lookAt(glm::vec3(2.f, 2.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
+	UBO.Projection = glm::perspective(glm::radians(FOV), ViewportExtent.width / float(ViewportExtent.height), 0.1f, 10.f);
+
+	UBO.Projection[1][1] *= -1;
+
+	MemoryManagementMethods::MapMemory(*LogicalDevice, &UBO, mUniformBufferData[ImageIndex]->mBuffer, sizeof(UBO), mUniformBufferData[ImageIndex]->mBufferMemory);
+}
+
+void MemoryManager::CleanUp(const VkDevice& mLogicalDevice)
+{
+	for (int i = int(mUniformBufferData.size()) - 1; i >= 0; i--)
+	{
+		vkDestroyBuffer(mLogicalDevice, mUniformBufferData[i]->mBuffer, nullptr);
+		vkFreeMemory(mLogicalDevice, mUniformBufferData[i]->mBufferMemory, nullptr);
+	}
+
+	mUniformBufferData.erase(mUniformBufferData.begin(), mUniformBufferData.end());
+}
+
 void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 {
+	CleanUp(mLogicalDevice);
 
 	// [TODO] Merge above and below code.
 	for (int i = int(mVertexBufferData.size()) - 1; i >= 0; i--)

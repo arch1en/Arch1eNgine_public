@@ -3,10 +3,11 @@
 
 #include "GeometrySystem/Vertex.h"
 
+#include <glm/mat4x4.hpp>
+
 struct BufferData
 {
 	VkBuffer mBuffer;
-	VkBufferCreateInfo mBufferCreateInfo = {};
 	VkDeviceMemory mBufferMemory;
 };
 
@@ -20,6 +21,13 @@ struct IndexBufferData
 {
 	BufferData mBufferData;
 	std::vector<uint16_t> mIndices;
+};
+
+struct UniformBufferObject
+{
+	glm::mat4 Model;
+	glm::mat4 View;
+	glm::mat4 Projection;
 };
 
 #endif // VULKANUTILITIES_H
