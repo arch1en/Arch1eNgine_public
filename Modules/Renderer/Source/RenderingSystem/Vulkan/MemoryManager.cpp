@@ -152,6 +152,19 @@ std::unique_ptr<BufferData>	BufferFactory::CreateGeneralBuffer(const GeneralBuff
 
 }
 
+std::unique_ptr<BufferData>	BufferFactory::CreateUniformBuffer(const GeneralBufferCreationInfo& CreationInfo)
+{
+	return CreateBufferInternal
+	(
+		CreationInfo.mBufferCreationInfo.mLogicalDevice,
+		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
+		CreationInfo.mBufferCreationInfo.mDataSize,
+		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
+
+}
+
 uint32_t BufferFactory::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties)
 {
 	VkPhysicalDeviceMemoryProperties MemoryProperties;
@@ -203,7 +216,7 @@ void MemoryManager::CreateUniformBuffers(const GeneralBufferCreationInfo& Creati
 
 	for (int i = 0; i < SwapChainImagesNum; i++)
 	{
-		std::unique_ptr<BufferData> Data = GetBufferFactory()->CreateGeneralBuffer(CreationInfo);
+		std::unique_ptr<BufferData> Data = GetBufferFactory()->CreateUniformBuffer(CreationInfo);
 		mUniformBufferData[i] = std::move(Data);
 	}
 
@@ -269,6 +282,10 @@ const std::vector<std::unique_ptr<IndexBufferData>>* const MemoryManager::GetInd
 	return &mIndexBufferData;
 }
 
+const std::vector<std::unique_ptr<BufferData>>* const MemoryManager::GetUniformBufferData() const
+{
+	return &mUniformBufferData;
+}
 
 template<>
 const std::vector<VkVertexInputAttributeDescription> MemoryManager::GetAttributeDescription<Vertex>() const

@@ -20,6 +20,8 @@ struct RenderPassCommandBufferCreateInfo
 	const VkDevice* mLogicalDevice;
 	const VkCommandPool* mCommandPool;
 	const VkPipeline* mPipelineHandle;
+	const VkPipelineLayout* mPipelineLayout;
+	const std::vector<VkDescriptorSet>* mDescriptorSets;
 	size_t mBufferSize;
 	VkExtent2D mSwapChainExtent;
 	const VertexBufferData* mVertexBufferData;

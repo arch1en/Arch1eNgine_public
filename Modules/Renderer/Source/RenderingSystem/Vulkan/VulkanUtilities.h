@@ -23,11 +23,13 @@ struct IndexBufferData
 	std::vector<uint16_t> mIndices;
 };
 
+// [vulkan][disclaimer] Vulkan has a specification regarding memory alignments.
+// https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap14.html#interfaces-resources-layout
 struct UniformBufferObject
 {
-	glm::mat4 Model;
-	glm::mat4 View;
-	glm::mat4 Projection;
+	alignas(16) glm::mat4 Model;
+	alignas(16) glm::mat4 View;
+	alignas(16) glm::mat4 Projection;
 };
 
 #endif // VULKANUTILITIES_H

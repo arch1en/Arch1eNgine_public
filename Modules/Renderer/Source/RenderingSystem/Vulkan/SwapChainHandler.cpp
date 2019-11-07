@@ -190,18 +190,83 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 
 	GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
 
+	CreateDescriptorPool(CreationInfo.mLogicalDevice);
+	CreateDescriptorSets(CreationInfo.mLogicalDevice);
+
 	RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
 
 	RenderPassCommandBufferCI.mLogicalDevice = CreationInfo.mLogicalDevice;
 	RenderPassCommandBufferCI.mBufferSize = GetRenderPassManager()->GetFramebuffers()->size();
 	RenderPassCommandBufferCI.mCommandPool = GetCommandPool();
 	RenderPassCommandBufferCI.mPipelineHandle = GetPipelineSystem()->GetPipelineHandle();
+	// [TODO] This will need a refactoring.
+	RenderPassCommandBufferCI.mPipelineLayout = GetPipelineSystem()->GetPipelineLayout();
+	RenderPassCommandBufferCI.mDescriptorSets = &mDescriptorSets;
 	RenderPassCommandBufferCI.mSwapChainExtent = GetSwapChainExtent();
 	// [TODO] This will need a refactoring.
 	RenderPassCommandBufferCI.mVertexBufferData = (*GetMemoryManager()->GetVertexBufferData())[0].get();
 	RenderPassCommandBufferCI.mIndexBufferData = (*GetMemoryManager()->GetIndexBufferData())[0].get();
 
 	GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
+
+}
+
+void SwapChainHandler::CreateDescriptorPool(const VkDevice* Device)
+{
+	VkDescriptorPoolSize PoolSize = {};
+	PoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	PoolSize.descriptorCount = static_cast<uint32_t>(mSwapChainImages.size());
+
+	VkDescriptorPoolCreateInfo PoolCI = {};
+	PoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	PoolCI.poolSizeCount = 1;
+	PoolCI.pPoolSizes = &PoolSize;
+	PoolCI.maxSets = static_cast<uint32_t>(mSwapChainImages.size());
+	PoolCI.flags = 0;
+
+	if (vkCreateDescriptorPool(*Device, &PoolCI, nullptr, &mDescriptorPool) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
+	}
+}
+
+void SwapChainHandler::CreateDescriptorSets(const VkDevice* Device)
+{
+	std::vector<VkDescriptorSetLayout> LayoutsToSet(mSwapChainImages.size(), GetPipelineSystem()->GetDescriptorSetLayouts()[0]);
+
+	VkDescriptorSetAllocateInfo AllocInfo = {};
+
+	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	AllocInfo.descriptorPool = mDescriptorPool;
+	AllocInfo.descriptorSetCount = static_cast<uint32_t>(mSwapChainImages.size());
+	AllocInfo.pSetLayouts = LayoutsToSet.data();
+
+	mDescriptorSets.resize(mSwapChainImages.size());
+	if (vkAllocateDescriptorSets(*Device, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
+	}
+
+	for (size_t i = 0; i < mSwapChainImages.size(); i++)
+	{
+		VkDescriptorBufferInfo BufferInfo = {};
+		BufferInfo.buffer = (*GetMemoryManager()->GetUniformBufferData())[i]->mBuffer;
+		BufferInfo.offset = 0;
+		BufferInfo.range = sizeof(UniformBufferObject);
+
+		VkWriteDescriptorSet DescriptorWrite = {};
+		DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		DescriptorWrite.dstSet = mDescriptorSets[i];
+		DescriptorWrite.dstBinding = 0;
+		DescriptorWrite.dstArrayElement = 0;
+		DescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		DescriptorWrite.descriptorCount = 1;
+		DescriptorWrite.pBufferInfo = &BufferInfo;
+		DescriptorWrite.pImageInfo = nullptr;	// Optional
+		DescriptorWrite.pTexelBufferView = nullptr; // Optional
+
+		vkUpdateDescriptorSets(*Device, 1, &DescriptorWrite, 0, nullptr);
+	}
 }
 
 void SwapChainHandler::CreateCommandPool(const CommandPoolCreateInfo& CreateInfo)
@@ -370,6 +435,7 @@ void SwapChainHandler::Cleanup(const VkDevice* Device)
 		vkDestroyImageView(*Device, (*GetSwapChainImageViews())[i], nullptr);
 	}
 
+	vkDestroyDescriptorPool(*Device, mDescriptorPool, nullptr);
 	vkDestroySwapchainKHR(*Device, mSwapChainHandle, nullptr);
 }
 

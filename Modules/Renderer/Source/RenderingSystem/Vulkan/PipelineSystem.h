@@ -29,7 +29,10 @@ public:
 	void CleanUp(const VkDevice& Device);
 	void Destroy(const VkDevice& Device);
 
-	const VkPipeline* GetPipelineHandle() const;
+	const VkPipeline*			GetPipelineHandle() const;
+	const VkPipelineLayout*		GetPipelineLayout() const;
+
+	const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
 
 private:
 

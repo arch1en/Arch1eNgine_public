@@ -70,6 +70,8 @@ public:
 
 	void CreateSemaphores(const VkDevice* Device);
 	void CreateFences(const VkDevice* Device);
+	void CreateDescriptorPool(const VkDevice* Device);
+	void CreateDescriptorSets(const VkDevice* Device);
 	void CreateCommandPool(const CommandPoolCreateInfo& CreateInfo);
 
 	EDrawFrameErrorCode DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle);
@@ -109,6 +111,10 @@ private:
 	VkExtent2D mSwapChainExtent; // Cached computed extent.
 	VkExtent2D mSwapChainActualExtent; // Proposed extent (eg. for window resizing).
 	VkCommandPool mCommandPool;
+
+	// Descriptor Pool/Sets
+	VkDescriptorPool mDescriptorPool;
+	std::vector<VkDescriptorSet> mDescriptorSets;
 
 	std::unique_ptr<RenderPassManager> mRenderPassManager;
 	std::unique_ptr<PipelineSystem> mPipelineSystem;

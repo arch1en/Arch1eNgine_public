@@ -66,7 +66,7 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	Rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	Rasterizer.lineWidth = 1.0f;
 	Rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	Rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	Rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	Rasterizer.depthBiasEnable = VK_FALSE;
 	Rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 	Rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -102,17 +102,8 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	ColorBlendState.blendConstants[2] = 0.f; // Optional
 	ColorBlendState.blendConstants[3] = 0.f; // Optional
 
-	VkPipelineLayoutCreateInfo PipelineLayoutInfo = {};
-	PipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	PipelineLayoutInfo.setLayoutCount = 0; // Optional
-	PipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-	PipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-	PipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
-
-	if (vkCreatePipelineLayout(*CreationInfo.mLogicalDevice, &PipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
-	{
-		LogVk(LogType::Error, 0, "Pipeline layout creation failed !");
-	}
+	CreateDescriptorSetLayout(*CreationInfo.mLogicalDevice);
+	CreatePipelineLayout(*CreationInfo.mLogicalDevice, &mDescriptorSetLayouts);
 
 	VkGraphicsPipelineCreateInfo PipelineInfo = {};
 	PipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -174,6 +165,8 @@ void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 	{
 		LogVk(LogType::Error, 0, "Descriptor set layout creation failed!");
 	}
+
+	mDescriptorSetLayouts.push_back(NewLayout);
 }
 
 void PipelineSystem::CleanUp(const VkDevice& Device)
@@ -206,4 +199,14 @@ void PipelineSystem::Destroy(const VkDevice& Device)
 const VkPipeline* PipelineSystem::GetPipelineHandle() const
 {
 	return &mPipelineHandle;
+}
+
+const VkPipelineLayout* PipelineSystem::GetPipelineLayout() const
+{
+	return &mPipelineLayout;
+}
+
+const std::vector<VkDescriptorSetLayout>& PipelineSystem::GetDescriptorSetLayouts() const
+{
+	return mDescriptorSetLayouts;
 }

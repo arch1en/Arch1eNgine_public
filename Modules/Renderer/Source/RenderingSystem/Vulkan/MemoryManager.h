@@ -31,6 +31,7 @@ public:
 	std::unique_ptr<BufferData>			CreateGeneralBuffer(const GeneralBufferCreationInfo& CreationInfo);
 	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
 	std::unique_ptr<IndexBufferData>	CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
+	std::unique_ptr<BufferData>			CreateUniformBuffer(const GeneralBufferCreationInfo& CreationInfo);
 
 	void Destroy(const VkDevice& LogicalDevice);
 
@@ -92,6 +93,7 @@ public:
 
 	const std::vector<std::unique_ptr<VertexBufferData>>* const GetVertexBufferData() const;
 	const std::vector<std::unique_ptr<IndexBufferData>>* const GetIndexBufferData() const;
+	const std::vector<std::unique_ptr<BufferData>>* const GetUniformBufferData() const;
 
 	void CleanUp(const VkDevice& mLogicalDevice);
 	void Destroy(const VkDevice& mLogicalDevice);

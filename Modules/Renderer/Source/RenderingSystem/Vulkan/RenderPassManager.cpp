@@ -126,6 +126,8 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 			VkBuffer IndexBuffers[] = { CreateInfo.mIndexBufferData->mBufferData.mBuffer };
 			vkCmdBindIndexBuffer(mRenderPassCommandBuffers[i], *IndexBuffers, 0, VK_INDEX_TYPE_UINT16);
 
+			vkCmdBindDescriptorSets(mRenderPassCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *CreateInfo.mPipelineLayout, 0, 1, &(*CreateInfo.mDescriptorSets)[i], 0, nullptr);
+
 			vkCmdDrawIndexed(mRenderPassCommandBuffers[i], static_cast<uint32_t>(CreateInfo.mIndexBufferData->mIndices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(mRenderPassCommandBuffers[i]);
