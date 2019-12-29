@@ -1,31 +1,21 @@
 #include "ShaderSystem.h"
 #include "LogSystem.h"
 
-#include <fstream>
-
-#include "FileSystem.h"
+#include "FileSystem/FileSystem.h"
 
 // @todo: Loading files should be performed through internal file management system.
 std::vector<char> ShaderSystem::LoadShaderFromFile(const std::string& FileName)
 {
+	FileData Data;
 	std::string AssetsDir =	FileSystem::Get()->GetModuleAssetsDir("Renderer");
-	std::ifstream File(FileSystem::Path(AssetsDir + "/" + FileName), std::ios::ate | std::ios::binary);
+	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::OpenAndReadFromEnd | FileOpeningOptions::BinaryFormat);
 
-	if (!File.is_open())
+	if (Result.Code != 0)
 	{
-		LogVk(LogType::Error, 0, "File opening failed");
-		return std::vector<char>();
+		Log(LogType::Error, 0, "Cannot load shader from file. %s", Result.Msg);
 	}
 
-	size_t FileSize = static_cast<size_t>(File.tellg());
-	std::vector<char> Buffer(FileSize);
-
-	File.seekg(0);
-	File.read(Buffer.data(), FileSize);
-
-	File.close();
-
-	return Buffer;
+	return Data.Data;
 }
 
 VkShaderModule ShaderSystem::CreateShaderModule(const std::vector<char>& Code, const VkDevice& Device)

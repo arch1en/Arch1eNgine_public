@@ -1,7 +1,47 @@
 #include "FileSystem.h"
 
 #include <algorithm>
+#include <fstream>
 #include <SDL_filesystem.h>
+
+ErrorHandle FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)
+{
+	ErrorHandle Result;
+
+	std::ios_base::openmode OpenMode = 0;
+
+	if (Options | FileOpeningOptions::OpenAndReadFromEnd)
+	{
+		OpenMode |= std::ios::ate;
+	}
+
+	if (Options | FileOpeningOptions::BinaryFormat)
+	{
+		OpenMode |= std::ios::binary;
+	}
+
+	std::ifstream File(Path, OpenMode);
+
+	if (!File.is_open())
+	{
+		Result.Msg = "File opening failed";
+		Result.Code = 1;
+		return Result;
+	}
+
+	size_t FileSize = static_cast<size_t>(File.tellg());
+	std::vector<char> Buffer(FileSize);
+
+	File.seekg(0);
+	File.read(Buffer.data(), FileSize);
+
+	File.close();
+
+	Data.Size = FileSize;
+	Data.Data = Buffer;
+
+	return Result;
+}
 
 FileSystem::FileSystem()
 {

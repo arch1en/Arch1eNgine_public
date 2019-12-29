@@ -1,5 +1,5 @@
 Properties = 
 {
-	Name = "WUL",
+	Name = "Core",
 	LinkageType = "Include"
 }
