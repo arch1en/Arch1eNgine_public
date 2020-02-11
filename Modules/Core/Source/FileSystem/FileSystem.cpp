@@ -47,7 +47,7 @@ FileSystem::FileSystem()
 {
 	char* BasePath = SDL_GetBasePath();
 
-	const int Position = static_cast<int>(FindOccurenceFromString(BasePath, GetPathSeparator(), 4, true));
+	const int Position = static_cast<int>(FindOccurenceFromString(BasePath, GetPathSeparator(), 3, true));
 	char* NewRootDir = new char[Position - 4];
 	memcpy(NewRootDir, BasePath, Position);
 

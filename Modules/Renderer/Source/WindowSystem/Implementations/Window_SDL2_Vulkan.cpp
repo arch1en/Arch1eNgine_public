@@ -3,7 +3,7 @@
 #include "SDL.h"
 #include "SDL_vulkan.h"
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 Window_SDL2_Vulkan::Window_SDL2_Vulkan(WindowProperties Properties)
 	: Window_SDL2{Properties}

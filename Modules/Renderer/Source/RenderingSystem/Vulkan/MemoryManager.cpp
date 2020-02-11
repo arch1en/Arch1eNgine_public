@@ -4,7 +4,7 @@
 
 #include <glm/gtx/transform.hpp>
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 void BufferFactory::Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
 {
@@ -179,6 +179,7 @@ uint32_t BufferFactory::FindMemoryType(const VkPhysicalDevice& PhysicalDevice, u
 	}
 
 	LogVk(LogType::Error, 0, "Suitable memory type finding failure!");
+	return 0;
 }
 
 void MemoryManagementMethods::MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkDeviceSize& MemorySize, VkDeviceMemory& BufferMemory)

@@ -1,5 +1,5 @@
 #include "Window_SDL2.h"
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 #include "SDL.h"
 
 Window_SDL2::Window_SDL2(WindowProperties Properties)

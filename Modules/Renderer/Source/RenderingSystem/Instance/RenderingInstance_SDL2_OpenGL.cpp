@@ -1,7 +1,7 @@
 #include "RenderingInstance_SDL2_OpenGL.h"
 
 #include <glad/glad.h>
-#include "Assertions.h"
+#include "Debug/Assertions.h"
 
 void RenderingInstance_SDL2_OpenGL::CreateOpenGLContext(SDL_Window* WindowHandle)
 {

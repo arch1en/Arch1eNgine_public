@@ -1,5 +1,5 @@
 #include "ShaderSystem.h"
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 #include "FileSystem/FileSystem.h"
 

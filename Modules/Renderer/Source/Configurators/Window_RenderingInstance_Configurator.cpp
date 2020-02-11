@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 #include "WindowSystem/Implementations/Window_SDL2.h"
 #include "WindowSystem/Implementations/Window_SDL2_Vulkan.h"
 #include "RenderingSystem/Instance/RenderingInstance_SDL2_OpenGL.h"
@@ -20,7 +20,7 @@ Configurator::Window_RenderingInstance::Window_RenderingInstance(I::Window_Impl*
 	, mRenderingInstance{RenderingInstance}
 {}
 
-void Configurator::Window_RenderingInstance::ConfigureImplementations()
+void Configurator::Window_RenderingInstance::Configure()
 {
 	if (mWindow->GetImplementationType().compare("SDL2/Vulkan") == 0)
 	{

@@ -9,7 +9,6 @@
 #include "RenderingSystem/Vulkan/DeviceHandler.h"
 #include "RenderingSystem/Vulkan/Surface/SurfaceHandler.h"
 #include "RenderingSystem/Vulkan/SwapChainHandler.h"
-#include "RenderingSystem/Vulkan/MemoryManager.h"
 
 class RenderingInstance_SDL2_Vulkan : public I::RenderingInstance_Impl
 {

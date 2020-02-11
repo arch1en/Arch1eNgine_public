@@ -3,7 +3,7 @@
 #include "SDL.h"
 #include "SDL_vulkan.h"
 #include "vulkan/vulkan_win32.h"
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 Surface_SDL::Surface_SDL(const SurfaceHandlerCreationData* Data)
 	: Surface_Base{ Data }

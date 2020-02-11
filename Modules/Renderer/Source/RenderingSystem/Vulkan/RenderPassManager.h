@@ -1,11 +1,26 @@
 #ifndef RENDERPASSMANAGER_H
 #define RENDERPASSMANAGER_H
 
+#include <map>
 #include <vector>
+#include <string>
 #include <vulkan/vulkan.h>
+
+using RenderPassID = std::string;
 
 struct VertexBufferData;
 struct IndexBufferData;
+
+struct RenderPassCreateInfo
+{
+	RenderPassID mRenderPassID = "";
+	const VkDevice* mLogicalDevice = nullptr;
+	VkAttachmentDescription mAttachmentDescriptrion = {};
+	VkAttachmentReference mAttachmentReference = {};
+	VkSubpassDescription mSubpassDescription = {};
+	VkSubpassDependency mSubpassDependency = {};
+	VkRenderPassCreateInfo mRenderPassCreateInfo = {};
+};
 
 struct FramebufferCreateInfo
 {
@@ -32,9 +47,10 @@ class RenderPassManager
 {
 public:
 
-	void CreateRenderPass(const VkDevice& Device, const VkFormat& ImageFormat);
+	void CreateRenderPass(const RenderPassCreateInfo& CreateInfo);
 	void CreateFramebuffers(const FramebufferCreateInfo& CreateInfo);
-	const VkRenderPass* const GetRenderPassHandle() const;
+	const VkRenderPass* const GetMainRenderPassHandle();
+	const VkRenderPass* const GetRenderPassHandle(RenderPassID ID);
 	const std::vector<VkCommandBuffer>* GetRenderPassCommandBuffers() const;
 
 	const std::vector<VkFramebuffer>* GetFramebuffers() const;
@@ -45,7 +61,7 @@ public:
 	void Destroy(const VkDevice& Device, const VkCommandPool* const CommandPool);
 private:
 
-	VkRenderPass mRenderPass;
+	std::map<RenderPassID, VkRenderPass> mRenderPasses;
 	std::vector<VkFramebuffer> mFramebuffers;
 	std::vector<VkCommandBuffer> mRenderPassCommandBuffers;
 

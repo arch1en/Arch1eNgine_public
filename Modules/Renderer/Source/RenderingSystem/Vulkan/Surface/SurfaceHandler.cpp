@@ -5,7 +5,7 @@
 #include "Implementations/Surface_SDL.h"
 #endif
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 void SurfaceHandler::CreateSurface(const SurfaceHandlerCreationData* Data)
 {

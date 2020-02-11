@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <set>
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 #include "SwapChainHandler.h"
 
 // Queue Family Handler
@@ -77,7 +77,7 @@ void DeviceHandler::Initiate(const DeviceHandlerCreationInfo* CreationInfo)
 
 	CacheDevices(RetrievedDevices);
 
-	CreateLogicalDevice(*CreationInfo->pSurfaceHandle, DeviceProperties[0]);
+	CreateLogicalDevice(*CreationInfo->pSurfaceHandle, mDeviceProperties[0]);
 }
 
 bool DeviceHandler::RetrievePhysicalDevices(const VkInstance& InstanceHandle, std::vector<VkPhysicalDevice>& Devices)
@@ -175,16 +175,16 @@ void DeviceHandler::SetDesiredDeviceExtensions(const std::vector<const char*> aD
 
 void DeviceHandler::CacheDevices(std::vector<VkPhysicalDevice>& Devices)
 {
-    DeviceProperties.clear();
-    DeviceProperties.resize(Devices.size());
+    mDeviceProperties.clear();
+    mDeviceProperties.resize(Devices.size());
 
-    for(size_t i = 0; i < DeviceProperties.size(); i++)
+    for(size_t i = 0; i < mDeviceProperties.size(); i++)
     {
-        DeviceProperties[i].DeviceHandle = Devices[i];
-        DeviceProperties[i].Rating = GetDeviceSuitabilityRating(Devices[i]);
+        mDeviceProperties[i].DeviceHandle = Devices[i];
+        mDeviceProperties[i].Rating = GetDeviceSuitabilityRating(Devices[i]);
     }
 
-	std::sort(DeviceProperties.begin(), DeviceProperties.end(), [](const PhysicalDeviceProperties& LHS, const PhysicalDeviceProperties& RHS)
+	std::sort(mDeviceProperties.begin(), mDeviceProperties.end(), [](const PhysicalDeviceProperties& LHS, const PhysicalDeviceProperties& RHS)
 	{
 		return LHS.Rating < RHS.Rating;
 	});
@@ -299,7 +299,7 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 
 const std::vector<PhysicalDeviceProperties>* DeviceHandler::GetPhysicalDevicesProperties() const
 {
-	return &DeviceProperties;
+	return &mDeviceProperties;
 }
 
 const VkDevice * DeviceHandler::GetLogicalDeviceHandle() const

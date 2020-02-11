@@ -4,9 +4,8 @@
 #include <vector>
 #include <memory>
 
-#include "Implementations/Window_Impl.h"
 #include "WindowSystemUtilities.h"
-#include "RenderingSystem/RenderingSystemUtilities.h"
+#include "Implementations/Window_Impl.h"
 
 class WindowSystem
 {

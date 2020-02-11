@@ -2,7 +2,7 @@
 
 #include "SDL.h"
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 Window_SDL2_OpenGL::Window_SDL2_OpenGL(WindowProperties Properties)
 	: Window_SDL2{Properties}

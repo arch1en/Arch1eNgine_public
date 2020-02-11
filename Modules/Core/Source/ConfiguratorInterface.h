@@ -6,6 +6,7 @@ namespace I
 	class Configurator
 	{
 	public:
+		virtual void Configure() = 0;
 		virtual void Invalidate() = 0;
 	};
 }

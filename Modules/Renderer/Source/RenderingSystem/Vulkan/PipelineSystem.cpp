@@ -1,6 +1,6 @@
 #include "PipelineSystem.h"
 
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 #include "MemoryManager.h"
 
 void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo)
@@ -134,7 +134,7 @@ void PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vec
 {
 	VkPipelineLayoutCreateInfo PipelineLayoutInfo = {};
 	PipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	PipelineLayoutInfo.setLayoutCount = DescriptorSetLayouts->size(); // Optional
+	PipelineLayoutInfo.setLayoutCount = uint32_t(DescriptorSetLayouts->size()); // Optional
 	PipelineLayoutInfo.pSetLayouts = DescriptorSetLayouts->data(); // Optional
 	PipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	PipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional

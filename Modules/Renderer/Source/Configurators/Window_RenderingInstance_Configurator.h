@@ -12,7 +12,7 @@ namespace Configurator {
 		Window_RenderingInstance() = delete;
 		Window_RenderingInstance(I::Window_Impl* Window, I::RenderingInstance_Impl* RenderingInstance);
 
-		void ConfigureImplementations();
+		void Configure() override;
 
 	private:
 

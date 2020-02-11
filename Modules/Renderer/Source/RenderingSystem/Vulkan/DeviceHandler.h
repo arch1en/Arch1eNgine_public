@@ -86,7 +86,7 @@ private:
 
 	QueueFamilyHandler mQueueFamilyHandler;
 	VkDevice LogicalDevice;
-    std::vector<PhysicalDeviceProperties> DeviceProperties;
+    std::vector<PhysicalDeviceProperties> mDeviceProperties;
 	std::vector<const char*> mDesiredDeviceExtensions;
 };
 

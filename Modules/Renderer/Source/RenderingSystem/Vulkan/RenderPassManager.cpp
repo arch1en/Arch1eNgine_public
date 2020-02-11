@@ -1,50 +1,19 @@
 #include "RenderPassManager.h"
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 #include "VulkanUtilities.h"
 
-void RenderPassManager::CreateRenderPass(const VkDevice& Device, const VkFormat& ImageFormat)
+void RenderPassManager::CreateRenderPass(const RenderPassCreateInfo& CreateInfo)
 {
-	VkAttachmentDescription ColorAttachment = {};
-	ColorAttachment.format = ImageFormat;
-	ColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	ColorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	ColorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	ColorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	ColorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	ColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	ColorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	Assert(CreateInfo.mRenderPassID.compare("") != 0, "Render pass ID cannot be empty!");
 
-	VkAttachmentReference ColorAttachmentRef = {};
-	ColorAttachmentRef.attachment = 0;
-	ColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkRenderPass NewRenderPass;
 
-	VkSubpassDescription Subpass = {};
-	Subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	Subpass.colorAttachmentCount = 1;
-	Subpass.pColorAttachments = &ColorAttachmentRef;
-
-	VkSubpassDependency Dependency = {};
-	Dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	Dependency.dstSubpass = 0;
-	Dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	Dependency.srcAccessMask = 0;
-	Dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	Dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-	VkRenderPassCreateInfo RenderPassInfo = {};
-	RenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	RenderPassInfo.attachmentCount = 1;
-	RenderPassInfo.pAttachments = &ColorAttachment;
-	RenderPassInfo.subpassCount = 1;
-	RenderPassInfo.pSubpasses = &Subpass;
-	RenderPassInfo.dependencyCount = 1;
-	RenderPassInfo.pDependencies = &Dependency;
-
-	if (vkCreateRenderPass(Device, &RenderPassInfo, nullptr, &mRenderPass) != VK_SUCCESS)
+	if (vkCreateRenderPass(*CreateInfo.mLogicalDevice, &CreateInfo.mRenderPassCreateInfo, nullptr, &NewRenderPass) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Render pass creation failed !");
 	}
 
+	mRenderPasses.insert({ CreateInfo.mRenderPassID, NewRenderPass });
 }
 
 void RenderPassManager::CreateFramebuffers(const FramebufferCreateInfo& CreateInfo)
@@ -104,7 +73,7 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 
 		VkRenderPassBeginInfo RenderPassBI = {};
 		RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		RenderPassBI.renderPass = *GetRenderPassHandle();
+		RenderPassBI.renderPass = *GetMainRenderPassHandle();
 		RenderPassBI.framebuffer = (*GetFramebuffers())[i];
 		RenderPassBI.renderArea.offset = { 0,0 };
 		RenderPassBI.renderArea.extent = CreateInfo.mSwapChainExtent;
@@ -139,9 +108,14 @@ void RenderPassManager::CreateRenderPassCommandBuffers(const RenderPassCommandBu
 	}
 }
 
-const VkRenderPass* const RenderPassManager::GetRenderPassHandle() const
+const VkRenderPass* const RenderPassManager::GetMainRenderPassHandle()
 {
-	return &mRenderPass;
+	return GetRenderPassHandle("main");
+}
+
+const VkRenderPass* const RenderPassManager::GetRenderPassHandle(RenderPassID ID)
+{
+	return &mRenderPasses[ID];
 }
 
 const std::vector<VkFramebuffer>* RenderPassManager::GetFramebuffers() const
@@ -157,10 +131,14 @@ void RenderPassManager::CleanUp(const VkDevice& Device, const VkCommandPool* con
 		vkDestroyFramebuffer(Device, mFramebuffers[i], nullptr);
 		mFramebuffers.erase(mFramebuffers.begin() + i);
 	}
-	if (mRenderPass != VK_NULL_HANDLE)
+
+	for (auto iter = mRenderPasses.rbegin(); iter != mRenderPasses.rend(); ++iter)
 	{
-		vkDestroyRenderPass(Device, mRenderPass, nullptr);
-		mRenderPass = VK_NULL_HANDLE;
+		if (iter->second != VK_NULL_HANDLE)
+		{
+			vkDestroyRenderPass(Device, iter->second, nullptr);
+		}
+		mRenderPasses.erase(iter->first);
 	}
 }
 

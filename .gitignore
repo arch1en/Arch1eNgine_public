@@ -8,9 +8,10 @@ Dependencies/*/Libraries/*
 Modules/*/Build/*
 Modules/*/Libraries/*
 # All files from visual studio
-.vs/*
+*/.vs/*
 # All logs
 *.log
 Application/.vs/*
 Application/Application/*
 *.sln
+*.VC.opendb

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.c" />
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.cpp" />
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui.cpp" />
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui_draw.cpp" />
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\DebugTimer.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_General.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Impl.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Vulkan.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LogSystem.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.cpp" />
+    <ClCompile Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Mesh.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Vertex.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_OpenGL.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_Vulkan.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\RenderingSystem.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\DeviceHandler.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\MemoryManager.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\PipelineSystem.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\RenderPassManager.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\ShaderSystem.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_SDL.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\SurfaceHandler.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\SwapChainHandler.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\VulkanUtilities.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_OpenGL.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_Vulkan.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\WindowSystem.cpp" />
+    <ClCompile Include="..\..\Source\Application.cpp" />
+    <ClCompile Include="..\..\Source\Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.h" />
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\imgui.h" />
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\imgui_internal.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Array.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Color.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\ConfiguratorInterface.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\Assertions.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\DebugTimer.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_General.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Impl.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Vulkan.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LogSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LogSystemUtilities.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Delegate.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\UniquePtr.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Utilities.h" />
+    <ClInclude Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Mesh.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Vertex.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_Impl.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_OpenGL.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_Vulkan.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\RenderingSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\RenderingSystemUtilities.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\DeviceHandler.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\MemoryManager.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\PipelineSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\RenderPassManager.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\ShaderSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_Base.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_Impl.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_SDL.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\SurfaceHandler.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\SurfaceUtilities.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\SwapChainHandler.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\VulkanUtilities.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_Impl.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_OpenGL.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_Vulkan.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\WindowSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\WindowSystemUtilities.h" />
+    <ClInclude Include="..\..\Source\Application.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Modules\Core\Source\Array.inl" />
+    <None Include="..\..\..\Modules\Core\Source\Debug\Assertions.inl" />
+    <None Include="..\..\..\Modules\Core\Source\FileSystem\FileTypes.inl" />
+    <None Include="..\..\..\Modules\Core\Source\Mathematics.inl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{CDBA3BF1-1687-46B9-B0C1-5A537DF9AC05}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Sunspark</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PLATFORM_WIN32;ARCHITECTURE_X86;_CONSOLE;%(PreprocessorDefinitions);DEBUG;DEBUG;DEBUG</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;C:\_Workspace\Arch1eNgine\Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions);DEBUG;PLATFORM_WIN64;ARCHITECTURE_X86_64</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;C:\_Workspace\Arch1eNgine\Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>PLATFORM_WIN32;ARCHITECTURE_X86;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;C:\_Workspace\Arch1eNgine\Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PLATFORM_WIN64;ARCHITECTURE_X64</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;C:\_Workspace\Arch1eNgine\Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

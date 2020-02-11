@@ -1,9 +1,10 @@
 #ifndef RENDERINGSYSTEMUTILITIES_H
 #define RENDERINGSYSTEMUTILITIES_H
 
+#include "Utilities.h"
 
 // Needs to match WindowSystemUtilities -> WindowRendererType
-enum class RenderingInstanceType
+enum class RenderingInstanceType : uint8_t
 {
 	OpenGL,
 	Vulkan,
@@ -13,6 +14,7 @@ enum class RenderingInstanceType
 	TOTAL,
 	INVALID
 };
+TypeSafeEnumBitmask(RenderingInstanceType)
 
 struct RenderingInstanceProperties
 {

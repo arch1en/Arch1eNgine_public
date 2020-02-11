@@ -6,7 +6,7 @@
 #include "SDL_vulkan.h"
 
 #include "RenderingSystem/RenderingSystemUtilities.h"
-#include "LogSystem.h"
+#include "Debug/LogSystem.h"
 
 // Windows has a "max" macro.
 #undef max

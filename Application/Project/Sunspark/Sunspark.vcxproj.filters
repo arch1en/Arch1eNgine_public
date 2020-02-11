@@ -1,0 +1,314 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Main.cpp" />
+    <ClCompile Include="..\..\Source\Application.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\DebugTimer.cpp">
+      <Filter>Modules\Core\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LogSystem.cpp">
+      <Filter>Modules\Core\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_General.cpp">
+      <Filter>Modules\Core\Debug\LoggerImpl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Impl.cpp">
+      <Filter>Modules\Core\Debug\LoggerImpl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Vulkan.cpp">
+      <Filter>Modules\Core\Debug\LoggerImpl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.cpp">
+      <Filter>Modules\Renderer\Configurators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Mesh.cpp">
+      <Filter>Modules\Renderer\GeometrySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Vertex.cpp">
+      <Filter>Modules\Renderer\GeometrySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\RenderingSystem.cpp">
+      <Filter>Modules\Renderer\RenderingSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\DeviceHandler.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\MemoryManager.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\PipelineSystem.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\RenderPassManager.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\ShaderSystem.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\SwapChainHandler.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\VulkanUtilities.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\SurfaceHandler.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_SDL.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_Vulkan.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\WindowSystem.cpp">
+      <Filter>Modules\Renderer\WindowSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2.cpp">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_OpenGL.cpp">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_Vulkan.cpp">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_OpenGL.cpp">
+      <Filter>Modules\Renderer\RenderingSystem\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.c">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.cpp">
+      <Filter>Modules\Core\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.cpp">
+      <Filter>Modules\EngineEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.cpp">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui_draw.cpp">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui.cpp">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui_widgets.cpp">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.cpp">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\Application.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\Array.h">
+      <Filter>Modules\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\ConfiguratorInterface.h">
+      <Filter>Modules\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Delegate.h">
+      <Filter>Modules\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\UniquePtr.h">
+      <Filter>Modules\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Utilities.h">
+      <Filter>Modules\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\Assertions.h">
+      <Filter>Modules\Core\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\DebugTimer.h">
+      <Filter>Modules\Core\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LogSystem.h">
+      <Filter>Modules\Core\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LogSystemUtilities.h">
+      <Filter>Modules\Core\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_General.h">
+      <Filter>Modules\Core\Debug\LoggerImpl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Impl.h">
+      <Filter>Modules\Core\Debug\LoggerImpl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Vulkan.h">
+      <Filter>Modules\Core\Debug\LoggerImpl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.h">
+      <Filter>Modules\Renderer\Configurators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Mesh.h">
+      <Filter>Modules\Renderer\GeometrySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Vertex.h">
+      <Filter>Modules\Renderer\GeometrySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\RenderingSystem.h">
+      <Filter>Modules\Renderer\RenderingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\RenderingSystemUtilities.h">
+      <Filter>Modules\Renderer\RenderingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\DeviceHandler.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\MemoryManager.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\PipelineSystem.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\RenderPassManager.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\ShaderSystem.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\SwapChainHandler.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\VulkanUtilities.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\SurfaceHandler.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\SurfaceUtilities.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_Base.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_Impl.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Vulkan\Surface\Implementations\Surface_SDL.h">
+      <Filter>Modules\Renderer\RenderingSystem\Vulkan\Surface\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_Impl.h">
+      <Filter>Modules\Renderer\RenderingSystem\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_Vulkan.h">
+      <Filter>Modules\Renderer\RenderingSystem\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\WindowSystem.h">
+      <Filter>Modules\Renderer\WindowSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\WindowSystemUtilities.h">
+      <Filter>Modules\Renderer\WindowSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_Impl.h">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2.h">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_OpenGL.h">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\WindowSystem\Implementations\Window_SDL2_Vulkan.h">
+      <Filter>Modules\Renderer\WindowSystem\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_OpenGL.h">
+      <Filter>Modules\Renderer\RenderingSystem\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.h">
+      <Filter>Modules\Core\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.h">
+      <Filter>Modules\EngineEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.h">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\imgui.h">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\imgui_internal.h">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Core\Source\Color.h">
+      <Filter>Modules\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.h">
+      <Filter>Dependencies\IMGUI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{8f8262e0-9701-4152-a737-f3cee19554c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Core">
+      <UniqueIdentifier>{858bee6e-b2c9-45a5-971a-a13177cf2871}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Core\Debug">
+      <UniqueIdentifier>{eeefe873-d2b7-4edc-9257-42503c3fb4b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Core\Debug\LoggerImpl">
+      <UniqueIdentifier>{36962955-bdd4-42ba-940c-735c4daa8804}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer">
+      <UniqueIdentifier>{9a987f99-fccd-412f-8cd7-37db99b06e1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\Configurators">
+      <UniqueIdentifier>{1765720a-22ff-440a-b9ce-bab15fac890e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\GeometrySystem">
+      <UniqueIdentifier>{c5b674d4-1891-4082-82c4-63caae68820a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\RenderingSystem">
+      <UniqueIdentifier>{03856c42-9f6a-44da-8d27-15038616b78e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\RenderingSystem\Vulkan">
+      <UniqueIdentifier>{6b6fb783-2d8e-4e3a-8e32-8c6bf049f622}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\RenderingSystem\Vulkan\Surface">
+      <UniqueIdentifier>{b49b34ec-ffc3-4d5f-b621-f72f13eb6cff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\RenderingSystem\Vulkan\Surface\Implementations">
+      <UniqueIdentifier>{e6c4334d-b655-4cb7-b29c-5398776cc699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\RenderingSystem\Instance">
+      <UniqueIdentifier>{431b7d49-748c-4c72-8fc6-b01fbdeb560d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\WindowSystem">
+      <UniqueIdentifier>{67a739bf-2f3a-450a-9050-9155340d9e81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Renderer\WindowSystem\Implementations">
+      <UniqueIdentifier>{540c76c1-03df-49f8-9935-5bb9877b8b60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Core\FileSystem">
+      <UniqueIdentifier>{f8fd5ff0-1243-4a32-86cb-b794dc3da0f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\Engine">
+      <UniqueIdentifier>{9c6b2d5c-c5b4-4026-9606-763799754106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules\EngineEditor">
+      <UniqueIdentifier>{5005ac24-b80a-40c4-8772-bc3eaa79b020}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies">
+      <UniqueIdentifier>{6716916f-7cb8-4a89-8679-62e181f547b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies\IMGUI">
+      <UniqueIdentifier>{06614600-d287-40cc-9fee-2f30beef26b9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Modules\Core\Source\Array.inl">
+      <Filter>Modules\Core</Filter>
+    </None>
+    <None Include="..\..\..\Modules\Core\Source\Debug\Assertions.inl">
+      <Filter>Modules\Core\Debug</Filter>
+    </None>
+    <None Include="..\..\..\Modules\Core\Source\FileSystem\FileTypes.inl">
+      <Filter>Modules\Core\FileSystem</Filter>
+    </None>
+    <None Include="..\..\..\Modules\Core\Source\Mathematics.inl">
+      <Filter>Modules\Core</Filter>
+    </None>
+  </ItemGroup>
+</Project>

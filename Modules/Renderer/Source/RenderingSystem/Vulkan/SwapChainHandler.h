@@ -1,12 +1,15 @@
 #ifndef SWAPCHAINHANDLER_H
 #define SWAPCHAINHANDLER_H
 
+#include <map>
 #include <vector>
 #include <vulkan/vulkan.h>
 
 #include "RenderingSystem/Vulkan/PipelineSystem.h"
 #include "RenderingSystem/Vulkan/RenderPassManager.h"
 #include "MemoryManager.h"
+
+using DescriptorPoolID = std::string;
 
 class QueueFamilyHandler;
 struct QueueFamilyData;
@@ -48,6 +51,14 @@ struct CommandPoolCreateInfo
 	const std::vector<QueueFamilyData>* mQueueFamilyData = nullptr;
 };
 
+struct DescriptorPoolCreateInfo
+{
+	const VkDevice* mLogicalDevice = nullptr;
+	std::vector<VkDescriptorPoolSize> mPoolSizes = {};
+	VkDescriptorPoolCreateInfo mPoolCreateInfo = {};
+	DescriptorPoolID mDescriptorPoolID = "";
+};
+
 constexpr int MaxFramesInFlight = 2;
 
 class SwapChainHandler
@@ -70,8 +81,11 @@ public:
 
 	void CreateSemaphores(const VkDevice* Device);
 	void CreateFences(const VkDevice* Device);
-	void CreateDescriptorPool(const VkDevice* Device);
-	void CreateDescriptorSets(const VkDevice* Device);
+
+	void CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo);
+	void UpdateDescriptorSets(const VkDevice* Device);
+	void CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo);
+
 	void CreateCommandPool(const CommandPoolCreateInfo& CreateInfo);
 
 	EDrawFrameErrorCode DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle);
@@ -100,7 +114,8 @@ public:
 	MemoryManager*		const	GetMemoryManager() const;
 
 	const VkCommandPool*		const	GetCommandPool() const;
-
+	const VkDescriptorPool*		const	GetMainDescriptorPool();
+	const VkDescriptorPool*		const	GetDescriptorPool(DescriptorPoolID ID);
 private:
 
 	bool mRequestFrameBufferResizing = false;
@@ -113,7 +128,7 @@ private:
 	VkCommandPool mCommandPool;
 
 	// Descriptor Pool/Sets
-	VkDescriptorPool mDescriptorPool;
+	std::map<DescriptorPoolID, VkDescriptorPool> mDescriptorPools;
 	std::vector<VkDescriptorSet> mDescriptorSets;
 
 	std::unique_ptr<RenderPassManager> mRenderPassManager;
