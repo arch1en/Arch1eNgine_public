@@ -3,7 +3,7 @@
 
 #include <string>
 #include "Mathematics.inl"
-
+#include "Delegate.h"
 // Namespaces must be separated, since you cannot use a I::RenderingInstanceProperties_ClearColor_Impl inside I::RenderingInstance_Impl if they are in the same namespace block.
 
 namespace I {
@@ -37,8 +37,14 @@ namespace I
 		virtual void SetSwapInterval(int Interval) = 0;
 		virtual void SetClearColor(Vector4<float> ClearColor) = 0;
 		virtual void RenderLoop() = 0;
-		virtual void ResizeCanvas(int Width, int Height) = 0;
+		virtual void ResizeCanvas(int Width, int Height) { mOnResizeCanvasEvent.Broadcast(Width, Height); }
 		virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) = 0;
+
+		MulticastDelegate<void(int, int)>& GetOnResizeCanvasEvent() { return mOnResizeCanvasEvent; }
+
+	private:
+
+		MulticastDelegate<void(int, int)> mOnResizeCanvasEvent;
 	};
 }
 

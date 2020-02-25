@@ -19,6 +19,7 @@ public:
 	virtual void* GetWindowHandle() const override;
 	virtual void DestroyWindow() override;
 	const SDL_SysWMinfo* GetWindowInfo() const;
+	virtual void SwapBuffers() override {};
 
 protected:
 	SDL_SysWMinfo WindowInfo;

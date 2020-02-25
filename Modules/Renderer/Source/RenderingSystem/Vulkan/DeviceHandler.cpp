@@ -302,6 +302,11 @@ const std::vector<PhysicalDeviceProperties>* DeviceHandler::GetPhysicalDevicesPr
 	return &mDeviceProperties;
 }
 
+const PhysicalDeviceProperties* DeviceHandler::GetStrongestPhysicalDeviceProperties() const
+{
+	return &mDeviceProperties[0];
+}
+
 const VkDevice * DeviceHandler::GetLogicalDeviceHandle() const
 {
 	return &LogicalDevice;

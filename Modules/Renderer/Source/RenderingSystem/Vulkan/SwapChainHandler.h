@@ -116,6 +116,9 @@ public:
 	const VkCommandPool*		const	GetCommandPool() const;
 	const VkDescriptorPool*		const	GetMainDescriptorPool();
 	const VkDescriptorPool*		const	GetDescriptorPool(DescriptorPoolID ID);
+
+	const SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const;
+
 private:
 
 	bool mRequestFrameBufferResizing = false;
@@ -141,8 +144,6 @@ private:
 	std::vector<VkSemaphore>	mImageAvailableSemaphores;
 	std::vector<VkSemaphore>	mRenderFinishedSemaphores;
 	std::vector<VkFence>		mInFlightFences;
-
-	const SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const;
 
 	void DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array);
 	void DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array);

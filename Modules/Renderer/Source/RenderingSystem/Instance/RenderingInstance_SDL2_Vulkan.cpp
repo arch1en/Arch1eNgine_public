@@ -283,4 +283,6 @@ void RenderingInstance_SDL2_Vulkan::ResizeCanvas(int Width, int Height)
 {
 	GetSwapChainHandler()->SetActualSwapChainExtent({ uint32_t(Width), uint32_t(Height) });
 	GetSwapChainHandler()->RequestFrameBufferResizing();
+
+	Parent::ResizeCanvas(Width, Height);
 }

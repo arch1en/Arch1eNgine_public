@@ -53,6 +53,7 @@ namespace Configurator
 
 		// Configure should be used immediately after the constructor invocation.
 		void Configure() override;
+		void RenderLoop();
 		void Invalidate() override {}
 
 	private:
@@ -60,6 +61,8 @@ namespace Configurator
 		WindowSystem* const mWindowSystem;
 		RenderingSystem* const mRenderingSystem;
 		EngineEditor* const mEngineEditor;
+
+		void OnResizeCanvasVulkan(int Width, int Height);
 	};
 }
 

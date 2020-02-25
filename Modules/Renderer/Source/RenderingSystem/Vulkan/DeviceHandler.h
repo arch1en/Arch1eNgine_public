@@ -55,6 +55,7 @@ public:
 	void Initiate(const DeviceHandlerCreationInfo* CreationInfo);
 
 	const std::vector<PhysicalDeviceProperties>* GetPhysicalDevicesProperties() const;
+	const PhysicalDeviceProperties* GetStrongestPhysicalDeviceProperties() const;
 	const VkDevice* GetLogicalDeviceHandle() const;
 	const std::vector<QueueFamilyData> RetrieveQueueFamiliesData(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device) const;
 

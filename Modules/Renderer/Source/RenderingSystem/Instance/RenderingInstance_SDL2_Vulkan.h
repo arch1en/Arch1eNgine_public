@@ -10,7 +10,9 @@
 #include "RenderingSystem/Vulkan/Surface/SurfaceHandler.h"
 #include "RenderingSystem/Vulkan/SwapChainHandler.h"
 
-class RenderingInstance_SDL2_Vulkan : public I::RenderingInstance_Impl
+using Parent = I::RenderingInstance_Impl;
+
+class RenderingInstance_SDL2_Vulkan : public Parent
 {
 public:
 
