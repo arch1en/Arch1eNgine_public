@@ -15,7 +15,7 @@ bool Application::Initiate()
 {
 	mWindowSystem = std::make_unique<WindowSystem>();
 	mRenderingSystem = std::make_unique<RenderingSystem>();
-	mEngineEditor = std::make_unique<EngineEditor>(mWindowSystem.get(), mRenderingSystem.get());
+	//mEngineEditor = std::make_unique<EngineEditor>(mWindowSystem.get(), mRenderingSystem.get());
 	// Renderer
 	RenderingInstanceType Type = RenderingInstanceType::Vulkan;
 
@@ -28,7 +28,7 @@ bool Application::Initiate()
 	// EngineEditor
 	//Configurator::Renderer_EngineEditor REEConfigurator(mWindowSystem.get(), mRenderingSystem.get(), mEngineEditor.get());
 	//REEConfigurator.Configure();
-	mEngineEditor->Initiate();
+	//mEngineEditor->Initiate();
 
 	MainLoop();
 
@@ -98,9 +98,12 @@ void Application::LogicLoop()
 void Application::RenderingLoop()
 {
 	int Width, Height;
-	SDL_GetWindowSize(static_cast<SDL_Window*>(mWindowSystem->GetMainWindow()->GetWindowHandle()), &Width, &Height);
-	mEngineEditor->Render(Vector2<>(float(Width), float(Height)));
-	mRenderingSystem->GetRenderingInstance()->RenderLoop();
+	if (mWindowSystem->IsMainWindowAvailable())
+	{
+		SDL_GetWindowSize(static_cast<SDL_Window*>(mWindowSystem->GetMainWindow()->GetWindowHandle()), &Width, &Height);
+		//mEngineEditor->Render(Vector2<>(float(Width), float(Height)));
+		mRenderingSystem->GetRenderingInstance()->RenderLoop();
+	}
 
 	//mRenderingSystem->GetRenderingInstance()->SetClearColor(Vector4<float>(0.f, 0.f, 0.f, 1.f));
 

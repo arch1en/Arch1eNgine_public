@@ -5,11 +5,11 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "RenderingSystem/Vulkan/PipelineSystem.h"
+//#include "RenderingSystem/Vulkan/PipelineSystem.h"
 #include "RenderingSystem/Vulkan/RenderPassManager.h"
 #include "MemoryManager.h"
 
-using DescriptorPoolID = std::string;
+//using DescriptorPoolID = std::string;
 
 class QueueFamilyHandler;
 struct QueueFamilyData;
@@ -51,13 +51,13 @@ struct CommandPoolCreateInfo
 	const std::vector<QueueFamilyData>* mQueueFamilyData = nullptr;
 };
 
-struct DescriptorPoolCreateInfo
-{
-	const VkDevice* mLogicalDevice = nullptr;
-	std::vector<VkDescriptorPoolSize> mPoolSizes = {};
-	VkDescriptorPoolCreateInfo mPoolCreateInfo = {};
-	DescriptorPoolID mDescriptorPoolID = "";
-};
+//struct DescriptorPoolCreateInfo
+//{
+//	const VkDevice* mLogicalDevice = nullptr;
+//	std::vector<VkDescriptorPoolSize> mPoolSizes = {};
+//	VkDescriptorPoolCreateInfo mPoolCreateInfo = {};
+//	DescriptorPoolID mDescriptorPoolID = "";
+//};
 
 constexpr int MaxFramesInFlight = 2;
 
@@ -72,19 +72,20 @@ public:
 	void PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices);
 	void PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<uint16_t> Indices);
 	void CreateSwapChain(const SwapChainCreationInfo& CreationInfo);
+	void CreateMainRenderPass(const VkDevice* LogicalDevice, const VkPhysicalDevice* PhysicalDevice, const QueueFamilyHandler* QueueFamilyHandler);
 	void ReCreateSwapChain(const SwapChainCreationInfo& CreationInfo);
 	void CreateSwapChainImageView(const VkDevice& Device);
 
 	void CreateRenderPassManager();
-	void CreatePipelineSystem();
+	//void CreatePipelineSystem();
 	void CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
 
 	void CreateSemaphores(const VkDevice* Device);
 	void CreateFences(const VkDevice* Device);
 
-	void CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo);
-	void UpdateDescriptorSets(const VkDevice* Device);
-	void CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo);
+	//void CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo);
+	//void UpdateDescriptorSets(const VkDevice* Device);
+	//void CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo);
 
 	void CreateCommandPool(const CommandPoolCreateInfo& CreateInfo);
 
@@ -97,7 +98,6 @@ public:
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& AvailableFormats);
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> AvailablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& Capabilities);
-	void RetrieveSwapChainImages(const VkDevice& Device, std::vector<VkImage>& SwapChainImages);
 
 	void Cleanup(const VkDevice* Device);
 	void Destroy(const VkDevice* Device);
@@ -110,14 +110,16 @@ public:
 	const std::vector<VkImageView>* GetSwapChainImageViews() const;
 
 	RenderPassManager*	const	GetRenderPassManager() const;
-	PipelineSystem*		const	GetPipelineSystem() const;
+	//PipelineSystem*		const	GetPipelineSystem() const;
 	MemoryManager*		const	GetMemoryManager() const;
 
 	const VkCommandPool*		const	GetCommandPool() const;
-	const VkDescriptorPool*		const	GetMainDescriptorPool();
-	const VkDescriptorPool*		const	GetDescriptorPool(DescriptorPoolID ID);
+	//const VkDescriptorPool*		const	GetMainDescriptorPool();
+	//const VkDescriptorPool*		const	GetDescriptorPool(DescriptorPoolID ID);
 
 	const SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& Device, const VkSurfaceKHR& Surface) const;
+
+	std::vector<VkImage>* GetSwapChainImages();
 
 private:
 
@@ -131,19 +133,21 @@ private:
 	VkCommandPool mCommandPool;
 
 	// Descriptor Pool/Sets
-	std::map<DescriptorPoolID, VkDescriptorPool> mDescriptorPools;
-	std::vector<VkDescriptorSet> mDescriptorSets;
+	//std::map<DescriptorPoolID, VkDescriptorPool> mDescriptorPools;
+	//std::vector<VkDescriptorSet> mDescriptorSets;
 
 	std::unique_ptr<RenderPassManager> mRenderPassManager;
-	std::unique_ptr<PipelineSystem> mPipelineSystem;
+	//std::unique_ptr<PipelineSystem> mPipelineSystem;
 	std::unique_ptr<MemoryManager> mMemoryManager;
 
-	std::vector<VkImage> mSwapChainImages;
-	std::vector<VkImageView> mSwapChainImageViews;
+	std::vector<VkImage> mSwapChainImages;			// SwapChain holds images that can be then retrieved by render passes, and drawn onto.
+	std::vector<VkImageView> mSwapChainImageViews;	// 
 
 	std::vector<VkSemaphore>	mImageAvailableSemaphores;
 	std::vector<VkSemaphore>	mRenderFinishedSemaphores;
 	std::vector<VkFence>		mInFlightFences;
+
+	void RetrieveSwapChainImages(const VkDevice& Device, std::vector<VkImage>& SwapChainImages);
 
 	void DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array);
 	void DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array);

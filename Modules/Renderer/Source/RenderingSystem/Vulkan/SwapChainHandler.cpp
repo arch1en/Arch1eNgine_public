@@ -10,10 +10,11 @@
 #include "DeviceHandler.h" // CIRCULAR DEPENDENCY !
 #include "VulkanUtilities.h"
 
+#include "RenderingSystem/Vulkan/PipelineSystem.h"
+
 void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo)
 {
 	CreateRenderPassManager();
-	CreatePipelineSystem();
 	CreateMemoryManager(*InitiationInfo.mLogicalDevice, InitiationInfo.mQueueFamilyHandler);
 
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
@@ -41,10 +42,10 @@ void SwapChainHandler::CreateRenderPassManager()
 	mRenderPassManager = std::make_unique<RenderPassManager>();
 }
 
-void SwapChainHandler::CreatePipelineSystem()
-{
-	mPipelineSystem = std::make_unique<PipelineSystem>();
-}
+//void SwapChainHandler::CreatePipelineSystem()
+//{
+//	mPipelineSystem = std::make_unique<PipelineSystem>();
+//}
 
 void SwapChainHandler::CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
 {
@@ -158,6 +159,11 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 
 	CreateSwapChainImageView(*CreationInfo.mLogicalDevice);
 
+	CreateMainRenderPass(CreationInfo.mLogicalDevice, CreationInfo.mPhysicalDevice, CreationInfo.mQueueFamilyHandler);
+}
+
+void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const VkPhysicalDevice* PhysicalDevice, const QueueFamilyHandler* QueueFamilyHandler)
+{
 	// Render Pass Creation
 
 	RenderPassCreateInfo RenderPassCI = {};
@@ -195,10 +201,9 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	RenderPassCI.mRenderPassCreateInfo.dependencyCount = 1;
 	RenderPassCI.mRenderPassCreateInfo.pDependencies = &RenderPassCI.mSubpassDependency;
 
-	RenderPassCI.mLogicalDevice = CreationInfo.mLogicalDevice;
-	RenderPassCI.mRenderPassID = "main";
+	RenderPassCI.mLogicalDevice = LogicalDevice;
 	// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
-	GetRenderPassManager()->CreateRenderPass(RenderPassCI);
+	GetRenderPassManager()->CreateRenderPass("main", RenderPassCI);
 
 	// ~Render Pass Creation
 
@@ -206,35 +211,35 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 
 	FramebufferCreateInfo FramebufferCreationInfo = {};
 
-	FramebufferCreationInfo.mLogicalDevice = CreationInfo.mLogicalDevice;
+	FramebufferCreationInfo.mLogicalDevice = LogicalDevice;
 	FramebufferCreationInfo.mRenderPassHandle = GetRenderPassManager()->GetMainRenderPassHandle();
 	FramebufferCreationInfo.mSwapChainImageExtent = &GetSwapChainExtent();
 	FramebufferCreationInfo.mSwapChainImageViews = GetSwapChainImageViews();
 
-	GetRenderPassManager()->CreateFramebuffers(FramebufferCreationInfo);
+	GetRenderPassManager()->CreateFramebuffers("main", FramebufferCreationInfo);
 
 	GeneralBufferCreationInfo UniformBufferCI = {};
-	UniformBufferCI.mBufferCreationInfo.mLogicalDevice = CreationInfo.mLogicalDevice;
-	UniformBufferCI.mBufferCreationInfo.mPhysicalDevice = CreationInfo.mPhysicalDevice;
+	UniformBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
+	UniformBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
 	UniformBufferCI.mBufferCreationInfo.mDataSize = sizeof(UniformBufferObject);
-	UniformBufferCI.mQueueFamilyHandler = CreationInfo.mQueueFamilyHandler;
+	UniformBufferCI.mQueueFamilyHandler = QueueFamilyHandler;
 
 	GetMemoryManager()->CreateUniformBuffers(UniformBufferCI, static_cast<uint8_t>(mSwapChainImages.size()));
 
 	PipelineSystemCreationInfo PipelineCreationInfo = {};
 
-	PipelineCreationInfo.mLogicalDevice = CreationInfo.mLogicalDevice;
+	PipelineCreationInfo.mLogicalDevice = LogicalDevice;
 	PipelineCreationInfo.mImageFormat = GetSwapChainImageFormat();
 	PipelineCreationInfo.mViewportExtent = GetSwapChainExtent();
 	PipelineCreationInfo.mRenderPassHandle = GetRenderPassManager()->GetMainRenderPassHandle();
-	PipelineCreationInfo.mMemoryManager = CreationInfo.mMemoryManager;
+	PipelineCreationInfo.mMemoryManager = GetMemoryManager();
 
-	GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
+	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
 
 	// Descriptor Pool Creation and Descriptor Sets Update.
 	DescriptorPoolCreateInfo DescriptorPoolCI = {};
 
-	DescriptorPoolCI.mLogicalDevice = CreationInfo.mLogicalDevice;
+	DescriptorPoolCI.mLogicalDevice = LogicalDevice;
 
 	DescriptorPoolCI.mPoolSizes = { {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  static_cast<uint32_t>(mSwapChainImages.size())} };
 
@@ -244,85 +249,84 @@ void SwapChainHandler::CreateSwapChain(const SwapChainCreationInfo& CreationInfo
 	DescriptorPoolCI.mPoolCreateInfo.maxSets = static_cast<uint32_t>(mSwapChainImages.size());
 	DescriptorPoolCI.mPoolCreateInfo.flags = 0;
 	DescriptorPoolCI.mDescriptorPoolID = "main";
-	
-	CreateDescriptorPoolAndUpdateDescriptorSets(DescriptorPoolCI);
+
+	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets(DescriptorPoolCI, GetMemoryManager(), mSwapChainImages.size());
 
 	RenderPassCommandBufferCreateInfo RenderPassCommandBufferCI = {};
 
-	RenderPassCommandBufferCI.mLogicalDevice = CreationInfo.mLogicalDevice;
-	RenderPassCommandBufferCI.mBufferSize = GetRenderPassManager()->GetFramebuffers()->size();
+	RenderPassCommandBufferCI.mLogicalDevice = LogicalDevice;
+	RenderPassCommandBufferCI.mBufferSize = GetRenderPassManager()->GetRenderPassData("main")->mFramebufferHandles.size();
 	RenderPassCommandBufferCI.mCommandPool = GetCommandPool();
-	RenderPassCommandBufferCI.mPipelineHandle = GetPipelineSystem()->GetPipelineHandle();
+	RenderPassCommandBufferCI.mPipelineHandle = GetRenderPassManager()->GetPipelineSystem()->GetPipelineHandle();
 	// [TODO] This will need a refactoring.
-	RenderPassCommandBufferCI.mPipelineLayout = GetPipelineSystem()->GetPipelineLayout();
-	RenderPassCommandBufferCI.mDescriptorSets = &mDescriptorSets;
+	RenderPassCommandBufferCI.mPipelineLayout = GetRenderPassManager()->GetPipelineSystem()->GetPipelineLayout();
+	RenderPassCommandBufferCI.mDescriptorSets = GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSets();
 	RenderPassCommandBufferCI.mSwapChainExtent = GetSwapChainExtent();
 	// [TODO] This will need a refactoring.
 	RenderPassCommandBufferCI.mVertexBufferData = (*GetMemoryManager()->GetVertexBufferData())[0].get();
 	RenderPassCommandBufferCI.mIndexBufferData = (*GetMemoryManager()->GetIndexBufferData())[0].get();
 
-	GetRenderPassManager()->CreateRenderPassCommandBuffers(RenderPassCommandBufferCI);
-
+	GetRenderPassManager()->CreateRenderPassCommandBuffers("main", RenderPassCommandBufferCI);
 }
 
-void SwapChainHandler::CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo)
-{
-	CreateDescriptorPool(CreateInfo);
-	UpdateDescriptorSets(CreateInfo.mLogicalDevice);
-}
+//void SwapChainHandler::CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo)
+//{
+//	CreateDescriptorPool(CreateInfo);
+//	UpdateDescriptorSets(CreateInfo.mLogicalDevice);
+//}
 
-void SwapChainHandler::CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo)
-{
-	Assert(CreateInfo.mDescriptorPoolID.compare("") != 0, "Descriptor pool ID cannot be empty!");
+//void SwapChainHandler::CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo)
+//{
+//	Assert(CreateInfo.mDescriptorPoolID.compare("") != 0, "Descriptor pool ID cannot be empty!");
+//
+//	VkDescriptorPool Pool;
+//
+//	if (vkCreateDescriptorPool(*CreateInfo.mLogicalDevice, &CreateInfo.mPoolCreateInfo, nullptr, &Pool) != VK_SUCCESS)
+//	{
+//		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
+//	}
+//
+//	mDescriptorPools.insert({ CreateInfo.mDescriptorPoolID, Pool });
+//}
 
-	VkDescriptorPool Pool;
-
-	if (vkCreateDescriptorPool(*CreateInfo.mLogicalDevice, &CreateInfo.mPoolCreateInfo, nullptr, &Pool) != VK_SUCCESS)
-	{
-		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
-	}
-
-	mDescriptorPools.insert({ CreateInfo.mDescriptorPoolID, Pool });
-}
-
-void SwapChainHandler::UpdateDescriptorSets(const VkDevice* Device)
-{
-	std::vector<VkDescriptorSetLayout> LayoutsToSet(mSwapChainImages.size(), GetPipelineSystem()->GetDescriptorSetLayouts()[0]);
-
-	VkDescriptorSetAllocateInfo AllocInfo = {};
-
-	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	AllocInfo.descriptorPool = *GetMainDescriptorPool();
-	AllocInfo.descriptorSetCount = static_cast<uint32_t>(mSwapChainImages.size());
-	AllocInfo.pSetLayouts = LayoutsToSet.data();
-
-	mDescriptorSets.resize(mSwapChainImages.size());
-	if (vkAllocateDescriptorSets(*Device, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
-	{
-		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
-	}
-
-	for (size_t i = 0; i < mSwapChainImages.size(); i++)
-	{
-		VkDescriptorBufferInfo BufferInfo = {};
-		BufferInfo.buffer = (*GetMemoryManager()->GetUniformBufferData())[i]->mBuffer;
-		BufferInfo.offset = 0;
-		BufferInfo.range = sizeof(UniformBufferObject);
-
-		VkWriteDescriptorSet DescriptorWrite = {};
-		DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		DescriptorWrite.dstSet = mDescriptorSets[i];
-		DescriptorWrite.dstBinding = 0;
-		DescriptorWrite.dstArrayElement = 0;
-		DescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		DescriptorWrite.descriptorCount = 1;
-		DescriptorWrite.pBufferInfo = &BufferInfo;
-		DescriptorWrite.pImageInfo = nullptr;	// Optional
-		DescriptorWrite.pTexelBufferView = nullptr; // Optional
-
-		vkUpdateDescriptorSets(*Device, 1, &DescriptorWrite, 0, nullptr);
-	}
-}
+//void SwapChainHandler::UpdateDescriptorSets(const VkDevice* Device)
+//{
+//	std::vector<VkDescriptorSetLayout> LayoutsToSet(mSwapChainImages.size(), GetPipelineSystem()->GetDescriptorSetLayouts()[0]);
+//
+//	VkDescriptorSetAllocateInfo AllocInfo = {};
+//
+//	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+//	AllocInfo.descriptorPool = *GetMainDescriptorPool();
+//	AllocInfo.descriptorSetCount = static_cast<uint32_t>(mSwapChainImages.size());
+//	AllocInfo.pSetLayouts = LayoutsToSet.data();
+//
+//	mDescriptorSets.resize(mSwapChainImages.size());
+//	if (vkAllocateDescriptorSets(*Device, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+//	{
+//		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
+//	}
+//
+//	for (size_t i = 0; i < mSwapChainImages.size(); i++)
+//	{
+//		VkDescriptorBufferInfo BufferInfo = {};
+//		BufferInfo.buffer = (*GetMemoryManager()->GetUniformBufferData())[i]->mBuffer;
+//		BufferInfo.offset = 0;
+//		BufferInfo.range = sizeof(UniformBufferObject);
+//
+//		VkWriteDescriptorSet DescriptorWrite = {};
+//		DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+//		DescriptorWrite.dstSet = mDescriptorSets[i];
+//		DescriptorWrite.dstBinding = 0;
+//		DescriptorWrite.dstArrayElement = 0;
+//		DescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+//		DescriptorWrite.descriptorCount = 1;
+//		DescriptorWrite.pBufferInfo = &BufferInfo;
+//		DescriptorWrite.pImageInfo = nullptr;	// Optional
+//		DescriptorWrite.pTexelBufferView = nullptr; // Optional
+//
+//		vkUpdateDescriptorSets(*Device, 1, &DescriptorWrite, 0, nullptr);
+//	}
+//}
 
 void SwapChainHandler::CreateCommandPool(const CommandPoolCreateInfo& CreateInfo)
 {
@@ -406,7 +410,15 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 {
 	EDrawFrameErrorCode ErrorCode = EDrawFrameErrorCode::OK;
 
-	const std::vector<VkCommandBuffer>& RenderPassCommandBuffers = *GetRenderPassManager()->GetRenderPassCommandBuffers();
+	std::vector<VkCommandBuffer> RenderPassesCommandBuffers;
+
+	for (auto RenderPass : GetRenderPassManager()->GetAllRenderPasses())
+	{
+		for (auto CommandBuffer : RenderPass.second.mCommandBufferHandles)
+		{
+			RenderPassesCommandBuffers.push_back(CommandBuffer);
+		}
+	}
 
 	Assert(Device, "Device must be valid at this point!");
 
@@ -447,7 +459,7 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 	SubmitInfo.pWaitSemaphores = WaitSemaphores;
 	SubmitInfo.pWaitDstStageMask = WaitStages;
 	SubmitInfo.commandBufferCount = 1;
-	SubmitInfo.pCommandBuffers = &RenderPassCommandBuffers[ImageIndex];
+	SubmitInfo.pCommandBuffers = &RenderPassesCommandBuffers[ImageIndex];
 	SubmitInfo.pSignalSemaphores = SignalSemaphores;
 	SubmitInfo.signalSemaphoreCount = 1;
 
@@ -482,7 +494,7 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 void SwapChainHandler::Cleanup(const VkDevice* Device)
 {
 	GetRenderPassManager()->CleanUp(*Device, &mCommandPool);
-	GetPipelineSystem()->CleanUp(*Device);
+	//GetPipelineSystem()->CleanUp(*Device);
 	GetMemoryManager()->CleanUp(*Device);
 
 	for (int i = int(GetSwapChainImageViews()->size()) - 1; i >= 0; i--)
@@ -490,12 +502,12 @@ void SwapChainHandler::Cleanup(const VkDevice* Device)
 		vkDestroyImageView(*Device, (*GetSwapChainImageViews())[i], nullptr);
 	}
 
-	for (auto iter = mDescriptorPools.rbegin(); iter != mDescriptorPools.rend(); ++iter)
-	{
-		vkDestroyDescriptorPool(*Device, iter->second, nullptr);
-		mDescriptorPools.erase(iter->first);
-	}
-	mDescriptorPools.clear();
+	//for (auto iter = mDescriptorPools.rbegin(); iter != mDescriptorPools.rend(); ++iter)
+	//{
+	//	vkDestroyDescriptorPool(*Device, iter->second, nullptr);
+	//	mDescriptorPools.erase(iter->first);
+	//}
+	//mDescriptorPools.clear();
 
 	vkDestroySwapchainKHR(*Device, mSwapChainHandle, nullptr);
 }
@@ -509,7 +521,7 @@ void SwapChainHandler::Destroy(const VkDevice* Device)
 	DestroyFenceArray(*Device, mInFlightFences);
 
 	GetRenderPassManager()->Destroy(*Device, GetCommandPool());
-	GetPipelineSystem()->Destroy(*Device);
+	//GetPipelineSystem()->Destroy(*Device);
 	GetMemoryManager()->Destroy(*Device);
 
 	vkDestroyCommandPool(*Device, *GetCommandPool(), nullptr);
@@ -626,6 +638,11 @@ const SwapChainSupportDetails SwapChainHandler::QuerySwapChainSupport(const VkPh
 	return Details;
 }
 
+std::vector<VkImage>* SwapChainHandler::GetSwapChainImages()
+{
+	return &mSwapChainImages;
+}
+
 const VkSwapchainKHR* SwapChainHandler::GetSwapChainHandle()
 {
 	return &mSwapChainHandle;
@@ -661,25 +678,25 @@ RenderPassManager* const SwapChainHandler::GetRenderPassManager() const
 	return mRenderPassManager.get();
 }
 
-PipelineSystem* const SwapChainHandler::GetPipelineSystem() const
-{
-	return mPipelineSystem.get();
-}
+//PipelineSystem* const SwapChainHandler::GetPipelineSystem() const
+//{
+//	return mPipelineSystem.get();
+//}
 
 MemoryManager* const SwapChainHandler::GetMemoryManager() const
 {
 	return mMemoryManager.get();
 }
 
-const VkDescriptorPool* const SwapChainHandler::GetMainDescriptorPool()
-{
-	return GetDescriptorPool("main");
-}
+//const VkDescriptorPool* const SwapChainHandler::GetMainDescriptorPool()
+//{
+//	return GetDescriptorPool("main");
+//}
 
-const VkDescriptorPool* const SwapChainHandler::GetDescriptorPool(DescriptorPoolID ID)
-{
-	return &mDescriptorPools[ID];
-}
+//const VkDescriptorPool* const SwapChainHandler::GetDescriptorPool(DescriptorPoolID ID)
+//{
+//	return &mDescriptorPools[ID];
+//}
 
 const VkCommandPool* const SwapChainHandler::GetCommandPool() const
 {

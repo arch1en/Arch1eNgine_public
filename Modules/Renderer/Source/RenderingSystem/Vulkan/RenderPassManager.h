@@ -4,16 +4,25 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <memory>
 #include <vulkan/vulkan.h>
+
+#include "RenderingSystem/Vulkan/PipelineSystem.h"
 
 using RenderPassID = std::string;
 
 struct VertexBufferData;
 struct IndexBufferData;
 
+struct RenderPassData
+{
+	VkRenderPass mRenderPassHandle = VK_NULL_HANDLE;
+	std::vector<VkFramebuffer> mFramebufferHandles;
+	std::vector<VkCommandBuffer> mCommandBufferHandles;
+};
+
 struct RenderPassCreateInfo
 {
-	RenderPassID mRenderPassID = "";
 	const VkDevice* mLogicalDevice = nullptr;
 	VkAttachmentDescription mAttachmentDescriptrion = {};
 	VkAttachmentReference mAttachmentReference = {};
@@ -47,23 +56,34 @@ class RenderPassManager
 {
 public:
 
-	void CreateRenderPass(const RenderPassCreateInfo& CreateInfo);
-	void CreateFramebuffers(const FramebufferCreateInfo& CreateInfo);
-	const VkRenderPass* const GetMainRenderPassHandle();
-	const VkRenderPass* const GetRenderPassHandle(RenderPassID ID);
-	const std::vector<VkCommandBuffer>* GetRenderPassCommandBuffers() const;
-
-	const std::vector<VkFramebuffer>* GetFramebuffers() const;
-
-	void CreateRenderPassCommandBuffers(const RenderPassCommandBufferCreateInfo& CreateInfo);
+	RenderPassManager();
 	
+	void CreateRenderPass(const RenderPassID& ID, const RenderPassCreateInfo& CreateInfo);
+	void CreateFramebuffers(const RenderPassID& ID, const FramebufferCreateInfo& CreateInfo);
+	void CreateRenderPassCommandBuffers(const RenderPassID& ID, const RenderPassCommandBufferCreateInfo& CreateInfo);
+
+	const VkRenderPass* const GetMainRenderPassHandle();
+	const RenderPassData* const GetRenderPassData(const RenderPassID ID);
+	const std::map<RenderPassID, RenderPassData>& GetAllRenderPasses() const;
+	const VkRenderPass* const GetRenderPassHandle(const RenderPassID ID);
+	//const std::vector<VkCommandBuffer>* GetRenderPassCommandBuffers() const;
+
+	//const std::vector<VkFramebuffer>* GetFramebuffers() const;
+	
+	// Pipeline
+	void CreatePipelineSystem();
+	PipelineSystem* const	GetPipelineSystem() const;
+	// ~Pipeline
+
 	void CleanUp(const VkDevice& Device, const VkCommandPool* const CommandPool);
 	void Destroy(const VkDevice& Device, const VkCommandPool* const CommandPool);
 private:
 
-	std::map<RenderPassID, VkRenderPass> mRenderPasses;
-	std::vector<VkFramebuffer> mFramebuffers;
-	std::vector<VkCommandBuffer> mRenderPassCommandBuffers;
+	std::unique_ptr<PipelineSystem> mPipelineSystem;
+
+	std::map<RenderPassID, RenderPassData> mRenderPasses;
+	//std::vector<VkFramebuffer> mFramebuffers;
+	//std::vector<VkCommandBuffer> mRenderPassCommandBuffers;
 
 };
 

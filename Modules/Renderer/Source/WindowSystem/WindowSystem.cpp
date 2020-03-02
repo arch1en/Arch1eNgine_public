@@ -33,7 +33,7 @@ I::Window_Impl* WindowSystem::GetMainWindow()
 
 bool WindowSystem::IsMainWindowAvailable()
 {
-	return Windows.size() > 0 && Windows[0] != nullptr;
+	return Windows.size() > 0 && GetMainWindow() != nullptr;
 }
 
 void WindowSystem::DestroyAllWindows()

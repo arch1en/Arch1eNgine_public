@@ -145,6 +145,20 @@ void PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vec
 	}
 }
 
+void PipelineSystem::CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo)
+{
+	Assert(CreateInfo.mDescriptorPoolID.compare("") != 0, "Descriptor pool ID cannot be empty!");
+
+	VkDescriptorPool Pool;
+
+	if (vkCreateDescriptorPool(*CreateInfo.mLogicalDevice, &CreateInfo.mPoolCreateInfo, nullptr, &Pool) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
+	}
+
+	mDescriptorPools.insert({ CreateInfo.mDescriptorPoolID, Pool });
+}
+
 void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 {
 	VkDescriptorSetLayoutBinding LayoutBindingUBO = {};
@@ -169,6 +183,59 @@ void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 	mDescriptorSetLayouts.push_back(NewLayout);
 }
 
+
+void PipelineSystem::CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
+{
+	CreateDescriptorPool(CreateInfo);
+	UpdateDescriptorSets(CreateInfo.mLogicalDevice, MemoryManager, NumSwapChainImages);
+}
+
+
+void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
+{
+	//std::vector<VkDescriptorSetLayout> LayoutsToSet(mSwapChainImages.size(), GetDescriptorSetLayouts()[0]);
+	std::vector<VkDescriptorSetLayout> LayoutsToSet(NumSwapChainImages, GetDescriptorSetLayouts()[0]);
+
+	VkDescriptorSetAllocateInfo AllocInfo = {};
+
+	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	AllocInfo.descriptorPool = *GetMainDescriptorPool();
+	//AllocInfo.descriptorSetCount = static_cast<uint32_t>(mSwapChainImages.size());
+	AllocInfo.descriptorSetCount = NumSwapChainImages;
+	AllocInfo.pSetLayouts = LayoutsToSet.data();
+
+	//mDescriptorSets.resize(mSwapChainImages.size());
+	mDescriptorSets.resize(NumSwapChainImages);
+
+	if (vkAllocateDescriptorSets(*Device, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
+	}
+
+	//for (size_t i = 0; i < mSwapChainImages.size(); i++)
+	for (size_t i = 0; i < NumSwapChainImages; i++)
+	{
+		VkDescriptorBufferInfo BufferInfo = {};
+		BufferInfo.buffer = (*MemoryManager->GetUniformBufferData())[i]->mBuffer;
+		BufferInfo.offset = 0;
+		BufferInfo.range = sizeof(UniformBufferObject);
+
+		VkWriteDescriptorSet DescriptorWrite = {};
+		DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		DescriptorWrite.dstSet = mDescriptorSets[i];
+		DescriptorWrite.dstBinding = 0;
+		DescriptorWrite.dstArrayElement = 0;
+		DescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		DescriptorWrite.descriptorCount = 1;
+		DescriptorWrite.pBufferInfo = &BufferInfo;
+		DescriptorWrite.pImageInfo = nullptr;	// Optional
+		DescriptorWrite.pTexelBufferView = nullptr; // Optional
+
+		vkUpdateDescriptorSets(*Device, 1, &DescriptorWrite, 0, nullptr);
+	}
+}
+
+
 void PipelineSystem::CleanUp(const VkDevice& Device)
 {
 	if (mPipelineHandle != VK_NULL_HANDLE)
@@ -182,6 +249,12 @@ void PipelineSystem::CleanUp(const VkDevice& Device)
 		vkDestroyPipelineLayout(Device, mPipelineLayout, nullptr);
 		mPipelineLayout = VK_NULL_HANDLE;
 	}
+
+	for (auto iter = mDescriptorPools.rbegin(); iter != mDescriptorPools.rend(); ++iter)
+	{
+		vkDestroyDescriptorPool(Device, iter->second, nullptr);
+	}
+	mDescriptorPools.clear();
 }
 
 void PipelineSystem::Destroy(const VkDevice& Device)
@@ -209,4 +282,19 @@ const VkPipelineLayout* PipelineSystem::GetPipelineLayout() const
 const std::vector<VkDescriptorSetLayout>& PipelineSystem::GetDescriptorSetLayouts() const
 {
 	return mDescriptorSetLayouts;
+}
+
+const VkDescriptorPool* const PipelineSystem::GetMainDescriptorPool()
+{
+	return GetDescriptorPool("main");
+}
+
+const VkDescriptorPool* const PipelineSystem::GetDescriptorPool(DescriptorPoolID ID) 
+{
+	return &mDescriptorPools[ID];
+}
+
+const std::vector<VkDescriptorSet>* PipelineSystem::GetDescriptorSets()
+{
+	return &mDescriptorSets;
 }
