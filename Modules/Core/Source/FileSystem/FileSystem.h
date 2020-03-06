@@ -58,6 +58,7 @@ public:
 	static std::string ReplaceStringOccurences(std::string Source, const char* ReplaceFrom, const char* ReplaceTo);
 
 	static 	ErrorHandle Open(const char* Path, FileData& Data, uint8_t Options);
+	static std::vector<char> RetrieveBinaryDataFromFile(const char* ModuleName, const std::string& FileName);
 
 private:
 

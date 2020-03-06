@@ -66,9 +66,6 @@ public:
 	const RenderPassData* const GetRenderPassData(const RenderPassID ID);
 	const std::map<RenderPassID, RenderPassData>& GetAllRenderPasses() const;
 	const VkRenderPass* const GetRenderPassHandle(const RenderPassID ID);
-	//const std::vector<VkCommandBuffer>* GetRenderPassCommandBuffers() const;
-
-	//const std::vector<VkFramebuffer>* GetFramebuffers() const;
 	
 	// Pipeline
 	void CreatePipelineSystem();
@@ -82,8 +79,6 @@ private:
 	std::unique_ptr<PipelineSystem> mPipelineSystem;
 
 	std::map<RenderPassID, RenderPassData> mRenderPasses;
-	//std::vector<VkFramebuffer> mFramebuffers;
-	//std::vector<VkCommandBuffer> mRenderPassCommandBuffers;
 
 };
 

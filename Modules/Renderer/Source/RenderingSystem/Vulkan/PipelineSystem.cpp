@@ -5,11 +5,8 @@
 
 void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo)
 {
-	auto ShaderCode_Vertex = mShaderSystem.LoadShaderFromFile("Shaders/Main.vert.spv");
-	auto ShaderCode_Fragment = mShaderSystem.LoadShaderFromFile("Shaders/Main.frag.spv");
-
-	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(ShaderCode_Vertex, *CreationInfo.mLogicalDevice);
-	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(ShaderCode_Fragment, *CreationInfo.mLogicalDevice);
+	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(CreationInfo.mShaderCode_Vertex, *CreationInfo.mLogicalDevice);
+	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(CreationInfo.mShaderCode_Fragment, *CreationInfo.mLogicalDevice);
 
 	VkPipelineShaderStageCreateInfo ShaderStageInfo_Vertex = {};
 	ShaderStageInfo_Vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -193,14 +190,12 @@ void PipelineSystem::CreateDescriptorPoolAndUpdateDescriptorSets(const Descripto
 
 void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
 {
-	//std::vector<VkDescriptorSetLayout> LayoutsToSet(mSwapChainImages.size(), GetDescriptorSetLayouts()[0]);
 	std::vector<VkDescriptorSetLayout> LayoutsToSet(NumSwapChainImages, GetDescriptorSetLayouts()[0]);
 
 	VkDescriptorSetAllocateInfo AllocInfo = {};
 
 	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	AllocInfo.descriptorPool = *GetMainDescriptorPool();
-	//AllocInfo.descriptorSetCount = static_cast<uint32_t>(mSwapChainImages.size());
 	AllocInfo.descriptorSetCount = NumSwapChainImages;
 	AllocInfo.pSetLayouts = LayoutsToSet.data();
 
@@ -212,7 +207,6 @@ void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager*
 		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
 	}
 
-	//for (size_t i = 0; i < mSwapChainImages.size(); i++)
 	for (size_t i = 0; i < NumSwapChainImages; i++)
 	{
 		VkDescriptorBufferInfo BufferInfo = {};

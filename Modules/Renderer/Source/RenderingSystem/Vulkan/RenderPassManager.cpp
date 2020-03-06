@@ -154,16 +154,8 @@ const VkRenderPass* const RenderPassManager::GetRenderPassHandle(const RenderPas
 	return &mRenderPasses[ID].mRenderPassHandle;
 }
 
-//const std::vector<VkFramebuffer>* RenderPassManager::GetFramebuffers() const
-//{
-//	return &mFramebuffers;
-//}
-
 void RenderPassManager::CleanUp(const VkDevice& Device, const VkCommandPool* const CommandPool)
 {
-	// [Todo] Should this be here ?
-	//vkFreeCommandBuffers(Device, *CommandPool, static_cast<uint32_t>(GetRenderPassCommandBuffers()->size()), GetRenderPassCommandBuffers()->data());
-
 	auto& RenderPassesLocalRef = this->mRenderPasses;
 	std::vector<VkCommandBuffer> CommandBuffers;
 	for (auto RenderPass : RenderPassesLocalRef)
@@ -175,11 +167,6 @@ void RenderPassManager::CleanUp(const VkDevice& Device, const VkCommandPool* con
 	}
 
 	vkFreeCommandBuffers(Device, *CommandPool, static_cast<uint32_t>(CommandBuffers.size()), CommandBuffers.data());
-
-	//for (int i = int(mFramebuffers.size() - 1); i >= 0 ; i--)
-	//{
-	//	mFramebuffers.erase(mFramebuffers.begin() + i);
-	//}
 
 	for (auto iter = mRenderPasses.rbegin(); iter != mRenderPasses.rend(); ++iter)
 	{
@@ -208,7 +195,6 @@ void RenderPassManager::CleanUp(const VkDevice& Device, const VkCommandPool* con
 
 void RenderPassManager::Destroy(const VkDevice& Device, const VkCommandPool* const CommandPool)
 {
-	// [Arch1eN] Upon destruction, render pass command buffers must be erased
 	CleanUp(Device, CommandPool);
 
 	for (auto i : mRenderPasses)
@@ -219,15 +205,6 @@ void RenderPassManager::Destroy(const VkDevice& Device, const VkCommandPool* con
 		auto& FramebufferHandles = i.second.mFramebufferHandles;
 		FramebufferHandles.erase(FramebufferHandles.begin(), FramebufferHandles.end());
 	}
-	//mRenderPassCommandBuffers.erase(mRenderPassCommandBuffers.begin(), mRenderPassCommandBuffers.end());
-
-
-	//mFramebuffers.erase(mFramebuffers.begin(), mFramebuffers.end());
 
 	GetPipelineSystem()->Destroy(Device);
 }
-
-//const std::vector<VkCommandBuffer>* RenderPassManager::GetRenderPassCommandBuffers() const
-//{
-//	return &mRenderPassCommandBuffers;
-//}

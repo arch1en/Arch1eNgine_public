@@ -21,6 +21,9 @@ struct PipelineSystemCreationInfo
 	VkFormat mImageFormat;
 	const VkRenderPass* mRenderPassHandle;
 	const MemoryManager* mMemoryManager;
+
+	std::vector<char> mShaderCode_Vertex;
+	std::vector<char> mShaderCode_Fragment;
 };
 
 struct DescriptorPoolCreateInfo

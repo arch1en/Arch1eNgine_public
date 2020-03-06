@@ -43,6 +43,21 @@ ErrorHandle FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)
 	return Result;
 }
 
+// [Todo] Adapt name to mention that we are extracting data from the assets dir folder or make this function load from absolute path.
+std::vector<char> FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const std::string& FileName)
+{
+	FileData Data;
+	std::string AssetsDir = FileSystem::Get()->GetModuleAssetsDir(ModuleName);
+	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::OpenAndReadFromEnd | FileOpeningOptions::BinaryFormat);
+
+	if (Result.Code != 0)
+	{
+		Log(LogType::Error, 0, "Cannot load binary data from file. %s", Result.Msg);
+	}
+
+	return Data.Data;
+}
+
 FileSystem::FileSystem()
 {
 	char* BasePath = SDL_GetBasePath();

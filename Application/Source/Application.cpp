@@ -15,7 +15,7 @@ bool Application::Initiate()
 {
 	mWindowSystem = std::make_unique<WindowSystem>();
 	mRenderingSystem = std::make_unique<RenderingSystem>();
-	//mEngineEditor = std::make_unique<EngineEditor>(mWindowSystem.get(), mRenderingSystem.get());
+	mEngineEditor = std::make_unique<EngineEditor>(mWindowSystem.get(), mRenderingSystem.get());
 	// Renderer
 	RenderingInstanceType Type = RenderingInstanceType::Vulkan;
 
@@ -28,7 +28,7 @@ bool Application::Initiate()
 	// EngineEditor
 	//Configurator::Renderer_EngineEditor REEConfigurator(mWindowSystem.get(), mRenderingSystem.get(), mEngineEditor.get());
 	//REEConfigurator.Configure();
-	//mEngineEditor->Initiate();
+	mEngineEditor->Initiate();
 
 	MainLoop();
 
