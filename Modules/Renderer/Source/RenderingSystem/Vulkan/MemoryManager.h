@@ -18,7 +18,7 @@ struct BufferCreationInfo
 
 struct GeneralBufferCreationInfo
 {
-	BufferCreationInfo mBufferCreationInfo;
+	BufferCreationInfo mBufferCreationInfo = {};
 	const QueueFamilyHandler* mQueueFamilyHandler = nullptr;
 };
 
@@ -35,11 +35,13 @@ public:
 
 	void Destroy(const VkDevice& LogicalDevice);
 
+	VkCommandPool& GetMemoryOperationsCommandPool();
+
 private:
 
+	// [Todo] This should remain private, or somehow moved.
 	VkCommandPool mMemoryOperationsCommandPool;
 
-	uint32_t FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties);
 	
 	std::unique_ptr<BufferData>	 CreateBufferInternal
 	(
@@ -54,9 +56,55 @@ private:
 
 };
 
+// Image Structs
+struct ImageData
+{
+	VkImage mTextureImage;
+	VkDeviceMemory mTextureImageMemory;
+};
+
+struct ImageCreationInfo
+{
+	const VkDevice* mLogicalDevice;
+	const VkPhysicalDevice* mPhysicalDevice;
+	uint32_t mWidth;
+	uint32_t mHeight;
+	VkFormat mFormat;
+	VkImageTiling mTiling;
+	VkImageUsageFlags mUsage;
+	VkMemoryPropertyFlags mProperties;
+	ImageData* mImageData;
+};
+
+struct ImageTransitionInfo
+{
+	const VkCommandPool* mSingleTimeCommandsPool = nullptr;
+	const VkDevice* mLogicalDevice;
+	const VkQueue* mGraphicsQueue;
+	VkImage mImage;
+	VkFormat mFormat;
+	VkImageLayout mOldLayout;
+	VkImageLayout mNewLayout;
+};
+
+struct CopyBufferToImageInfo
+{
+	const VkDevice* mLogicalDevice;
+	const VkCommandPool* mSingleTimeCommandsPool = nullptr;
+	const VkQueue* mGraphicsQueue;
+	VkBuffer mBuffer;
+	VkImage mImage;
+	uint32_t mWidth;
+	uint32_t mHeight;
+};
+// ~Image Structs
+
 namespace MemoryManagementMethods
 {
 	void MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkDeviceSize& MemorySize, VkDeviceMemory& BufferMemory);
+	uint32_t FindMemoryType(const VkPhysicalDevice& PhysicalDevice, uint32_t TypeFilter, VkMemoryPropertyFlags Properties);
+	VkCommandBuffer BeginSingleTimeCommand(const VkDevice* LogicalDevice, VkCommandPool mCommandPool);
+	void EndSingleTimeCommand(VkCommandBuffer Buffer, const VkDevice* LogicalDevice, VkCommandPool CommandPool, VkQueue GraphicsQueue);
 }
 
 class MemoryManager
@@ -98,6 +146,14 @@ public:
 	void CleanUp(const VkDevice& mLogicalDevice);
 	void Destroy(const VkDevice& mLogicalDevice);
 
+	// Image
+	// [Todo] General handles should be packed into read-only singleton object.
+	void CreateTextureImage(const VkDevice* LogicalDevice, const VkPhysicalDevice* PhysicalDevice, const VkQueue* GraphicsQueue);
+private:
+	void CreateImage(const ImageCreationInfo& CreationInfo);
+	void TransitionImageLayout(const ImageTransitionInfo& TransitionInfo);
+	void CopyBufferToImage(const CopyBufferToImageInfo& Info);
+	// ~Image
 private:
 
 	BufferFactory* const GetBufferFactory() const;
@@ -111,6 +167,7 @@ private:
 	std::vector<std::unique_ptr<IndexBufferData>> mIndexBufferData;
 	std::vector<std::unique_ptr<BufferData>> mUniformBufferData;
 
+	std::vector<ImageData> mImageDatas;
 };
 
 #endif

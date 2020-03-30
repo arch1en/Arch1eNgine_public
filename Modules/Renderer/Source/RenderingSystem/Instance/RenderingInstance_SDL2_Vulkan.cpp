@@ -109,7 +109,7 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	SwapChainCreationInfo SwapChainCI = {};
 
 	const VkDevice* LogicalDevice = GetDeviceHandler()->GetLogicalDeviceHandle();
-	const VkPhysicalDevice* PhysicalDevice = &GetDeviceHandler()->GetPhysicalDevicesProperties()->at(0).DeviceHandle;
+	const VkPhysicalDevice* PhysicalDevice = &GetDeviceHandler()->GetStrongestPhysicalDeviceProperties()->DeviceHandle;
 
 	SwapChainCI.mLogicalDevice = LogicalDevice;
 	SwapChainCI.mPhysicalDevice = PhysicalDevice;
@@ -157,6 +157,9 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	GetSwapChainHandler()->PrepareVertexMemory(VertexBufferCI, Vertices);
 	GetSwapChainHandler()->PrepareIndexMemory(IndexBufferCI, Indices);
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
+
+	// [Temp] Temporary image creation
+	GetSwapChainHandler()->GetMemoryManager()->CreateTextureImage(LogicalDevice, PhysicalDevice, &GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle);
 }
 
 void RenderingInstance_SDL2_Vulkan::CreateDeviceHandler()

@@ -31,7 +31,6 @@ void Configurator::Window_RenderingInstance::Configure()
 		InstanceVkSDL2->CreateVulkanInstance(WindowVkSDL2->GetWindowHandle());
 		InstanceVkSDL2->CreateSurfaceHandler();
 		InstanceVkSDL2->CreateDeviceHandler();
-
 		SurfaceHandlerCreationData_SDL SurfaceData = {};
 		
 		// Creating Window.
@@ -62,7 +61,7 @@ void Configurator::Window_RenderingInstance::Configure()
 		};
 
 		InstanceVkSDL2->GetDeviceHandler()->Initiate(&CreationInfo);
-
+		
 		InstanceVkSDL2->CreateRequiredSubsystems();
 
 		return;

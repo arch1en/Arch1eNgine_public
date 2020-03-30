@@ -27,6 +27,7 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 	CommandPoolCI.mQueueFamilyData = InitiationInfo.mQueueFamilyHandler->GetQueueFamilyData();
 
 	CreateCommandPool(CommandPoolCI);
+
 }
 
 void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
@@ -271,6 +272,9 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 	RenderPassCommandBufferCI.mIndexBufferData = (*GetMemoryManager()->GetIndexBufferData())[0].get();
 
 	GetRenderPassManager()->CreateRenderPassCommandBuffers("main", RenderPassCommandBufferCI);
+
+	// [TODO] This will need refactoring.
+	
 }
 
 void SwapChainHandler::CreateCommandPool(const CommandPoolCreateInfo& CreateInfo)

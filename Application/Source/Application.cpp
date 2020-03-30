@@ -28,7 +28,7 @@ bool Application::Initiate()
 	// EngineEditor
 	//Configurator::Renderer_EngineEditor REEConfigurator(mWindowSystem.get(), mRenderingSystem.get(), mEngineEditor.get());
 	//REEConfigurator.Configure();
-	mEngineEditor->Initiate();
+	//mEngineEditor->Initiate();
 
 	MainLoop();
 
