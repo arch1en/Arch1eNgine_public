@@ -1,6 +1,7 @@
 #ifndef MEMORYMANAGER_H
 #define MEMORYMANAGER_H
 
+#include <list>
 #include <vector>
 #include <vulkan/vulkan.h>
 
@@ -59,8 +60,11 @@ private:
 // Image Structs
 struct ImageData
 {
+	std::string mTextureID = "";
 	VkImage mTextureImage;
 	VkDeviceMemory mTextureImageMemory;
+	VkImageView mTextureImageView;
+	VkSampler mTextureSampler;
 };
 
 struct ImageCreationInfo
@@ -148,8 +152,13 @@ public:
 
 	// Image
 	// [Todo] General handles should be packed into read-only singleton object.
-	void CreateTextureImage(const VkDevice* LogicalDevice, const VkPhysicalDevice* PhysicalDevice, const VkQueue* GraphicsQueue);
+	void CreateTextureImage(const VkDevice* LogicalDevice, const VkPhysicalDevice* PhysicalDevice, const VkQueue* GraphicsQueue, const unsigned char* Pixels, const int TexWidth, const int TexHeight, VkFormat ImageFormat, const std::string& TextureID);
+	VkImageView CreateImageView(const VkDevice* LogicalDevice, VkImage Image, VkFormat Format);
+	void DestroyImage(VkDevice LogicalDevice, ImageData Data);
+	const std::list<ImageData>* GetImageDataArray() const;
+	const ImageData* GetImageDataByID(std::string ID) const;
 private:
+	VkSampler CreateTextureSampler(const VkDevice* LogicalDevice);
 	void CreateImage(const ImageCreationInfo& CreationInfo);
 	void TransitionImageLayout(const ImageTransitionInfo& TransitionInfo);
 	void CopyBufferToImage(const CopyBufferToImageInfo& Info);
@@ -167,7 +176,7 @@ private:
 	std::vector<std::unique_ptr<IndexBufferData>> mIndexBufferData;
 	std::vector<std::unique_ptr<BufferData>> mUniformBufferData;
 
-	std::vector<ImageData> mImageDatas;
+	std::list<ImageData> mImageDataArray;
 };
 
 #endif

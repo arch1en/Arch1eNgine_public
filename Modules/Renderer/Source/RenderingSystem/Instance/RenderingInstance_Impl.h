@@ -4,6 +4,7 @@
 #include <string>
 #include "Mathematics.inl"
 #include "Delegate.h"
+#include "RenderingSystem/RenderingSystemUtilities.h"
 // Namespaces must be separated, since you cannot use a I::RenderingInstanceProperties_ClearColor_Impl inside I::RenderingInstance_Impl if they are in the same namespace block.
 
 namespace I {
@@ -39,6 +40,8 @@ namespace I
 		virtual void RenderLoop() = 0;
 		virtual void ResizeCanvas(int Width, int Height) { mOnResizeCanvasEvent.Broadcast(Width, Height); }
 		virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) = 0;
+		virtual void LoadTextureImage(const char* Path, TextureImageFormat Format, const std::string& TextureID) = 0;
+		virtual void LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const std::string& TextureID) = 0;
 
 		MulticastDelegate<void(int, int)>& GetOnResizeCanvasEvent() { return mOnResizeCanvasEvent; }
 

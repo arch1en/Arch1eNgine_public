@@ -92,7 +92,7 @@ std::string FileSystem::GetModuleAssetsDir(const char* ModuleName)
 	// @todo : Improve the algorithm.
 
 	std::string Result = GetRootDir();
-	Result =  Path(Result + "/Modules/" + ModuleName + "/Assets");
+	Result =  Path(Result / "Modules" / ModuleName / "Assets");
 
 	return Result;
 }

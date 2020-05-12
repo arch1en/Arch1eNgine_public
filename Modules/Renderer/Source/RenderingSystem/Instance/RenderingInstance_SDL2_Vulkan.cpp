@@ -8,6 +8,12 @@
 #include "RenderingSystem/RenderingSystemUtilities.h"
 #include "Debug/LogSystem.h"
 
+//Temp
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#include "FileSystem/FileSystem.h"
+//~Temp
+
 // Windows has a "max" macro.
 #undef max
 
@@ -131,10 +137,10 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 
 	std::vector<Vertex> Vertices =
 	{
-		{{-0.5f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}},
-		{{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}},
-		{{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}}
+		{{-0.5f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}, {1.f, 0.f}},
+		{{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0.f, 0.f}},
+		{{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {0.f, 1.f}},
+		{{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1.f, 1.f}}
 	};
 
 	VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(Vertices[0]) * Vertices.size();
@@ -159,7 +165,7 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 
 	// [Temp] Temporary image creation
-	GetSwapChainHandler()->GetMemoryManager()->CreateTextureImage(LogicalDevice, PhysicalDevice, &GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle);
+	//GetSwapChainHandler()->GetMemoryManager()->CreateTextureImage(LogicalDevice, PhysicalDevice, &GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle);
 }
 
 void RenderingInstance_SDL2_Vulkan::CreateDeviceHandler()
@@ -289,3 +295,54 @@ void RenderingInstance_SDL2_Vulkan::ResizeCanvas(int Width, int Height)
 
 	Parent::ResizeCanvas(Width, Height);
 }
+
+void RenderingInstance_SDL2_Vulkan::LoadTextureImage(const char* Path, TextureImageFormat Format, const std::string& TextureID)
+{
+	int TexWidth, TexHeight, TexChannels;
+	stbi_uc* Pixels = static_cast<unsigned char*>(stbi_load(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Textures/texture2.jpg").c_str(), &TexWidth, &TexHeight, &TexChannels, STBI_rgb_alpha));
+
+	if (!Pixels) {
+		LogVk(LogType::Error, 0, "Failed to load texture image!");
+	}
+
+	GetSwapChainHandler()->GetMemoryManager()->CreateTextureImage(
+		GetDeviceHandler()->GetLogicalDeviceHandle(),
+		&GetDeviceHandler()->GetStrongestPhysicalDeviceProperties()->DeviceHandle,
+		&GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle,
+		static_cast<unsigned char*>(Pixels), // [Todo] Make sure that this cast is safe.
+		TexWidth,
+		TexHeight,
+		ParseTextureImageFormatToVkFormat(Format),
+		TextureID
+	);
+
+	stbi_image_free(Pixels);
+
+}
+
+void RenderingInstance_SDL2_Vulkan::LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const std::string& TextureID)
+{
+	GetSwapChainHandler()->GetMemoryManager()->CreateTextureImage(
+		GetDeviceHandler()->GetLogicalDeviceHandle(),
+		&GetDeviceHandler()->GetStrongestPhysicalDeviceProperties()->DeviceHandle,
+		&GetDeviceHandler()->GetQueueFamilyHandler()->GetPresentationSuitableQueueFamilyData()->QueueHandle,
+		static_cast<unsigned char*>(Pixels), // [Todo] Make sure that this cast is safe.
+		TexWidth,
+		TexHeight,
+		ParseTextureImageFormatToVkFormat(Format),
+		TextureID
+	);
+}
+
+VkFormat RenderingInstance_SDL2_Vulkan::ParseTextureImageFormatToVkFormat(TextureImageFormat ImageFormat)
+{
+	switch (ImageFormat)
+	{
+	case TextureImageFormat::R8G8B8A8_SRGB: return VK_FORMAT_R8G8B8A8_SRGB; break;
+	case TextureImageFormat::R8G8B8A8_UNORM: return VK_FORMAT_R8G8B8A8_UNORM; break;
+	default: LogVk(LogType::Error, 0, "Undefined image format!"); break;
+	}
+
+	return VK_FORMAT_UNDEFINED;
+}
+

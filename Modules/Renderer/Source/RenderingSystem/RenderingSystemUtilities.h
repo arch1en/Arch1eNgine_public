@@ -16,6 +16,12 @@ enum class RenderingInstanceType : uint8_t
 };
 TypeSafeEnumBitmask(RenderingInstanceType)
 
+enum class TextureImageFormat : uint8_t
+{
+	R8G8B8A8_SRGB,
+	R8G8B8A8_UNORM
+};
+
 struct RenderingInstanceProperties
 {
 	RenderingInstanceProperties()

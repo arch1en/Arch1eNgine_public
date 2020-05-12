@@ -6,12 +6,6 @@
 
 #include "Debug/LogSystem.h"
 
-//Temp
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#include "FileSystem/FileSystem.h"
-//~Temp
-
 void BufferFactory::Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
 {
 	VkCommandPoolCreateInfo CommandPoolCI = {};
@@ -300,13 +294,12 @@ void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 {
 	CleanUp(mLogicalDevice);
 
-	for (auto i : mImageDatas)
+	for (auto i : mImageDataArray)
 	{
-		vkDestroyImage(mLogicalDevice, i.mTextureImage, nullptr);
-		vkFreeMemory(mLogicalDevice, i.mTextureImageMemory, nullptr);
+		DestroyImage(mLogicalDevice, i);
 	}
 
-	mImageDatas.erase(mImageDatas.begin(), mImageDatas.end());
+	mImageDataArray.erase(mImageDataArray.begin(), mImageDataArray.end());
 
 	// [TODO] Merge above and below code.
 	for (int i = int(mVertexBufferData.size()) - 1; i >= 0; i--)
@@ -368,6 +361,16 @@ const std::vector<VkVertexInputAttributeDescription> MemoryManager::GetAttribute
 
 	AttributeDescriptions.push_back(ColorAttributeDescription);
 
+	// UV.
+	VkVertexInputAttributeDescription TextureCoordAttributeDescription = {};
+
+	TextureCoordAttributeDescription.binding = 0;
+	TextureCoordAttributeDescription.location = 2;
+	TextureCoordAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+	TextureCoordAttributeDescription.offset = offsetof(Vertex, TexCoord);
+
+	AttributeDescriptions.push_back(TextureCoordAttributeDescription);
+
 	return AttributeDescriptions;
 }
 
@@ -392,35 +395,46 @@ void BufferFactory::CopyBuffer(const VkDevice* LogicalDevice, const QueueFamilyH
 	MemoryManagementMethods::EndSingleTimeCommand(CommandBuffer, LogicalDevice, mMemoryOperationsCommandPool, GraphicsQueue);
 }
 
-void MemoryManager::CreateTextureImage(const VkDevice* LogicalDevice, const VkPhysicalDevice* PhysicalDevice, const VkQueue* GraphicsQueue)
+void MemoryManager::CreateTextureImage(
+	const VkDevice* LogicalDevice,
+	const VkPhysicalDevice* PhysicalDevice,
+	const VkQueue* GraphicsQueue,
+	const unsigned char* Pixels,
+	const int TexWidth,
+	const int TexHeight,
+	VkFormat ImageFormat,
+	const std::string& TextureID
+	)
 {
-	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Textures/texture.jpg").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-	VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-	if (!pixels) {
-		throw std::runtime_error("failed to load texture image!");
+	// [ToDo] Looks suspicious, will require refactoring.
+	if (Pixels == nullptr)
+	{
+		LogVk(LogType::Error, 0, "No pixels passed. Texture image cannot be created!");
+		return;
 	}
+	
+	// [ToDo] Why * 4 ?
+	VkDeviceSize ImageSize = TexWidth * TexHeight * 4;
 
 	ImageData ImgData;
+
+	ImgData.mTextureID = TextureID;
 
 	GeneralBufferCreationInfo BufferCI = {};
 
 	BufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
 	BufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
-	BufferCI.mBufferCreationInfo.mDataSize = imageSize;
+	BufferCI.mBufferCreationInfo.mDataSize = ImageSize;
 
 	std::unique_ptr<BufferData> Data = GetBufferFactory()->CreateGeneralBuffer(BufferCI);
 
-	MemoryManagementMethods::MapMemory(*LogicalDevice, pixels, Data->mBuffer, static_cast<size_t>(imageSize), Data->mBufferMemory);
-
-	stbi_image_free(pixels);
+	MemoryManagementMethods::MapMemory(*LogicalDevice, Pixels, Data->mBuffer, static_cast<size_t>(ImageSize), Data->mBufferMemory);
 
 	ImageCreationInfo ImageCI = {};
 	ImageCI.mLogicalDevice = LogicalDevice;
 	ImageCI.mPhysicalDevice = PhysicalDevice;
-	ImageCI.mWidth = texWidth;
-	ImageCI.mHeight = texHeight;
+	ImageCI.mWidth = TexWidth;
+	ImageCI.mHeight = TexHeight;
 	ImageCI.mFormat = VK_FORMAT_R8G8B8A8_SRGB;
 	ImageCI.mTiling = VK_IMAGE_TILING_OPTIMAL;
 	ImageCI.mUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -439,9 +453,24 @@ void MemoryManager::CreateTextureImage(const VkDevice* LogicalDevice, const VkPh
 	ImageUndefinedToDstInfo.mOldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	ImageUndefinedToDstInfo.mNewLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
+	TransitionImageLayout(ImageUndefinedToDstInfo);
+
+	//CopyBufferToImage
+	CopyBufferToImageInfo CbtiInfo;
+
+	CbtiInfo.mLogicalDevice = LogicalDevice;
+	CbtiInfo.mSingleTimeCommandsPool = &GetBufferFactory()->GetMemoryOperationsCommandPool();
+	CbtiInfo.mGraphicsQueue = GraphicsQueue;
+	CbtiInfo.mBuffer = Data->mBuffer;
+	CbtiInfo.mImage = ImgData.mTextureImage;
+	CbtiInfo.mWidth = static_cast<uint32_t>(TexWidth);
+	CbtiInfo.mHeight = static_cast<uint32_t>(TexHeight);
+
+
+	CopyBufferToImage(CbtiInfo);
+	//~CopyBufferToImage
 
 	ImageTransitionInfo ImageDstToShaderInfo = {};
-
 
 	ImageDstToShaderInfo.mLogicalDevice = LogicalDevice;
 	ImageDstToShaderInfo.mSingleTimeCommandsPool = &GetBufferFactory()->GetMemoryOperationsCommandPool();
@@ -451,28 +480,98 @@ void MemoryManager::CreateTextureImage(const VkDevice* LogicalDevice, const VkPh
 	ImageDstToShaderInfo.mOldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	ImageDstToShaderInfo.mNewLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	TransitionImageLayout(ImageUndefinedToDstInfo);
-
-	//CopyBufferToImage
-	CopyBufferToImageInfo CbtiInfo;
-	
-	CbtiInfo.mLogicalDevice = LogicalDevice;
-	CbtiInfo.mSingleTimeCommandsPool = &GetBufferFactory()->GetMemoryOperationsCommandPool();
-	CbtiInfo.mGraphicsQueue = GraphicsQueue;
-	CbtiInfo.mBuffer = Data->mBuffer;
-	CbtiInfo.mImage = ImgData.mTextureImage;
-	CbtiInfo.mWidth = static_cast<uint32_t>(texWidth);
-	CbtiInfo.mHeight = static_cast<uint32_t>(texHeight);
-
-
-	CopyBufferToImage(CbtiInfo);
-	//~CopyBufferToImage
 	TransitionImageLayout(ImageDstToShaderInfo);
 
 	vkDestroyBuffer(*LogicalDevice, Data->mBuffer, nullptr);
 	vkFreeMemory(*LogicalDevice, Data->mBufferMemory, nullptr);
 
-	mImageDatas.push_back(ImgData);
+	ImgData.mTextureImageView = CreateImageView(LogicalDevice, ImgData.mTextureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	ImgData.mTextureSampler = CreateTextureSampler(LogicalDevice);
+
+	mImageDataArray.push_back(ImgData);
+}
+
+VkImageView MemoryManager::CreateImageView(const VkDevice* LogicalDevice, VkImage Image, VkFormat Format)
+{
+	VkImageViewCreateInfo ViewInfo = {};
+	ViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	ViewInfo.image = Image;
+	ViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	ViewInfo.format = Format;
+
+	// Put here implicitly for educational purpose. VK_COMPONENT_SWIZZLE_IDENTITY is a default value for these four.
+	ViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	ViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	ViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	ViewInfo.subresourceRange.baseMipLevel = 0;
+	ViewInfo.subresourceRange.levelCount = 1;
+	ViewInfo.subresourceRange.baseArrayLayer = 0;
+	ViewInfo.subresourceRange.layerCount = 1;
+
+	VkImageView ImageView;
+	if (vkCreateImageView(*LogicalDevice, &ViewInfo, nullptr, &ImageView) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Failed to create image view!");
+	}
+
+	return ImageView;
+}
+
+void MemoryManager::DestroyImage(VkDevice LogicalDevice, ImageData Data)
+{
+	vkDestroySampler(LogicalDevice, Data.mTextureSampler, nullptr);
+	vkDestroyImageView(LogicalDevice, Data.mTextureImageView, nullptr);
+	vkDestroyImage(LogicalDevice, Data.mTextureImage, nullptr);
+	vkFreeMemory(LogicalDevice, Data.mTextureImageMemory, nullptr);
+}
+
+const std::list<ImageData>* MemoryManager::GetImageDataArray() const
+{
+	return &mImageDataArray;
+
+}
+
+const ImageData* MemoryManager::GetImageDataByID(std::string ID) const
+{
+	for (const auto& i : mImageDataArray)
+	{
+		if (i.mTextureID.compare(ID) == 0)
+		{
+			return &i;
+		}
+	}
+
+	return nullptr;
+}
+
+VkSampler MemoryManager::CreateTextureSampler(const VkDevice* LogicalDevice)
+{
+	VkSamplerCreateInfo SamplerInfo = {};
+	SamplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	SamplerInfo.magFilter = VK_FILTER_LINEAR;
+	SamplerInfo.minFilter = VK_FILTER_LINEAR;
+	SamplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	SamplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	SamplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	SamplerInfo.anisotropyEnable = VK_TRUE;
+	SamplerInfo.maxAnisotropy = 16;
+	SamplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	SamplerInfo.unnormalizedCoordinates = VK_FALSE;
+	SamplerInfo.compareEnable = VK_FALSE;
+	SamplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	SamplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+	VkSampler NewSampler;
+
+	if (vkCreateSampler(*LogicalDevice, &SamplerInfo, nullptr, &NewSampler) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Failed to create texture sampler!");
+	}
+
+	return NewSampler;
 }
 
 void MemoryManager::CreateImage(const ImageCreationInfo& CreationInfo)

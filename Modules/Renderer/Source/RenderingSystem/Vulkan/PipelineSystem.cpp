@@ -165,10 +165,19 @@ void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 	LayoutBindingUBO.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	LayoutBindingUBO.pImmutableSamplers = nullptr; // Optional
 
+	VkDescriptorSetLayoutBinding LayoutBindingSampler = {};
+	LayoutBindingSampler.binding = 1;
+	LayoutBindingSampler.descriptorCount = 1;
+	LayoutBindingSampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	LayoutBindingSampler.pImmutableSamplers = nullptr;
+	LayoutBindingSampler.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 2>  Bindings = { LayoutBindingUBO, LayoutBindingSampler };
+
 	VkDescriptorSetLayoutCreateInfo LayoutCI = {};
 	LayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	LayoutCI.bindingCount = 1;
-	LayoutCI.pBindings = &LayoutBindingUBO;
+	LayoutCI.bindingCount = static_cast<uint32_t>(Bindings.size());
+	LayoutCI.pBindings = Bindings.data();
 
 	VkDescriptorSetLayout NewLayout;
 
@@ -184,22 +193,21 @@ void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 void PipelineSystem::CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
 {
 	CreateDescriptorPool(CreateInfo);
-	UpdateDescriptorSets(CreateInfo.mLogicalDevice, MemoryManager, NumSwapChainImages);
+	UpdateDescriptorSets(CreateInfo.mLogicalDevice, MemoryManager, NumSwapChainImages, CreateInfo.mDescriptorPoolID);
 }
 
 
-void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
+void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages, DescriptorPoolID DescPoolID)
 {
 	std::vector<VkDescriptorSetLayout> LayoutsToSet(NumSwapChainImages, GetDescriptorSetLayouts()[0]);
 
 	VkDescriptorSetAllocateInfo AllocInfo = {};
 
 	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	AllocInfo.descriptorPool = *GetMainDescriptorPool();
+	AllocInfo.descriptorPool = *GetDescriptorPool(DescPoolID);
 	AllocInfo.descriptorSetCount = NumSwapChainImages;
 	AllocInfo.pSetLayouts = LayoutsToSet.data();
 
-	//mDescriptorSets.resize(mSwapChainImages.size());
 	mDescriptorSets.resize(NumSwapChainImages);
 
 	if (vkAllocateDescriptorSets(*Device, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
@@ -209,23 +217,53 @@ void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager*
 
 	for (size_t i = 0; i < NumSwapChainImages; i++)
 	{
+		int Binding = 0;
+
 		VkDescriptorBufferInfo BufferInfo = {};
 		BufferInfo.buffer = (*MemoryManager->GetUniformBufferData())[i]->mBuffer;
 		BufferInfo.offset = 0;
 		BufferInfo.range = sizeof(UniformBufferObject);
 
-		VkWriteDescriptorSet DescriptorWrite = {};
-		DescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		DescriptorWrite.dstSet = mDescriptorSets[i];
-		DescriptorWrite.dstBinding = 0;
-		DescriptorWrite.dstArrayElement = 0;
-		DescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		DescriptorWrite.descriptorCount = 1;
-		DescriptorWrite.pBufferInfo = &BufferInfo;
-		DescriptorWrite.pImageInfo = nullptr;	// Optional
-		DescriptorWrite.pTexelBufferView = nullptr; // Optional
+		std::vector<VkWriteDescriptorSet> DescriptorWrites = {};
 
-		vkUpdateDescriptorSets(*Device, 1, &DescriptorWrite, 0, nullptr);
+		VkWriteDescriptorSet UboDescriptorWrite = {};
+
+		UboDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		UboDescriptorWrite.dstSet = mDescriptorSets[i];
+		UboDescriptorWrite.dstBinding = Binding++;
+		UboDescriptorWrite.dstArrayElement = 0;
+		UboDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		UboDescriptorWrite.descriptorCount = 1;
+		UboDescriptorWrite.pBufferInfo = &BufferInfo;
+		UboDescriptorWrite.pImageInfo = nullptr;	// Optional
+		UboDescriptorWrite.pTexelBufferView = nullptr; // Optional
+
+		DescriptorWrites.push_back(UboDescriptorWrite);
+
+		if (mAssociatedImageData.size() > 0)
+		{
+			for (const ImageData* ImageDataRef : mAssociatedImageData)
+			{
+				VkDescriptorImageInfo ImageInfo = {};
+				ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				ImageInfo.imageView = ImageDataRef->mTextureImageView;
+				ImageInfo.sampler = ImageDataRef->mTextureSampler;
+
+				VkWriteDescriptorSet ImageDescriptorWrite = {};
+
+				ImageDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				ImageDescriptorWrite.dstSet = mDescriptorSets[i];
+				ImageDescriptorWrite.dstBinding = Binding++;
+				ImageDescriptorWrite.dstArrayElement = 0;
+				ImageDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				ImageDescriptorWrite.descriptorCount = 1;
+				ImageDescriptorWrite.pImageInfo = &ImageInfo;
+
+				DescriptorWrites.push_back(ImageDescriptorWrite);
+			}
+		}
+
+		vkUpdateDescriptorSets(*Device, static_cast<uint32_t>(DescriptorWrites.size()), DescriptorWrites.data(), 0, nullptr);
 	}
 }
 
@@ -291,4 +329,30 @@ const VkDescriptorPool* const PipelineSystem::GetDescriptorPool(DescriptorPoolID
 const std::vector<VkDescriptorSet>* PipelineSystem::GetDescriptorSets()
 {
 	return &mDescriptorSets;
+}
+
+void PipelineSystem::AssociateImage(const ImageData* Data)
+{
+	auto Iterator = std::find(mAssociatedImageData.begin(), mAssociatedImageData.end(), Data);
+	if (Iterator == mAssociatedImageData.end())
+	{
+		mAssociatedImageData.push_back(Data);
+	}
+	else
+	{
+		LogVk(LogType::Error, 0, "Image was already associated!");
+	}
+}
+
+void PipelineSystem::DissociateImage(const ImageData* Data)
+{
+	auto Iterator = std::find(mAssociatedImageData.begin(), mAssociatedImageData.end(), Data);
+	if (Iterator != mAssociatedImageData.end())
+	{
+		mAssociatedImageData.erase(Iterator);
+	}
+	else
+	{
+		LogVk(LogType::Error, 0, "Image could not be dissociated, missing from the association array!");
+	}
 }

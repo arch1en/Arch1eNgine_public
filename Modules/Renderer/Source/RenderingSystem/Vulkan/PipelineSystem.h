@@ -11,6 +11,7 @@
 // REF : https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Render_passes
 
 class MemoryManager;
+struct ImageData;
 
 using DescriptorPoolID = std::string;
 
@@ -50,7 +51,7 @@ public:
 	const VkPipelineLayout*		GetPipelineLayout() const;
 
 	void CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo);
-	void UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages);
+	void UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages, DescriptorPoolID DescPoolID);
 	void CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo, MemoryManager* MemoryManager, uint32_t NumSwapChainImages);
 
 	const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
@@ -58,6 +59,10 @@ public:
 	const VkDescriptorPool* const GetDescriptorPool(DescriptorPoolID ID);
 	const std::vector<VkDescriptorSet>* GetDescriptorSets();
 
+	// When a texture is loaded, it needs to be associated with the pipeline system.
+	// Associate loaded texture images with this pipeline, it can be then used in descriptor sets.
+	void AssociateImage(const ImageData* Data);
+	void DissociateImage(const ImageData* Data);
 
 private:
 
@@ -72,6 +77,7 @@ private:
 	std::map<DescriptorPoolID, VkDescriptorPool> mDescriptorPools;
 	std::vector<VkDescriptorSet> mDescriptorSets;
 	std::vector<VkDescriptorSetLayout> mDescriptorSetLayouts;
+	std::vector<const ImageData*> mAssociatedImageData;
 
 };
 

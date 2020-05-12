@@ -31,4 +31,20 @@ struct ErrorHandle
 	inline std::underlying_type<EnumType>::type operator|(EnumType LHS, EnumType RHS) { return static_cast<std::underlying_type<EnumType>::type>(LHS) | static_cast<std::underlying_type<EnumType>::type>(RHS); } \
 	inline std::underlying_type<EnumType>::type operator|(std::underlying_type<EnumType>::type LHS, EnumType RHS) { return LHS | static_cast<std::underlying_type<EnumType>::type>(RHS); }	\
 	inline std::underlying_type<EnumType>::type operator|(EnumType LHS, std::underlying_type<EnumType>::type RHS) { return static_cast<std::underlying_type<EnumType>::type>(LHS) | RHS; }
+
+inline std::string operator/(std::string& LHS, const std::string& RHS)
+{
+	return LHS + "/" + RHS;
+}
+
+inline std::string operator/(std::string LHS, const std::string& RHS)
+{
+	return LHS + "/" + RHS;
+}
+
+inline std::string operator/(std::string& LHS, const char* RHS)
+{
+	return LHS + "/" + RHS;
+}
+
 #endif

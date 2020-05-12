@@ -246,7 +246,11 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	DescriptorPoolCI.mLogicalDevice = LogicalDevice;
 
-	DescriptorPoolCI.mPoolSizes = { {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  static_cast<uint32_t>(GetSwapChainImages()->size())} };
+	DescriptorPoolCI.mPoolSizes = 
+	{ 
+		{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
+		{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
+	};
 
 	DescriptorPoolCI.mPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	DescriptorPoolCI.mPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolCI.mPoolSizes.size());
@@ -317,28 +321,7 @@ void SwapChainHandler::CreateSwapChainImageView(const VkDevice& Device)
 
 	for (size_t i = 0; i < mSwapChainImages.size(); i++)
 	{
-		VkImageViewCreateInfo CreateInfo = {};
-		
-		CreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		CreateInfo.image = mSwapChainImages[i];
-		CreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		CreateInfo.format = mSwapChainImageFormat;
-		
-		CreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		CreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		CreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		CreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		
-		CreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		CreateInfo.subresourceRange.baseMipLevel = 0;
-		CreateInfo.subresourceRange.levelCount = 1;
-		CreateInfo.subresourceRange.baseArrayLayer = 0;
-		CreateInfo.subresourceRange.layerCount = 1;
-
-		if (vkCreateImageView(Device, &CreateInfo, nullptr, &mSwapChainImageViews[i]) != VK_SUCCESS)
-		{
-			LogVk(LogType::Error, 0, "Failed to create image view !");
-		}
+		mSwapChainImageViews[i] = GetMemoryManager()->CreateImageView(&Device, mSwapChainImages[i], mSwapChainImageFormat);
 	}
 }
 

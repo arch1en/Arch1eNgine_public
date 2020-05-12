@@ -121,7 +121,10 @@ bool DeviceHandler::IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysic
 	bool AreExtensionsSupported = CheckDeviceExtensionSupport(Device, mDesiredDeviceExtensions);
 	bool SwapChainAdequate = aSwapChainHandler->IsAdequate(Device, Surface);
 
-    return Rating != 0 && !Indices.empty() && AreExtensionsSupported && SwapChainAdequate;
+	VkPhysicalDeviceFeatures SupportedFeatures;
+	vkGetPhysicalDeviceFeatures(Device, &SupportedFeatures);
+
+    return Rating != 0 && !Indices.empty() && AreExtensionsSupported && SwapChainAdequate && SupportedFeatures.samplerAnisotropy;
 }
 
 bool DeviceHandler::CheckDeviceExtensionSupport(const VkPhysicalDevice & aDevice, const std::vector<const char*> aDesiredDeviceExtensions) const
@@ -266,6 +269,7 @@ void DeviceHandler::CreateLogicalDevice(const VkSurfaceKHR& Surface, const Physi
 	}
 
 	VkPhysicalDeviceFeatures DeviceFeatures = {};
+	DeviceFeatures.samplerAnisotropy = VK_TRUE;
 
 	VkDeviceCreateInfo CreateInfo = {};
 	CreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

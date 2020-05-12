@@ -7,6 +7,7 @@
 #include "RenderingSystem/Vulkan/RenderPassManager.h"
 #include "examples/imgui_impl_vulkan.h"
 #include "examples/imgui_impl_sdl.h"
+#include "FileSystem/FileSystem.h"
 #include "WindowSystem/Implementations/Window_SDL2.h" // [Todo] This should not be here.
 
 #include "SDL.h"
@@ -24,6 +25,14 @@ bool Application::Initiate()
 
 	Configurator::Window_RenderingInstance WRIConfigurator(mWindowSystem->GetMainWindow(), mRenderingSystem->GetRenderingInstance());
 	WRIConfigurator.Configure();
+
+	mRenderingSystem->GetRenderingInstance()->LoadTextureImage(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Textures/texture2.jpg").c_str(), TextureImageFormat::R8G8B8A8_SRGB, "Main");
+
+	//Temp
+	auto Rend = static_cast<RenderingInstance_SDL2_Vulkan*>(mRenderingSystem->GetRenderingInstance());
+	const ImageData* ImgData = Rend->GetSwapChainHandler()->GetMemoryManager()->GetImageDataByID("Main");
+	Rend->GetSwapChainHandler()->GetRenderPassManager()->GetPipelineSystem()->AssociateImage(ImgData);
+	//~Temp
 
 	// EngineEditor
 	//Configurator::Renderer_EngineEditor REEConfigurator(mWindowSystem.get(), mRenderingSystem.get(), mEngineEditor.get());

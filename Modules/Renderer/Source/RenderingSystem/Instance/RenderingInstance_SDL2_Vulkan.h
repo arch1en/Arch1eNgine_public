@@ -12,7 +12,7 @@
 
 using Parent = I::RenderingInstance_Impl;
 
-class RenderingInstance_SDL2_Vulkan : public Parent
+class RenderingInstance_SDL2_Vulkan final : public Parent
 {
 public:
 
@@ -34,15 +34,17 @@ public:
 	SwapChainHandler*	const	GetSwapChainHandler() const;
 
 	// Begin I::RenderingInstance_Impl Interface
-	virtual void Initialize() override {}
-	virtual const std::string GetImplementationType() const override;
-	virtual void* GetRenderingInstanceHandle() override;
-	virtual void SetRenderingInstanceHandle(void* Handle) override {}
-	virtual void SetSwapInterval(int Interval) override {}
-	virtual void SetClearColor(Vector4<float> ClearColor) override {}
-	virtual void RenderLoop() override;
-	virtual void ResizeCanvas(int Width, int Height) override;
-	virtual void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override {}
+	void Initialize() override {}
+	const std::string GetImplementationType() const override;
+	void* GetRenderingInstanceHandle() override;
+	void SetRenderingInstanceHandle(void* Handle) override {}
+	void SetSwapInterval(int Interval) override {}
+	void SetClearColor(Vector4<float> ClearColor) override {}
+	void RenderLoop() override;
+	void ResizeCanvas(int Width, int Height) override;
+	void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override {}
+	void LoadTextureImage(const char* Path, TextureImageFormat Format, const std::string& TextureID) override;
+	void LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const std::string& TextureID) override;
 	// End I::RenderingInstance_Impl Interface
 
 private:
@@ -52,6 +54,8 @@ private:
 	std::unique_ptr<DeviceHandler> mDeviceHandler;
 	std::unique_ptr<SwapChainHandler> mSwapChainHandler;
 	std::unique_ptr<SurfaceHandler> mSurfaceHandler;
+
+	VkFormat ParseTextureImageFormatToVkFormat(TextureImageFormat ImageFormat);
 
 };
 #endif

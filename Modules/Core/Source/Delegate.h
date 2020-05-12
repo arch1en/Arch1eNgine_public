@@ -5,60 +5,123 @@
 #include <functional>
 
 template<typename T>
+class DelegateImpl;
+
+template <typename R, typename... Args>
+class DelegateImpl<R(Args...)>
+{
+protected:
+
+	struct InvocationData
+	{
+		void* Object = nullptr;
+		std::function<R(Args...)> FunctionPointer;
+	};
+};
+
+template<typename T>
+class Delegate;
+
+template<typename R, typename... Args>
+class Delegate<R(Args...)> final : private DelegateImpl<R(Args...)>
+{
+public:
+
+	using FunctionPtr = R(Args...);
+	using InvocationData = DelegateImpl<R(Args...)>::InvocationData;
+
+	Delegate()
+		: IsBound{ false }
+	{}
+
+	Delegate(const Delegate&) = delete;
+	Delegate(const Delegate&&) = delete;
+	~Delegate()
+	{
+		this->Binding.FunctionPointer = nullptr;
+	}
+
+	template<typename T, R(T:: * TMethod)(Args...)>
+	void Bind(T* Object)
+	{
+		if (!GetIsBound())
+		{
+			this->Binding.Object = Object;
+			this->Binding.FunctionPointer = [Object](Args... Arg)->R { return (Object->*TMethod)(Arg...); };
+			IsBound = true;
+		}
+	}
+
+	template<R(*TMethod)(Args...)>
+	void Bind()
+	{
+		if (!GetIsBound())
+		{
+			this->Binding.FunctionPointer = [](Args... Arg)->R { return (*TMethod)(Arg...); };
+			IsBound = true;
+		}
+	}
+
+	void Invoke(Args... Arg)
+	{
+		Binding.FunctionPointer(Arg...);
+	}
+
+	bool GetIsBound() const
+	{
+		return IsBound;
+	}
+private:
+
+	InvocationData Binding;
+	bool IsBound;
+};
+
+template<typename T>
 class MulticastDelegate;
 
 template<typename R, typename... Args>
-class MulticastDelegate<R(Args...)>
+class MulticastDelegate<R(Args...)> final : private DelegateImpl<R(Args...)>
 {
 
 public:
 
-    using FunctionPtr = R(Args...);
+	using FunctionPtr = R(Args...);
+	using InvocationData = DelegateImpl<R(Args...)>::InvocationData;
 
-    MulticastDelegate() = default;
-    MulticastDelegate(const MulticastDelegate&) = delete;
-    MulticastDelegate(const MulticastDelegate&&) = delete;
+	MulticastDelegate() = default;
+	MulticastDelegate(const MulticastDelegate&) = delete;
+	MulticastDelegate(const MulticastDelegate&&) = delete;
 
-    ~MulticastDelegate()
-    {
-        mBindings.clear();
-    }
+	~MulticastDelegate()
+	{
+		this->mBindings.clear();
+	}
 
-    template<typename T, void(T:: * TMethod)(Args...)>
-    void Bind(T* Object)
-    {
-        mBindings.push_back({ Object, [Object](Args... Arg)->void { (Object->*TMethod)(Arg...); } });
-    }
+	template<typename T, void(T:: * TMethod)(Args...)>
+	void Bind(T* Object)
+	{
+		this->mBindings.push_back({ Object, [Object](Args... Arg)->void { (Object->*TMethod)(Arg...); } });
+	}
 
-    void Bind(void(*TMethod)(Args...))
-    {
-        mBindings.push_back({ nullptr, [](Args... Arg)->void { *TMethod(Arg...); } });
-    }
 
-    template<typename T, void(T:: * TMethod)(Args...)>
-    void Unbind(T* Object)
-    {
-        mBindings.remove_if([Object](const InvocationData& Data) { return Data.Object == Object; });
-    }
+	template<typename T, void(T:: * TMethod)(Args...)>
+	void Unbind(T* Object)
+	{
+		this->mBindings.remove_if([Object](const InvocationData& Data) { return Data.Object == Object; });
+	}
 
-    void Broadcast(Args... Arg)
-    {
-        for (auto Binding : mBindings)
-        {
-            Binding.FunctionPointer(Arg...);
-        }
-    }
+	void Broadcast(Args... Arg)
+	{
+		for (auto Binding : mBindings)
+		{
+			Binding.FunctionPointer(Arg...);
+		}
+	}
 
 private:
 
-    struct InvocationData
-    {
-        void* Object = nullptr;
-        std::function<R(Args...)> FunctionPointer;
-    };
-
-    std::list<InvocationData> mBindings;
-
+	std::list<InvocationData> mBindings;
 };
 
 #endif
