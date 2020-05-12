@@ -104,7 +104,6 @@ bool RenderingInstance_SDL2_Vulkan::CreateVulkanInstance(void* WindowHandle)
 	// @todo [Urgent] Decide what to do with the logger class (maybe make it classless ?)
 	LogSystem::GetInstance()->GetVulkanLogger()->InitiateDebugMessenger(InstanceHandle);
 
-
 	// [TODO] Configurator has too much stuff in it that should be in this class (not nescesserily in this function). Move here what's nescessary.
 
 	return true;

@@ -42,60 +42,70 @@ void EngineEditor::CreateVulkanRenderPass()
 		const DescriptorPoolID ID = "engine_editor";
 
 		{
-			RenderPassCreateInfo RenderPassCI = {};
-
 			// Color Attachment
-			RenderPassCI.mLogicalDevice = LogicalDeviceHandle;
+			VkAttachmentDescription AttachmentDescription = {};
 
-			RenderPassCI.mAttachmentDescriptrion.format = SwapChainHandler->GetSwapChainImageFormat();
-			RenderPassCI.mAttachmentDescriptrion.samples = VK_SAMPLE_COUNT_1_BIT;
-			RenderPassCI.mAttachmentDescriptrion.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			RenderPassCI.mAttachmentDescriptrion.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			RenderPassCI.mAttachmentDescriptrion.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			RenderPassCI.mAttachmentDescriptrion.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			RenderPassCI.mAttachmentDescriptrion.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			RenderPassCI.mAttachmentDescriptrion.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			AttachmentDescription.format = SwapChainHandler->GetSwapChainImageFormat();
+			AttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+			AttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			AttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			AttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			AttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			AttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			AttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-			RenderPassCI.mAttachmentReference.attachment = 0;
-			RenderPassCI.mAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			VkAttachmentReference AttachmentReference = {};
 
-			RenderPassCI.mSubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-			RenderPassCI.mSubpassDescription.colorAttachmentCount = 1;
-			RenderPassCI.mSubpassDescription.pColorAttachments = &RenderPassCI.mAttachmentReference;
+			AttachmentReference.attachment = 0;
+			AttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-			RenderPassCI.mSubpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-			RenderPassCI.mSubpassDependency.dstSubpass = 0;
-			RenderPassCI.mSubpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			RenderPassCI.mSubpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			RenderPassCI.mSubpassDependency.srcAccessMask = 0;
-			RenderPassCI.mSubpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			VkSubpassDescription SubpassDescription = {};
 
-			RenderPassCI.mRenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-			RenderPassCI.mRenderPassCreateInfo.attachmentCount = 1;
-			RenderPassCI.mRenderPassCreateInfo.pAttachments = &RenderPassCI.mAttachmentDescriptrion;
-			RenderPassCI.mRenderPassCreateInfo.subpassCount = 1;
-			RenderPassCI.mRenderPassCreateInfo.pSubpasses = &RenderPassCI.mSubpassDescription;
-			RenderPassCI.mRenderPassCreateInfo.dependencyCount = 1;
-			RenderPassCI.mRenderPassCreateInfo.pDependencies = &RenderPassCI.mSubpassDependency;
+			SubpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+			SubpassDescription.colorAttachmentCount = 1;
+			SubpassDescription.pColorAttachments = &AttachmentReference;
+
+			VkSubpassDependency SubpassDependency = {};
+
+			SubpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			SubpassDependency.dstSubpass = 0;
+			SubpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			SubpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			SubpassDependency.srcAccessMask = 0;
+			SubpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+			VkRenderPassCreateInfo RenderPassCreateInfo = {};
+
+			RenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			RenderPassCreateInfo.attachmentCount = 1;
+			RenderPassCreateInfo.pAttachments = &AttachmentDescription;
+			RenderPassCreateInfo.subpassCount = 1;
+			RenderPassCreateInfo.pSubpasses = &SubpassDescription;
+			RenderPassCreateInfo.dependencyCount = 1;
+			RenderPassCreateInfo.pDependencies = &SubpassDependency;
 
 			// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
-			SwapChainHandler->GetRenderPassManager()->CreateRenderPass(ID, RenderPassCI);
+			SwapChainHandler->GetRenderPassManager()->CreateRenderPass
+			(
+				ID,
+				LogicalDeviceHandle,
+				RenderPassCreateInfo
+			);
 
 		}
 
 		const VkRenderPass& RenderPassHandle = SwapChainHandler->GetRenderPassManager()->GetRenderPassData(ID)->mRenderPassHandle;
 
 		// Framebuffer.
-		{
-			FramebufferCreateInfo FramebufferCreationInfo = {};
 
-			FramebufferCreationInfo.mLogicalDevice = LogicalDeviceHandle;
-			FramebufferCreationInfo.mRenderPassHandle = &RenderPassHandle;
-			FramebufferCreationInfo.mSwapChainImageExtent = &SwapChainHandler->GetSwapChainExtent();
-			FramebufferCreationInfo.mSwapChainImageViews = SwapChainHandler->GetSwapChainImageViews();
-
-			SwapChainHandler->GetRenderPassManager()->CreateFramebuffers(ID, FramebufferCreationInfo);
-		}
+		SwapChainHandler->GetRenderPassManager()->CreateFramebuffers
+		(
+			ID,
+			LogicalDeviceHandle,
+			&RenderPassHandle,
+			SwapChainHandler->GetSwapChainImageViews(),
+			&SwapChainHandler->GetSwapChainExtent()
+		);
 		// No uniform buffers ?
 
 		// Pipeline creation.
