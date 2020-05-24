@@ -58,10 +58,8 @@ void SwapChainHandler::CreateMemoryManager(const VkDevice& LogicalDevice, const 
 void SwapChainHandler::CreateSemaphores(const VkDevice* Device)
 {
 	Assert(mImageAvailableSemaphores.size() == 0, "Array must be empty at this point.");
-	Assert(mRenderFinishedSemaphores.size() == 0, "Array must be empty at this point.");
 
 	mImageAvailableSemaphores.resize(MaxFramesInFlight);
-	mRenderFinishedSemaphores.resize(MaxFramesInFlight);
 
 	VkSemaphoreCreateInfo CreateInfo = {};
 	CreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -71,14 +69,6 @@ void SwapChainHandler::CreateSemaphores(const VkDevice* Device)
 		if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS)
 		{
 			LogVk(LogType::Error, 0, "Image Available Semaphores Creation failed!");
-		}
-	}
-
-	for (int i = 0; i < mRenderFinishedSemaphores.size(); i++)
-	{
-		if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS)
-		{
-			LogVk(LogType::Error, 0, "Rendering Finished Semaphores Creation failed!");
 		}
 	}
 }
@@ -211,23 +201,87 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 	RenderPassCreateInfo.pDependencies = &SubpassDependency;
 
 	// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
+	
+	auto RecordingRenderPassFuncLambda = []
+	(
+		uint32_t						SwapChainImageIndex,
+		//const VkCommandBuffer* const	CommandBufferHandle, // Should be allocated already.
+		const VkRenderPass* const		RenderPassHandle,
+		const FrameData& const			FrameData,
+		const VertexBufferData* const	VertexBufferDataHandle,
+		const IndexBufferData* const	IndexBufferDataHandle,
+		const VkPipeline* const			PipelineHandle,
+		const VkPipelineLayout* const	PipelineLayoutHandle,
+		const VkDescriptorSet* const	DescriptorSetHandle,
+		VkExtent2D						SwapChainExtent,
+		VkClearValue					ClearValue
+	)
+	{
+		VkCommandBuffer CommandBufferHandle = FrameData.mCommandBufferHandles[0];
+		
+		VkCommandBufferBeginInfo CommandBufferBI = {};
+		CommandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		CommandBufferBI.flags = 0; // Optional
+		CommandBufferBI.pInheritanceInfo = nullptr; // Optional
+
+		if (vkBeginCommandBuffer(CommandBufferHandle, &CommandBufferBI) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Error beginning command buffer.");
+		}
+
+		VkRenderPassBeginInfo RenderPassBI = {};
+		RenderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		RenderPassBI.renderPass = *RenderPassHandle;
+		RenderPassBI.framebuffer = FrameData.mFrameBufferHandle;
+		RenderPassBI.renderArea.offset = { 0,0 };
+		RenderPassBI.renderArea.extent = SwapChainExtent;
+
+		VkClearValue ClearColor = ClearValue;
+
+		RenderPassBI.clearValueCount = 1;
+		RenderPassBI.pClearValues = &ClearColor;
+
+		vkCmdBeginRenderPass(CommandBufferHandle, &RenderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+
+			vkCmdBindPipeline(CommandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineHandle);
+
+			VkBuffer VertexBuffers[] = { VertexBufferDataHandle->mBufferData.mBuffer };
+			VkDeviceSize Offsets[] = { 0 };
+			vkCmdBindVertexBuffers(CommandBufferHandle, 0, 1, VertexBuffers, Offsets);
+
+			// [TODO] Needs change to distinct UINT16 and UINT32 index buffer type.
+			VkBuffer IndexBuffers[] = { IndexBufferDataHandle->mBufferData.mBuffer };
+			vkCmdBindIndexBuffer(CommandBufferHandle, *IndexBuffers, 0, VK_INDEX_TYPE_UINT16);
+
+			vkCmdBindDescriptorSets(CommandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayoutHandle, 0, 1, DescriptorSetHandle, 0, nullptr);
+
+			vkCmdDrawIndexed(CommandBufferHandle, static_cast<uint32_t>(IndexBufferDataHandle->mIndices.size()), 1, 0, 0, 0);
+
+		vkCmdEndRenderPass(CommandBufferHandle);
+
+		if (vkEndCommandBuffer(CommandBufferHandle) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Failed to record command buffer!");
+		}
+	};
+	
+	RecordingRenderPassDelegate RecordingRenderPassFuncDelegate;
+
+	RecordingRenderPassFuncDelegate.Bind<RecordingRenderPassFuncLambda>();
+
 	GetRenderPassManager()->CreateRenderPass
 	(
 		"main", 
 		LogicalDevice,
-		RenderPassCreateInfo
+		1,
+		GetSwapChainImageViews(),
+		GetSwapChainExtent(),
+		QueueFamilyHandler->GetPresentationSuitableQueueFamilyData()->FamilyIndex,
+		RenderPassCreateInfo,
+		std::move(RecordingRenderPassFuncDelegate)
 	);
 
 	// ~Render Pass Creation
-
-	GetRenderPassManager()->CreateFramebuffers
-	(	
-		"main",
-		LogicalDevice,
-		GetRenderPassManager()->GetMainRenderPassHandle(),
-		GetSwapChainImageViews(),
-		&GetSwapChainExtent()
-	);
 
 	GeneralBufferCreationInfo UniformBufferCI = {};
 	UniformBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
@@ -251,40 +305,40 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
 
 	// Descriptor Pool Creation and Descriptor Sets Update.
-	DescriptorPoolCreateInfo DescriptorPoolCI = {};
-
-	DescriptorPoolCI.mLogicalDevice = LogicalDevice;
-
-	DescriptorPoolCI.mPoolSizes = 
-	{ 
+	std::vector<VkDescriptorPoolSize> PoolSizes = 
+	{
 		{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
 		{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
 	};
 
-	DescriptorPoolCI.mPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	DescriptorPoolCI.mPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolCI.mPoolSizes.size());
-	DescriptorPoolCI.mPoolCreateInfo.pPoolSizes = DescriptorPoolCI.mPoolSizes.data();
-	DescriptorPoolCI.mPoolCreateInfo.maxSets = static_cast<uint32_t>(GetSwapChainImages()->size());
-	DescriptorPoolCI.mPoolCreateInfo.flags = 0;
-	DescriptorPoolCI.mDescriptorPoolID = "main";
-
-	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets(DescriptorPoolCI, GetMemoryManager(), GetSwapChainImages()->size());
-
-	// [TODO] This will need a refactoring.
-	GetRenderPassManager()->CreateRenderPassCommandBuffers
-	(	
-		"main",
-		LogicalDevice,
-		GetCommandPool(),
-		GetRenderPassManager()->GetPipelineSystem()->GetPipelineHandle(),
-		GetRenderPassManager()->GetPipelineSystem()->GetPipelineLayout(),
-		GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSets(),
-		GetRenderPassManager()->GetRenderPassData("main")->mFramebufferHandles.size(),
-		GetSwapChainExtent(),
-		(*GetMemoryManager()->GetVertexBufferData())[0].get(),
-		(*GetMemoryManager()->GetIndexBufferData())[0].get()
-	);
+	VkDescriptorPoolCreateInfo DescriptorPoolCI = {};
 	
+	DescriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	DescriptorPoolCI.poolSizeCount = static_cast<uint32_t>(PoolSizes.size());
+	DescriptorPoolCI.pPoolSizes = PoolSizes.data();
+	DescriptorPoolCI.maxSets = static_cast<uint32_t>(GetSwapChainImages()->size());
+	DescriptorPoolCI.flags = 0;
+
+	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets("main", *LogicalDevice, DescriptorPoolCI, PoolSizes, GetMemoryManager(), uint32_t(GetSwapChainImages()->size()));
+
+	// [Temp] There should be something like RecordingRenderPassFuncOneTime.
+	RenderPassData* const Data = GetRenderPassManager()->GetRenderPassData("main");
+	for (int i = 0; i < GetSwapChainImages()->size(); i++)
+	{
+		Data->mRecordingRenderPassFunc.Invoke
+		(		//	
+			i,
+			&Data->mRenderPassHandle,
+			Data->mFrameData[i],
+			(*GetMemoryManager()->GetVertexBufferData())[0].get(),
+			(*GetMemoryManager()->GetIndexBufferData())[0].get(),
+			GetRenderPassManager()->GetPipelineSystem()->GetPipelineHandle(),
+			GetRenderPassManager()->GetPipelineSystem()->GetPipelineLayout(),
+			&GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSets()[0],
+			GetSwapChainExtent(),
+			{ 0.1f, 0.1f, 0.1f, 1.f }
+		);
+	}
 }
 
 void SwapChainHandler::CreateCommandPool(const CommandPoolCreateInfo& CreateInfo)
@@ -344,19 +398,13 @@ void SwapChainHandler::RequestFrameBufferResizing()
 	mRequestFrameBufferResizing = true;
 }
 
+// ImageIndex - Used when we are dealing with the frame data (pointing to the correct frame buffer or command buffer).
+// CurrentFrameIndex - Used when er are dealing with the sync objects (pointing to the correct semaphore, fence etc.).
 EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const VkQueue& PresentQueueHandle)
 {
 	EDrawFrameErrorCode ErrorCode = EDrawFrameErrorCode::OK;
 
-	std::vector<VkCommandBuffer> RenderPassesCommandBuffers;
-
-	for (auto RenderPass : GetRenderPassManager()->GetAllRenderPasses())
-	{
-		for (auto CommandBuffer : RenderPass.second.mCommandBufferHandles)
-		{
-			RenderPassesCommandBuffers.push_back(CommandBuffer);
-		}
-	}
+	std::map<RenderPassID, RenderPassData> AllRenderPasses = GetRenderPassManager()->GetAllRenderPasses();
 
 	Assert(Device, "Device must be valid at this point!");
 
@@ -389,28 +437,65 @@ EDrawFrameErrorCode SwapChainHandler::DrawFrame(const VkDevice& Device, const Vk
 	VkPipelineStageFlags WaitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 	VkSemaphore WaitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrameIndex] };
-	VkSemaphore SignalSemaphores[] = { mRenderFinishedSemaphores[mCurrentFrameIndex] };
 
-	VkSubmitInfo SubmitInfo = {};
-	SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	SubmitInfo.waitSemaphoreCount = 1;
-	SubmitInfo.pWaitSemaphores = WaitSemaphores;
-	SubmitInfo.pWaitDstStageMask = WaitStages;
-	SubmitInfo.commandBufferCount = 1;
-	SubmitInfo.pCommandBuffers = &RenderPassesCommandBuffers[ImageIndex];
-	SubmitInfo.pSignalSemaphores = SignalSemaphores;
-	SubmitInfo.signalSemaphoreCount = 1;
+	// Record Rendering Data
+	VkSemaphore* LastRenderPassSemaphore = nullptr;
 
-	if (vkQueueSubmit(PresentQueueHandle, 1, &SubmitInfo, mInFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
+	for (std::map<RenderPassID, RenderPassData>::iterator iter = AllRenderPasses.begin(); iter != AllRenderPasses.end(); iter++)
 	{
-		LogVk(LogType::Error, 0, "Queue submission failed!");
-		return EDrawFrameErrorCode::QueueSubmissionFailed;
+		RenderPassData& RenderPassDataRef = iter->second;
+
+		// [Todo] Supposedly, here should be a render pass that draws every frame.
+		//vkResetCommandPool(Device, RenderPassDataRef.mFrameData[mCurrentFrameIndex].mFrameCommandPool, 0);
+
+		//RenderPassDataRef.mRecordingRenderPassFunc.Invoke
+		//(
+		//	ImageIndex,
+		//	&RenderPassDataRef.mRenderPassHandle,
+		//	RenderPassDataRef.mFrameData[mCurrentFrameIndex],
+		//	(*GetMemoryManager()->GetVertexBufferData())[0].get(),
+		//	(*GetMemoryManager()->GetIndexBufferData())[0].get(),
+		//	GetRenderPassManager()->GetPipelineSystem()->GetPipelineHandle(),
+		//	GetRenderPassManager()->GetPipelineSystem()->GetPipelineLayout(),
+		//	&GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSets()[0],
+		//	GetSwapChainExtent(),
+		//	{ 0.1f, 0.1f, 0.1f, 1.f }
+		//);
+
+
+		FrameData& CurrentFrameData = iter->second.mFrameData[ImageIndex];
+
+		VkSubmitInfo SubmitInfo = {};
+		SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		if (iter == AllRenderPasses.begin())
+		{
+			SubmitInfo.pWaitSemaphores = &mImageAvailableSemaphores[mCurrentFrameIndex];
+		}
+		else
+		{
+			SubmitInfo.pWaitSemaphores = &std::prev(iter)->second.mFrameData[ImageIndex].mFinishedFrameRenderingSemaphoreHandle;
+		}
+		SubmitInfo.waitSemaphoreCount = 1;
+		SubmitInfo.pWaitDstStageMask = WaitStages;
+		SubmitInfo.commandBufferCount = CurrentFrameData.mCommandBufferHandles.size();
+		SubmitInfo.pCommandBuffers = CurrentFrameData.mCommandBufferHandles.data();
+		SubmitInfo.pSignalSemaphores = &CurrentFrameData.mFinishedFrameRenderingSemaphoreHandle;
+		SubmitInfo.signalSemaphoreCount = 1;
+
+		if (vkQueueSubmit(PresentQueueHandle, 1, &SubmitInfo, mInFlightFences[mCurrentFrameIndex]) != VK_SUCCESS)
+		{
+			LogVk(LogType::Error, 0, "Queue submission failed!");
+			return EDrawFrameErrorCode::QueueSubmissionFailed;
+		}
+
+		LastRenderPassSemaphore = &CurrentFrameData.mFinishedFrameRenderingSemaphoreHandle;
 	}
+
 
 	VkPresentInfoKHR PresentInfo = {};
 	PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	PresentInfo.waitSemaphoreCount = 1;
-	PresentInfo.pWaitSemaphores = SignalSemaphores;
+	PresentInfo.pWaitSemaphores = LastRenderPassSemaphore;
 	PresentInfo.swapchainCount = 1;
 	PresentInfo.pSwapchains = { GetSwapChainHandle() };
 	PresentInfo.pImageIndices = &ImageIndex;
@@ -435,17 +520,10 @@ void SwapChainHandler::Cleanup(const VkDevice* Device)
 	//GetPipelineSystem()->CleanUp(*Device);
 	GetMemoryManager()->CleanUp(*Device);
 
-	for (int i = int(GetSwapChainImageViews()->size()) - 1; i >= 0; i--)
+	for (int i = int(GetSwapChainImageViews().size()) - 1; i >= 0; i--)
 	{
-		vkDestroyImageView(*Device, (*GetSwapChainImageViews())[i], nullptr);
+		vkDestroyImageView(*Device, GetSwapChainImageViews()[i], nullptr);
 	}
-
-	//for (auto iter = mDescriptorPools.rbegin(); iter != mDescriptorPools.rend(); ++iter)
-	//{
-	//	vkDestroyDescriptorPool(*Device, iter->second, nullptr);
-	//	mDescriptorPools.erase(iter->first);
-	//}
-	//mDescriptorPools.clear();
 
 	vkDestroySwapchainKHR(*Device, mSwapChainHandle, nullptr);
 }
@@ -455,7 +533,6 @@ void SwapChainHandler::Destroy(const VkDevice* Device)
 	Cleanup(Device);
 
 	DestroySemaphoreArray(*Device, mImageAvailableSemaphores);
-	DestroySemaphoreArray(*Device, mRenderFinishedSemaphores);
 	DestroyFenceArray(*Device, mInFlightFences);
 
 	GetRenderPassManager()->Destroy(*Device, GetCommandPool());
@@ -464,15 +541,6 @@ void SwapChainHandler::Destroy(const VkDevice* Device)
 
 	vkDestroyCommandPool(*Device, *GetCommandPool(), nullptr);
 	mCommandPool = VK_NULL_HANDLE;
-}
-
-void SwapChainHandler::DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array)
-{
-	for (int i = static_cast<int>(Array.size()) - 1; i >= 0; i--)
-	{
-		vkDestroySemaphore(Device, Array[i], nullptr);
-	}
-	Array.erase(Array.begin(), Array.end());
 }
 
 void SwapChainHandler::DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array)
@@ -606,9 +674,9 @@ const VkExtent2D SwapChainHandler::GetSwapChainExtent() const
 	return mSwapChainExtent;
 }
 
-const std::vector<VkImageView>* SwapChainHandler::GetSwapChainImageViews() const
+const std::vector<VkImageView> SwapChainHandler::GetSwapChainImageViews() const
 {
-	return &mSwapChainImageViews;
+	return mSwapChainImageViews;
 }
 
 RenderPassManager* const SwapChainHandler::GetRenderPassManager() const

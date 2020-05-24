@@ -93,7 +93,7 @@ public:
 	void SetActualSwapChainExtent(VkExtent2D Extent);
 	const VkExtent2D GetActualSwapChainExtent() const;
 	const VkExtent2D GetSwapChainExtent() const;
-	const std::vector<VkImageView>* GetSwapChainImageViews() const;
+	const std::vector<VkImageView> GetSwapChainImageViews() const;
 
 	RenderPassManager*	const	GetRenderPassManager() const;
 	MemoryManager*		const	GetMemoryManager() const;
@@ -124,13 +124,11 @@ private:
 	std::vector<VkImageView> mSwapChainImageViews;	// 
 
 	std::vector<VkSemaphore>	mImageAvailableSemaphores;
-	std::vector<VkSemaphore>	mRenderFinishedSemaphores;
 	std::vector<VkFence>		mInFlightFences;
 
 	// SwapChain automatically creates images (thats, 
 	void RetrieveSwapChainImages(const VkDevice& Device, std::vector<VkImage>& SwapChainImages);
 
-	void DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array);
 	void DestroyFenceArray(const VkDevice& Device, std::vector<VkFence>& Array);
 
 };

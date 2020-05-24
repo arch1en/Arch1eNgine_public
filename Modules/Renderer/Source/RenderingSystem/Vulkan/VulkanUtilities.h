@@ -4,6 +4,9 @@
 #include "GeometrySystem/Vertex.h"
 
 #include <glm/mat4x4.hpp>
+#include <vector>
+#include "vulkan/vulkan_core.h"
+#include "Debug/LogSystem.h"
 
 struct BufferData
 {
@@ -32,85 +35,69 @@ struct UniformBufferObject
 	alignas(16) glm::mat4 Projection;
 };
 
-// [Todo][Critical] This should definitely be implemented.
-//class VulkanCommons
-//{
-//	VulkanCommons()
-//	{
-//		if (IsInstanceAlreadyCreated())
-//		{
-//			LogVk(LogType::Fatal, "An attempt of creating a second singleton object is beign made!");
-//		}
-//	}
-//	VulkanCommons(VulkanCommons&) = delete;
-//	VulkanCommons(VulkanCommons&&) = delete;
-//	VulkanCommons& operator=(VulkanCommons&) = delete;
-//
-//public:
-//
-//	static VulkanCommons& Get()
-//	{
-//		if (Instance == nullptr)
-//		{
-//			Instance = new VulkanCommons();
-//		}
-//		return *Instance;
-//	}
-//
-//	// Do not modify this variale!
-//	static VulkanCommons* Instance;
-//
-//	void SetLogicalDevice(const VkDevice* Param)
-//	{
-//		LogicalDevice = Param;
-//	}
-//
-//	void SetPhysicalDevice(const VkPhysicalDevice* Param)
-//	{
-//		PhysicalDevice = Param;
-//	}
-//
-//	void SetGraphicQueue(const VkQueue* Param)
-//	{
-//		GraphicQueue = Param;
-//	}
-//
-//	void SetSingleTimeCommandPool(const VkCommandPool* Param)
-//	{
-//		SingleTimeCommandPool = Param;
-//	}
-//
-//	const VkDevice& GetLogicalDevice()
-//	{
-//		return *LogicalDevice;
-//	}
-//
-//	const VkPhysicalDevice& GetPhysicalDevice()
-//	{
-//		return *PhysicalDevice;
-//	}
-//
-//	const VkQueue& GetGraphicQueue()
-//	{
-//		return *GraphicQueue;
-//	}
-//
-//	const VkCommandPool& GetSingleTimeCommandPool()
-//	{
-//		return *SingleTimeCommandPool;
-//	}
-//
-//private:
-//
-//	const VkDevice* LogicalDevice;
-//	const VkPhysicalDevice* PhysicalDevice;
-//	const VkQueue* GraphicQueue;
-//	const VkCommandPool* SingleTimeCommandPool;
-//
-//	bool IsInstanceAlreadyCreated()
-//	{
-//		return Instance != nullptr;
-//	}
-//};
+//static void DestroySemaphore(const VkDevice& Device, const VkSemaphore& Semaphore);
 
+static void DestroySemaphoreArray(const VkDevice& Device, std::vector<VkSemaphore>& Array)
+{
+	for (int i = static_cast<int>(Array.size()) - 1; i >= 0; i--)
+	{
+		vkDestroySemaphore(Device, Array[i], nullptr);
+	}
+	Array.erase(Array.begin(), Array.end());
+}
+
+static VkCommandPool CreateCommandPool(const VkDevice* LogicalDevice, uint32_t PresentationSuitableQueueFamilyIndex)
+{
+	VkCommandPool NewCommandPool = {};
+
+	VkCommandPoolCreateInfo PoolInfo = {};
+
+	PoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	PoolInfo.queueFamilyIndex = PresentationSuitableQueueFamilyIndex;
+	PoolInfo.flags = 0; // Optional
+
+	if (vkCreateCommandPool(*LogicalDevice, &PoolInfo, nullptr, &NewCommandPool) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Command pool creation failed.");
+	}
+
+	return NewCommandPool;
+}
+
+static VkSemaphore CreateSemaphore(const VkDevice* Device)
+{
+	VkSemaphore NewSemaphore = {};
+
+	VkSemaphoreCreateInfo CreateInfo = {};
+	CreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	if (vkCreateSemaphore(*Device, &CreateInfo, nullptr, &NewSemaphore) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Render pass frame rendering finish semaphore creation failed!");
+	}
+
+	return NewSemaphore;
+}
+
+static void CreateAndAllocateCommandBuffers
+(
+	const VkDevice* LogicalDevice,
+	std::vector < VkCommandBuffer >& BufferArray,
+	const VkCommandPool* CommandPoolHandle,
+	size_t BufferSize
+)
+{
+	BufferArray.resize(BufferSize);
+
+	VkCommandBufferAllocateInfo AllocInfo = {};
+	AllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	AllocInfo.commandPool = *CommandPoolHandle;
+	AllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	AllocInfo.commandBufferCount = uint32_t(BufferArray.size());
+
+	if (vkAllocateCommandBuffers(*LogicalDevice, &AllocInfo, BufferArray.data()) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Command buffer allocation failed.");
+	}
+}
 #endif // VULKANUTILITIES_H

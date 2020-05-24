@@ -8,17 +8,41 @@
 #include <vulkan/vulkan.h>
 
 #include "RenderingSystem/Vulkan/PipelineSystem.h"
+#include "Delegate.h"
 
 using RenderPassID = std::string;
 
 struct VertexBufferData;
 struct IndexBufferData;
+struct FrameData;
+
+using RecordingRenderPassDelegate = Delegate<void
+(
+	uint32_t						SwapChainImageIndex,
+	const VkRenderPass* const		RenderPassHandle,
+	const FrameData& const			FrameData,
+	const VertexBufferData* const	VertexBufferDataHandle,
+	const IndexBufferData* const	IndexBufferDataHandle,
+	const VkPipeline* const			PipelineHandle,
+	const VkPipelineLayout* const	PipelineLayoutHandle,
+	const VkDescriptorSet* const	DescriptorSetHandle,
+	VkExtent2D						SwapChainExtent,
+	VkClearValue					ClearValue
+)>;
+
+struct FrameData
+{
+	VkCommandPool mFrameCommandPool = VK_NULL_HANDLE;
+	VkFramebuffer mFrameBufferHandle = VK_NULL_HANDLE;
+	std::vector<VkCommandBuffer> mCommandBufferHandles;
+	VkSemaphore mFinishedFrameRenderingSemaphoreHandle = VK_NULL_HANDLE;
+};
 
 struct RenderPassData
 {
 	VkRenderPass mRenderPassHandle = VK_NULL_HANDLE;
-	std::vector<VkFramebuffer> mFramebufferHandles;
-	std::vector<VkCommandBuffer> mCommandBufferHandles;
+	std::vector<FrameData> mFrameData;
+	RecordingRenderPassDelegate mRecordingRenderPassFunc;
 };
 
 struct RenderPassCommandBufferCreateInfo
@@ -41,39 +65,29 @@ public:
 	RenderPassManager();
 	
 	void CreateRenderPass
-	(	
-		const RenderPassID& ID,
-		const VkDevice* LogicalDevice,
-		VkRenderPassCreateInfo RenderPassCreateInfo
-	);
-
-	void CreateFramebuffers
 	(
 		const RenderPassID& ID,
 		const VkDevice* LogicalDevice,
-		const VkRenderPass* RenderPassHandle,
-		const std::vector<VkImageView>* SwapChainImageViews,
-		const VkExtent2D* SwapChainImageExtent
+		uint32_t NumCommandBuffersToMake,
+		const std::vector<VkImageView>& SwapChainImageViews,
+		const VkExtent2D& SwapChainImageExtent,
+		uint32_t PresentationSuitableQueueFamilyIndex,
+		const VkRenderPassCreateInfo& RenderPassCreateInfo,
+		RecordingRenderPassDelegate&& RecordingRenderPassFunc
 	);
 	
-	void CreateRenderPassCommandBuffers
+	VkFramebuffer CreateFramebuffer
 	(
-		const RenderPassID& ID,
-		const VkDevice* mLogicalDevice,
-		const VkCommandPool* mCommandPool,
-		const VkPipeline* mPipelineHandle,
-		const VkPipelineLayout* mPipelineLayout,
-		const std::vector<VkDescriptorSet>* mDescriptorSets,
-		size_t mBufferSize,
-		VkExtent2D mSwapChainExtent,
-		const VertexBufferData* mVertexBufferData,
-		const IndexBufferData* mIndexBufferData
+		const VkDevice* LogicalDevice,
+		const VkRenderPass* RenderPassHandle,
+		const VkImageView& SwapChainImageView,
+		const VkExtent2D& SwapChainImageExtent
 	);
 
 	const VkRenderPass* const GetMainRenderPassHandle();
-	const RenderPassData* const GetRenderPassData(const RenderPassID ID);
-	const std::map<RenderPassID, RenderPassData>& GetAllRenderPasses() const;
-	const VkRenderPass* const GetRenderPassHandle(const RenderPassID ID);
+	RenderPassData* const GetRenderPassData(const RenderPassID& ID);
+	const std::map<RenderPassID, RenderPassData> GetAllRenderPasses() const;
+	const VkRenderPass* const GetRenderPassHandle(const RenderPassID& ID);
 	
 	// Pipeline
 	void CreatePipelineSystem();

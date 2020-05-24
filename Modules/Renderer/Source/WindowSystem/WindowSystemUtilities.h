@@ -30,6 +30,7 @@ struct WindowProperties
 		, Flags{ 0x0 }
 		, RendererType{WindowRendererType::INVALID}
 		, Resizeable{false}
+		, WindowPosition{WindowPositionMode::Centered, 0, 0}
 	{}
 
 	std::string Title;

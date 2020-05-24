@@ -26,7 +26,7 @@ public:
 	void CreateSurfaceHandler();
 	void CreateSwapChainHandler();
 
-	std::vector<VkLayerProperties>		CheckValidationLayersAvailability(const std::vector<const char*> DesiredLayers);
+	std::vector<VkLayerProperties>		CheckValidationLayersAvailability(const std::vector<const char*>& DesiredLayers);
 	std::vector<VkExtensionProperties>	GetAvailableExtensions();
 
 	DeviceHandler*		const	GetDeviceHandler() const;

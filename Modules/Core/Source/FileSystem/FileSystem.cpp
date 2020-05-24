@@ -10,12 +10,12 @@ ErrorHandle FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)
 
 	std::ios_base::openmode OpenMode = 0;
 
-	if (Options | FileOpeningOptions::OpenAndReadFromEnd)
+	if (Options & FileOpeningOptions::OpenAndReadFromEnd)
 	{
 		OpenMode |= std::ios::ate;
 	}
 
-	if (Options | FileOpeningOptions::BinaryFormat)
+	if (Options & FileOpeningOptions::BinaryFormat)
 	{
 		OpenMode |= std::ios::binary;
 	}
@@ -135,7 +135,7 @@ std::string FileSystem::ReplaceStringOccurences(std::string Source, const char* 
 	return Source;
 }
 
-std::string FileSystem::Path(std::string String)
+std::string FileSystem::Path(const std::string& String)
 {
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
 	return ReplaceStringOccurences(String, "/", "\\");

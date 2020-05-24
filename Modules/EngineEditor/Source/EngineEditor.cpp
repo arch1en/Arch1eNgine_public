@@ -84,75 +84,9 @@ void EngineEditor::CreateVulkanRenderPass()
 			RenderPassCreateInfo.dependencyCount = 1;
 			RenderPassCreateInfo.pDependencies = &SubpassDependency;
 
-			// RenderPass. (Needs to be created before pipeline. Needs to be created after swap chain.)
-			SwapChainHandler->GetRenderPassManager()->CreateRenderPass
-			(
-				ID,
-				LogicalDeviceHandle,
-				RenderPassCreateInfo
-			);
-
 		}
 
 		const VkRenderPass& RenderPassHandle = SwapChainHandler->GetRenderPassManager()->GetRenderPassData(ID)->mRenderPassHandle;
-
-		// Framebuffer.
-
-		SwapChainHandler->GetRenderPassManager()->CreateFramebuffers
-		(
-			ID,
-			LogicalDeviceHandle,
-			&RenderPassHandle,
-			SwapChainHandler->GetSwapChainImageViews(),
-			&SwapChainHandler->GetSwapChainExtent()
-		);
-		// No uniform buffers ?
-
-		// Pipeline creation.
-		{
-			PipelineSystemCreationInfo PipelineCreationInfo = {};
-
-			PipelineCreationInfo.mLogicalDevice = LogicalDeviceHandle;
-			PipelineCreationInfo.mImageFormat = SwapChainHandler->GetSwapChainImageFormat();
-			PipelineCreationInfo.mViewportExtent = SwapChainHandler->GetSwapChainExtent();
-			PipelineCreationInfo.mRenderPassHandle = &RenderPassHandle;
-			PipelineCreationInfo.mMemoryManager = SwapChainHandler->GetMemoryManager();
-
-			PipelineCreationInfo.mShaderCode_Vertex = FileSystem::RetrieveBinaryDataFromFile("EngineEditor", "Shaders/Main.vert.spv");
-			PipelineCreationInfo.mShaderCode_Fragment = FileSystem::RetrieveBinaryDataFromFile("EngineEditor", "Shaders/Main.frag.spv");
-
-			SwapChainHandler->GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
-
-			// Adding Descriptor Pool. Descriptor pool can be done during vulkan initialization process (before rendering and swapchain even).
-			DescriptorPoolCreateInfo DescriptorPoolCI = {};
-
-			DescriptorPoolCI.mLogicalDevice = LogicalDeviceHandle;
-
-			DescriptorPoolCI.mPoolSizes =
-			{
-				{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-			};
-
-			DescriptorPoolCI.mPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			DescriptorPoolCI.mPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			DescriptorPoolCI.mPoolCreateInfo.maxSets = 1000 * static_cast<uint32_t>(DescriptorPoolCI.mPoolSizes.size());
-			DescriptorPoolCI.mPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(DescriptorPoolCI.mPoolSizes.size());
-			DescriptorPoolCI.mPoolCreateInfo.pPoolSizes = DescriptorPoolCI.mPoolSizes.data();
-
-			DescriptorPoolCI.mDescriptorPoolID = ID;
-
-			SwapChainHandler->GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPool(DescriptorPoolCI);
-		}
 
 
 		// Fonts

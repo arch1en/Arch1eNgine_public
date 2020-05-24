@@ -233,7 +233,7 @@ std::vector<VkExtensionProperties> RenderingInstance_SDL2_Vulkan::GetAvailableEx
 	return Extensions;
 }
 
-std::vector<VkLayerProperties> RenderingInstance_SDL2_Vulkan::CheckValidationLayersAvailability(const std::vector<const char*> DesiredLayers)
+std::vector<VkLayerProperties> RenderingInstance_SDL2_Vulkan::CheckValidationLayersAvailability(const std::vector<const char*>& DesiredLayers)
 {
 	uint32_t LayerCount = 0;
 	vkEnumerateInstanceLayerProperties(&LayerCount, nullptr);

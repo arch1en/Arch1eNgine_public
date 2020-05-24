@@ -69,10 +69,10 @@ private:
     bool RetrievePhysicalDevices(const VkInstance& InstanceHandle, std::vector<VkPhysicalDevice>& Devices);
     bool FilterSuitableDevices(const VkInstance& InstanceHandle, const VkSurfaceKHR& Surface, const SwapChainHandler* aSwapChainHandler, std::vector<VkPhysicalDevice>& Devices);
 	bool IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysicalDevice& Device, const SwapChainHandler* aSwapChainHandler) const;
-	bool CheckDeviceExtensionSupport(const VkPhysicalDevice& aDevice, const std::vector<const char*> aDesiredDeviceExtensions) const;
+	bool CheckDeviceExtensionSupport(const VkPhysicalDevice& aDevice, const std::vector<const char*>& aDesiredDeviceExtensions) const;
     void CacheDevices(std::vector<VkPhysicalDevice>& Devices);
 	int GetDeviceSuitabilityRating(const VkPhysicalDevice& Device) const;
-	void SetDesiredDeviceExtensions(const std::vector<const char*> aDesiredDeviceExtensions);
+	void SetDesiredDeviceExtensions(const std::vector<const char*>& aDesiredDeviceExtensions);
     // ~Physical Devices
 
 	// Queue Families

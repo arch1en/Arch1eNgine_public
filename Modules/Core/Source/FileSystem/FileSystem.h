@@ -53,7 +53,7 @@ public:
 	size_t FindOccurenceFromString(const char* String, const char* Token, int OccurenceNumber, bool Reversed = false);
 
 	// Convert path 
-	static std::string Path(std::string String);
+	static std::string Path(const std::string& String);
 
 	static std::string ReplaceStringOccurences(std::string Source, const char* ReplaceFrom, const char* ReplaceTo);
 

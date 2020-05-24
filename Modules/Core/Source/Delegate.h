@@ -34,8 +34,6 @@ public:
 		: IsBound{ false }
 	{}
 
-	Delegate(const Delegate&) = delete;
-	Delegate(const Delegate&&) = delete;
 	~Delegate()
 	{
 		this->Binding.FunctionPointer = nullptr;

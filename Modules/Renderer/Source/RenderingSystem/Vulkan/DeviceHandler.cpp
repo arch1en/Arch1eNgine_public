@@ -127,7 +127,7 @@ bool DeviceHandler::IsDeviceSuitable(const VkSurfaceKHR& Surface, const VkPhysic
     return Rating != 0 && !Indices.empty() && AreExtensionsSupported && SwapChainAdequate && SupportedFeatures.samplerAnisotropy;
 }
 
-bool DeviceHandler::CheckDeviceExtensionSupport(const VkPhysicalDevice & aDevice, const std::vector<const char*> aDesiredDeviceExtensions) const
+bool DeviceHandler::CheckDeviceExtensionSupport(const VkPhysicalDevice& aDevice, const std::vector<const char*>& aDesiredDeviceExtensions) const
 {
 	uint32_t ExtensionsCount = 0;
 
@@ -171,7 +171,7 @@ int DeviceHandler::GetDeviceSuitabilityRating(const VkPhysicalDevice& Device) co
     return Rating;
 }
 
-void DeviceHandler::SetDesiredDeviceExtensions(const std::vector<const char*> aDesiredDeviceExtensions)
+void DeviceHandler::SetDesiredDeviceExtensions(const std::vector<const char*>& aDesiredDeviceExtensions)
 {
 	mDesiredDeviceExtensions = aDesiredDeviceExtensions;
 }

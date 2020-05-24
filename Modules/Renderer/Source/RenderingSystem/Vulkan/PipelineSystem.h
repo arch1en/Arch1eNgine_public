@@ -27,14 +27,6 @@ struct PipelineSystemCreationInfo
 	std::vector<char> mShaderCode_Fragment;
 };
 
-struct DescriptorPoolCreateInfo
-{
-	const VkDevice* mLogicalDevice = nullptr;
-	std::vector<VkDescriptorPoolSize> mPoolSizes = {};
-	VkDescriptorPoolCreateInfo mPoolCreateInfo = {};
-	DescriptorPoolID mDescriptorPoolID = "";
-};
-
 class PipelineSystem
 {
 public:
@@ -50,14 +42,43 @@ public:
 	const VkPipeline*			GetPipelineHandle() const;
 	const VkPipelineLayout*		GetPipelineLayout() const;
 
-	void CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo);
-	void UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages, DescriptorPoolID DescPoolID);
-	void CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo, MemoryManager* MemoryManager, uint32_t NumSwapChainImages);
+	void CreateDescriptorPool
+	(
+		const DescriptorPoolID& DescPoolID,
+		const VkDevice& LogicalDevice,
+		const VkDescriptorPoolCreateInfo& DescriptorPoolCI
+	);
+
+	void AllocateDescriptorSets
+	(
+		const DescriptorPoolID& DescPoolID,
+		const VkDevice& LogicalDevice,
+		const std::vector<VkDescriptorSetLayout>& LayoutsToSet,
+		uint32_t NumSwapChainImages
+	);
+	
+	void UpdateDescriptorSets
+	(
+		const DescriptorPoolID& DescPoolID,
+		const VkDevice& LogicalDevice,
+		MemoryManager* MemoryManager,
+		uint32_t NumSwapChainImages
+	);
+
+	void CreateDescriptorPoolAndUpdateDescriptorSets
+	(
+		DescriptorPoolID DescPoolID,
+		const VkDevice& LogicalDevice,
+		VkDescriptorPoolCreateInfo PoolCreateInfo,
+		std::vector<VkDescriptorPoolSize> PoolSizes,
+		MemoryManager* MemoryManager,
+		uint32_t NumSwapChainImages
+	);
 
 	const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
 	const VkDescriptorPool* const GetMainDescriptorPool();
 	const VkDescriptorPool* const GetDescriptorPool(DescriptorPoolID ID);
-	const std::vector<VkDescriptorSet>* GetDescriptorSets();
+	const std::vector<VkDescriptorSet> GetDescriptorSets();
 
 	// When a texture is loaded, it needs to be associated with the pipeline system.
 	// Associate loaded texture images with this pipeline, it can be then used in descriptor sets.

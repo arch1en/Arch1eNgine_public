@@ -142,20 +142,6 @@ void PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vec
 	}
 }
 
-void PipelineSystem::CreateDescriptorPool(const DescriptorPoolCreateInfo& CreateInfo)
-{
-	Assert(CreateInfo.mDescriptorPoolID.compare("") != 0, "Descriptor pool ID cannot be empty!");
-
-	VkDescriptorPool Pool;
-
-	if (vkCreateDescriptorPool(*CreateInfo.mLogicalDevice, &CreateInfo.mPoolCreateInfo, nullptr, &Pool) != VK_SUCCESS)
-	{
-		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
-	}
-
-	mDescriptorPools.insert({ CreateInfo.mDescriptorPoolID, Pool });
-}
-
 void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 {
 	VkDescriptorSetLayoutBinding LayoutBindingUBO = {};
@@ -190,17 +176,40 @@ void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 }
 
 
-void PipelineSystem::CreateDescriptorPoolAndUpdateDescriptorSets(const DescriptorPoolCreateInfo& CreateInfo, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
+void PipelineSystem::CreateDescriptorPoolAndUpdateDescriptorSets
+(
+	DescriptorPoolID DescPoolID,
+	const VkDevice& LogicalDevice,
+	VkDescriptorPoolCreateInfo PoolCreateInfo,
+	std::vector<VkDescriptorPoolSize> PoolSizes,
+	MemoryManager* MemoryManager, 
+	uint32_t NumSwapChainImages
+)
 {
-	CreateDescriptorPool(CreateInfo);
-	UpdateDescriptorSets(CreateInfo.mLogicalDevice, MemoryManager, NumSwapChainImages, CreateInfo.mDescriptorPoolID);
-}
+	CreateDescriptorPool(DescPoolID, LogicalDevice, PoolCreateInfo);
 
-
-void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager* MemoryManager, uint32_t NumSwapChainImages, DescriptorPoolID DescPoolID)
-{
 	std::vector<VkDescriptorSetLayout> LayoutsToSet(NumSwapChainImages, GetDescriptorSetLayouts()[0]);
 
+	AllocateDescriptorSets(DescPoolID, LogicalDevice, LayoutsToSet, NumSwapChainImages);
+	UpdateDescriptorSets(DescPoolID, LogicalDevice, MemoryManager, NumSwapChainImages);
+}
+
+void PipelineSystem::CreateDescriptorPool(const DescriptorPoolID& DescPoolID, const VkDevice& LogicalDevice, const VkDescriptorPoolCreateInfo& DescriptorPoolCI)
+{
+	Assert(DescPoolID.compare("") != 0, "Descriptor pool ID cannot be empty!");
+
+	VkDescriptorPool Pool;
+
+	if (vkCreateDescriptorPool(LogicalDevice, &DescriptorPoolCI, nullptr, &Pool) != VK_SUCCESS)
+	{
+		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
+	}
+
+	mDescriptorPools.insert({ DescPoolID, Pool });
+}
+
+void PipelineSystem::AllocateDescriptorSets(const DescriptorPoolID& DescPoolID, const VkDevice& LogicalDevice, const std::vector<VkDescriptorSetLayout>& LayoutsToSet, uint32_t NumSwapChainImages)
+{
 	VkDescriptorSetAllocateInfo AllocInfo = {};
 
 	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -210,11 +219,14 @@ void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager*
 
 	mDescriptorSets.resize(NumSwapChainImages);
 
-	if (vkAllocateDescriptorSets(*Device, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+	if (vkAllocateDescriptorSets(LogicalDevice, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
 	}
+}
 
+void PipelineSystem::UpdateDescriptorSets(const DescriptorPoolID& DescPoolID, const VkDevice& LogicalDevice, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
+{
 	for (size_t i = 0; i < NumSwapChainImages; i++)
 	{
 		int Binding = 0;
@@ -263,7 +275,7 @@ void PipelineSystem::UpdateDescriptorSets(const VkDevice* Device, MemoryManager*
 			}
 		}
 
-		vkUpdateDescriptorSets(*Device, static_cast<uint32_t>(DescriptorWrites.size()), DescriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(LogicalDevice, static_cast<uint32_t>(DescriptorWrites.size()), DescriptorWrites.data(), 0, nullptr);
 	}
 }
 
@@ -326,9 +338,9 @@ const VkDescriptorPool* const PipelineSystem::GetDescriptorPool(DescriptorPoolID
 	return &mDescriptorPools[ID];
 }
 
-const std::vector<VkDescriptorSet>* PipelineSystem::GetDescriptorSets()
+const std::vector<VkDescriptorSet> PipelineSystem::GetDescriptorSets()
 {
-	return &mDescriptorSets;
+	return mDescriptorSets;
 }
 
 void PipelineSystem::AssociateImage(const ImageData* Data)
