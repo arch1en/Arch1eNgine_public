@@ -12,6 +12,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "FileSystem/FileSystem.h"
+#include "GeometrySystem/GeometrySystemUtilities.h"
 //~Temp
 
 // Windows has a "max" macro.
@@ -128,21 +129,19 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 
 	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
 
+
 	// [Temp] Vertex Preparation.
 	GeneralBufferCreationInfo VertexBufferCI = {};
 	VertexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
 	VertexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
 	VertexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
-	std::vector<Vertex> Vertices =
-	{
-		{{-0.5f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}, {1.f, 0.f}},
-		{{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}, {0.f, 0.f}},
-		{{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}, {0.f, 1.f}},
-		{{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}, {1.f, 1.f}}
-	};
+	Mesh MeshData;
 
-	VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(Vertices[0]) * Vertices.size();
+	GeometrySystemUtilities::OpenMesh(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Meshes/cube.obj").c_str(), MeshData);
+
+
+	VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
 	// ~[Temp] Vertex Preparation.
 
 	// [Temp] Index Preparation.
@@ -151,16 +150,13 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	IndexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
 	IndexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
-	std::vector<uint16_t> Indices =
-	{
-		0, 1, 2, 2, 3, 0
-	};
+	IndexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Indices[0]) * MeshData.Indices.size();
 
-	IndexBufferCI.mBufferCreationInfo.mDataSize = sizeof(Indices[0]) * Indices.size();
 	// ~[Temp] Index Preparation.
 
-	GetSwapChainHandler()->PrepareVertexMemory(VertexBufferCI, Vertices);
-	GetSwapChainHandler()->PrepareIndexMemory(IndexBufferCI, Indices);
+	GetSwapChainHandler()->PrepareVertexMemory(VertexBufferCI, MeshData.Vertices);
+	GetSwapChainHandler()->PrepareIndexMemory(IndexBufferCI, MeshData.Indices);
+
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 
 	// [Temp] Temporary image creation
