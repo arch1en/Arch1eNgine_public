@@ -30,12 +30,12 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 
 }
 
-void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
+void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, const std::vector<Vertex>& Vertices)
 {
 	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Vertices);
 }
 
-void SwapChainHandler::PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<uint16_t> Indices)
+void SwapChainHandler::PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, const std::vector<uint16_t>& Indices)
 {
 	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Indices);
 }
@@ -75,7 +75,7 @@ void SwapChainHandler::CreateSemaphores(const VkDevice* Device)
 
 void SwapChainHandler::CreateFences(const VkDevice* Device)
 {
-	Assert(mInFlightFences.size() == 0, "Array must be empty at this point.");
+	Assert(mInFlightFences.empty(), "Array must be empty at this point.");
 
 	mInFlightFences.resize(MaxFramesInFlight);
 
@@ -291,28 +291,26 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	GetMemoryManager()->CreateUniformBuffers(UniformBufferCI, static_cast<uint8_t>(mSwapChainImages.size()));
 
-	PipelineSystemCreationInfo PipelineCreationInfo = {};
-
-	PipelineCreationInfo.mLogicalDevice = LogicalDevice;
-	PipelineCreationInfo.mImageFormat = GetSwapChainImageFormat();
-	PipelineCreationInfo.mViewportExtent = GetSwapChainExtent();
-	PipelineCreationInfo.mRenderPassHandle = GetRenderPassManager()->GetMainRenderPassHandle();
-	PipelineCreationInfo.mMemoryManager = GetMemoryManager();
-
-	PipelineCreationInfo.mShaderCode_Vertex = FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.vert.spv");
-	PipelineCreationInfo.mShaderCode_Fragment = FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.frag.spv");
-
-	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
+	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline
+	(
+		LogicalDevice,
+		GetSwapChainExtent(),
+		GetSwapChainImageFormat(),
+		GetRenderPassManager()->GetMainRenderPassHandle(),
+		GetMemoryManager(),
+		FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.vert.spv"),
+		FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.frag.spv")
+	);
 
 	// Descriptor Pool Creation and Descriptor Sets Update.
-	std::vector<VkDescriptorPoolSize> PoolSizes = 
+	std::vector<VkDescriptorPoolSize> PoolSizes =
 	{
 		{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
 		{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
 	};
 
 	VkDescriptorPoolCreateInfo DescriptorPoolCI = {};
-	
+
 	DescriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	DescriptorPoolCI.poolSizeCount = static_cast<uint32_t>(PoolSizes.size());
 	DescriptorPoolCI.pPoolSizes = PoolSizes.data();

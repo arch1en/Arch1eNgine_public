@@ -15,18 +15,6 @@ struct ImageData;
 
 using DescriptorPoolID = std::string;
 
-struct PipelineSystemCreationInfo
-{
-	const VkDevice* mLogicalDevice;
-	VkExtent2D mViewportExtent;
-	VkFormat mImageFormat;
-	const VkRenderPass* mRenderPassHandle;
-	const MemoryManager* mMemoryManager;
-
-	std::vector<char> mShaderCode_Vertex;
-	std::vector<char> mShaderCode_Fragment;
-};
-
 class PipelineSystem
 {
 public:
@@ -34,7 +22,16 @@ public:
 	void CreateDescriptorSetLayout(const VkDevice& Device);
 	void CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts);
 
-	void CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo);
+	void CreateGraphicsPipeline
+	(
+		const VkDevice* LogicalDevice,
+		VkExtent2D ViewportExtent,
+		VkFormat ImageFormat,
+		const VkRenderPass* RenderPassHandle,
+		const MemoryManager* MemoryManager,
+		std::vector<char> ShaderCode_Vertex,
+		std::vector<char> ShaderCode_Fragment
+	);
 
 	void CleanUp(const VkDevice& Device);
 	void Destroy(const VkDevice& Device);

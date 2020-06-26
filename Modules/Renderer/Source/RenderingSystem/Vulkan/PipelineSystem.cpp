@@ -3,10 +3,19 @@
 #include "Debug/LogSystem.h"
 #include "MemoryManager.h"
 
-void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& CreationInfo)
+void PipelineSystem::CreateGraphicsPipeline
+(
+	const VkDevice* LogicalDevice,
+	VkExtent2D ViewportExtent,
+	VkFormat ImageFormat,
+	const VkRenderPass* RenderPassHandle,
+	const MemoryManager* MemoryManager,
+	std::vector<char> ShaderCode_Vertex,
+	std::vector<char> ShaderCode_Fragment
+)
 {
-	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(CreationInfo.mShaderCode_Vertex, *CreationInfo.mLogicalDevice);
-	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(CreationInfo.mShaderCode_Fragment, *CreationInfo.mLogicalDevice);
+	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(ShaderCode_Vertex, *LogicalDevice);
+	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(ShaderCode_Fragment, *LogicalDevice);
 
 	VkPipelineShaderStageCreateInfo ShaderStageInfo_Vertex = {};
 	ShaderStageInfo_Vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -22,8 +31,8 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 
 	mShaderStages = { ShaderStageInfo_Vertex, ShaderStageInfo_Fragment };
 
-	const VkVertexInputBindingDescription BindingDescription = CreationInfo.mMemoryManager->GetBindingDescription<Vertex>();
-	const std::vector<VkVertexInputAttributeDescription> AttributeDescriptions = CreationInfo.mMemoryManager->GetAttributeDescription<Vertex>();
+	const VkVertexInputBindingDescription BindingDescription = MemoryManager->GetBindingDescription<Vertex>();
+	const std::vector<VkVertexInputAttributeDescription> AttributeDescriptions = MemoryManager->GetAttributeDescription<Vertex>();
 
 	VkPipelineVertexInputStateCreateInfo VertexInputInfo = {};
 	VertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -40,14 +49,14 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	VkViewport Viewport = {};
 	Viewport.x = 0.0f;
 	Viewport.y = 0.0f;
-	Viewport.width = static_cast<float>(CreationInfo.mViewportExtent.width);
-	Viewport.height = static_cast<float>(CreationInfo.mViewportExtent.height);
+	Viewport.width = static_cast<float>(ViewportExtent.width);
+	Viewport.height = static_cast<float>(ViewportExtent.height);
 	Viewport.minDepth = 0.0f;
 	Viewport.maxDepth = 1.0f;
 
 	VkRect2D Scissor = {};
 	Scissor.offset = { 0,0 };
-	Scissor.extent = CreationInfo.mViewportExtent;
+	Scissor.extent = ViewportExtent;
 
 	VkPipelineViewportStateCreateInfo ViewportState = {};
 	ViewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -99,8 +108,8 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	ColorBlendState.blendConstants[2] = 0.f; // Optional
 	ColorBlendState.blendConstants[3] = 0.f; // Optional
 
-	CreateDescriptorSetLayout(*CreationInfo.mLogicalDevice);
-	CreatePipelineLayout(*CreationInfo.mLogicalDevice, &mDescriptorSetLayouts);
+	CreateDescriptorSetLayout(*LogicalDevice);
+	CreatePipelineLayout(*LogicalDevice, &mDescriptorSetLayouts);
 
 	VkGraphicsPipelineCreateInfo PipelineInfo = {};
 	PipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -113,17 +122,17 @@ void PipelineSystem::CreateGraphicsPipeline(const PipelineSystemCreationInfo& Cr
 	PipelineInfo.pMultisampleState = &Multisampling;
 	PipelineInfo.pColorBlendState = &ColorBlendState;
 	PipelineInfo.layout = mPipelineLayout;
-	PipelineInfo.renderPass = *CreationInfo.mRenderPassHandle;
+	PipelineInfo.renderPass = *RenderPassHandle;
 	PipelineInfo.subpass = 0;
 	PipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	PipelineInfo.basePipelineIndex = -1;
 
-	if (vkCreateGraphicsPipelines(*CreationInfo.mLogicalDevice, VK_NULL_HANDLE, 1, &PipelineInfo, nullptr, &mPipelineHandle) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(*LogicalDevice, VK_NULL_HANDLE, 1, &PipelineInfo, nullptr, &mPipelineHandle) != VK_SUCCESS) {
 		LogVk(LogType::Error, 0, "Graphics pipeline creation failed !");
 	}
 
-	vkDestroyShaderModule(*CreationInfo.mLogicalDevice, ShaderModule_Vertex, nullptr);
-	vkDestroyShaderModule(*CreationInfo.mLogicalDevice, ShaderModule_Fragment, nullptr);
+	vkDestroyShaderModule(*LogicalDevice, ShaderModule_Vertex, nullptr);
+	vkDestroyShaderModule(*LogicalDevice, ShaderModule_Fragment, nullptr);
 
 }
 
