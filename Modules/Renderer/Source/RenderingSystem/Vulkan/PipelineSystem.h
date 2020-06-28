@@ -1,7 +1,7 @@
 #ifndef PIPELINESYSTEM_H
 #define PIPELINESYSTEM_H
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -14,16 +14,35 @@ class MemoryManager;
 struct ImageData;
 
 using DescriptorPoolID = std::string;
+using PipelineID = std::string;
+
+// Requires reconstruction - This struct will be destroyed and created again during various events (eg. window resizing).
+struct PipelineData
+{
+	PipelineID mID;
+
+	VkPipeline mPipelineHandle;
+	VkPipelineLayout mPipelineLayout;
+
+	// Descriptor Pool/Sets
+	VkDescriptorPool mDescriptorPool;
+	// One descriptor set per swapchain image.
+	std::vector<VkDescriptorSet> mDescriptorSets;
+};
 
 class PipelineSystem
 {
 public:
 
-	void CreateDescriptorSetLayout(const VkDevice& Device);
-	void CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts);
+	PipelineSystem() = delete;
+	explicit PipelineSystem(const VkDevice* LogicalDevice);
+
+	VkDescriptorSetLayout CreateDescriptorSetLayout(const VkDevice& Device);
+	VkPipelineLayout CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts);
 
 	void CreateGraphicsPipeline
 	(
+		PipelineID ID,
 		const VkDevice* LogicalDevice,
 		VkExtent2D ViewportExtent,
 		VkFormat ImageFormat,
@@ -36,19 +55,17 @@ public:
 	void CleanUp(const VkDevice& Device);
 	void Destroy(const VkDevice& Device);
 
-	const VkPipeline*			GetPipelineHandle() const;
-	const VkPipelineLayout*		GetPipelineLayout() const;
+	PipelineData*				GetPipelineData(const PipelineID& ID) const;
 
-	void CreateDescriptorPool
+	VkDescriptorPool CreateDescriptorPool
 	(
-		const DescriptorPoolID& DescPoolID,
 		const VkDevice& LogicalDevice,
 		const VkDescriptorPoolCreateInfo& DescriptorPoolCI
 	);
 
 	void AllocateDescriptorSets
 	(
-		const DescriptorPoolID& DescPoolID,
+		const PipelineID& DescPoolID,
 		const VkDevice& LogicalDevice,
 		const std::vector<VkDescriptorSetLayout>& LayoutsToSet,
 		uint32_t NumSwapChainImages
@@ -68,34 +85,32 @@ public:
 		const VkDevice& LogicalDevice,
 		VkDescriptorPoolCreateInfo PoolCreateInfo,
 		std::vector<VkDescriptorPoolSize> PoolSizes,
+		VkDescriptorSetLayout LayoutToSet,
 		MemoryManager* MemoryManager,
 		uint32_t NumSwapChainImages
 	);
 
 	const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
-	const VkDescriptorPool* const GetMainDescriptorPool();
-	const VkDescriptorPool* const GetDescriptorPool(DescriptorPoolID ID);
-	const std::vector<VkDescriptorSet> GetDescriptorSets();
 
 	// When a texture is loaded, it needs to be associated with the pipeline system.
 	// Associate loaded texture images with this pipeline, it can be then used in descriptor sets.
-	void AssociateImage(const ImageData* Data);
-	void DissociateImage(const ImageData* Data);
+	void AssociateImage(const PipelineID& ID, const ImageData* Data);
+	void DissociateImage(const PipelineID& ID, const ImageData* Data);
 
 private:
 
-	VkPipelineLayout mPipelineLayout;
 	ShaderSystem mShaderSystem;
-	VkViewport mViewport;
-	VkPipeline mPipelineHandle;
+
+	std::vector<VkDescriptorSetLayout> mDescriptorSetLayouts;
+	std::unordered_map<PipelineID, std::unique_ptr<PipelineData>> mPipelines;
+	std::unordered_map<PipelineID, std::vector<const ImageData*>> mAssociatedImageData;
+
+	// [todo] : Description sets are beign destroyed frequently, and they are dependant on the image association. We cannot break the association, or it will be lost in the ether, and texture will not be shown.
+	// Figure out how to fix that.
+	void CreateImageAssociationCategory(const PipelineID ID);
+	void DestroyImageAssociationCategory(const PipelineID ID);
 
 	std::vector<VkPipelineShaderStageCreateInfo> mShaderStages;
-
-	// Descriptor Pool/Sets
-	std::map<DescriptorPoolID, VkDescriptorPool> mDescriptorPools;
-	std::vector<VkDescriptorSet> mDescriptorSets;
-	std::vector<VkDescriptorSetLayout> mDescriptorSetLayouts;
-	std::vector<const ImageData*> mAssociatedImageData;
 
 };
 

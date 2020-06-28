@@ -70,7 +70,8 @@ class RenderPassManager
 {
 public:
 
-	RenderPassManager();
+	RenderPassManager() = delete;
+	explicit RenderPassManager(const VkDevice* LogicalDevice);
 	
 	void CreateRenderPass
 	(
@@ -98,7 +99,7 @@ public:
 	const VkRenderPass* const GetRenderPassHandle(const RenderPassID& ID);
 	
 	// Pipeline
-	void CreatePipelineSystem();
+	void CreatePipelineSystem(const VkDevice* LogicalDevice);
 	PipelineSystem* const	GetPipelineSystem() const;
 	// ~Pipeline
 

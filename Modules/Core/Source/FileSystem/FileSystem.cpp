@@ -62,11 +62,13 @@ FileSystem::FileSystem()
 {
 	char* BasePath = SDL_GetBasePath();
 
-	const int Position = static_cast<int>(FindOccurenceFromString(BasePath, GetPathSeparator(), 3, true));
-	char* NewRootDir = new char[Position - 4];
-	memcpy(NewRootDir, BasePath, Position);
-
-	RootDir = NewRootDir;
+		
+	int Position = static_cast<int>(FindOccurenceFromString(BasePath, GetPathSeparator(), 3, true));
+	RootDir.resize(Position);
+	for (auto i = 0; i < Position; i++)
+	{
+		RootDir[i] = BasePath[i];
+	}
 
 	SDL_free(reinterpret_cast<void*>(const_cast<char*>(BasePath)));
 }
@@ -84,7 +86,7 @@ FileSystem* const FileSystem::Get()
 
 const char* FileSystem::GetRootDir()
 {
-	return RootDir;
+	return RootDir.c_str();
 }
 
 std::string FileSystem::GetModuleAssetsDir(const char* ModuleName)

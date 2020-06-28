@@ -36,8 +36,6 @@ class FileSystem
 {
 public:
 	
-
-
 	FileSystem();
 	FileSystem(const FileSystem&) = delete;
 	FileSystem(FileSystem&&) = delete;
@@ -62,7 +60,7 @@ public:
 
 private:
 
-	const char* RootDir = nullptr;
+	std::string RootDir;
 
 };
 

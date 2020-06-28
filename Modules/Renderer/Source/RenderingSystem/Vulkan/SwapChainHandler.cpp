@@ -16,7 +16,7 @@
 void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo)
 {
 	CreateShaderSystem();
-	CreateRenderPassManager();
+	CreateRenderPassManager(InitiationInfo.mLogicalDevice);
 	CreateMemoryManager(*InitiationInfo.mLogicalDevice, InitiationInfo.mQueueFamilyHandler);
 
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
@@ -45,9 +45,9 @@ void SwapChainHandler::CreateShaderSystem()
 	mShaderSystem = std::make_unique<ShaderSystem>();
 }
 
-void SwapChainHandler::CreateRenderPassManager()
+void SwapChainHandler::CreateRenderPassManager(const VkDevice* LogicalDevice)
 {
-	mRenderPassManager = std::make_unique<RenderPassManager>();
+	mRenderPassManager = std::make_unique<RenderPassManager>(LogicalDevice);
 }
 
 void SwapChainHandler::CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
@@ -207,7 +207,7 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 		uint32_t						SwapChainImageIndex,
 		//const VkCommandBuffer* const	CommandBufferHandle, // Should be allocated already.
 		const VkRenderPass* const		RenderPassHandle,
-		const FrameData& const			FrameData,
+		const FrameData&				FrameData,
 		const VertexBufferData* const	VertexBufferDataHandle,
 		const IndexBufferData* const	IndexBufferDataHandle,
 		const VkPipeline* const			PipelineHandle,
@@ -269,9 +269,11 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	RecordingRenderPassFuncDelegate.Bind<RecordingRenderPassFuncLambda>();
 
+	const std::string MainRenderPassID = "main";
+
 	GetRenderPassManager()->CreateRenderPass
 	(
-		"main", 
+		MainRenderPassID,
 		LogicalDevice,
 		1,
 		GetSwapChainImageViews(),
@@ -293,6 +295,7 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline
 	(
+		MainRenderPassID,
 		LogicalDevice,
 		GetSwapChainExtent(),
 		GetSwapChainImageFormat(),
@@ -317,10 +320,19 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 	DescriptorPoolCI.maxSets = static_cast<uint32_t>(GetSwapChainImages()->size());
 	DescriptorPoolCI.flags = 0;
 
-	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets("main", *LogicalDevice, DescriptorPoolCI, PoolSizes, GetMemoryManager(), uint32_t(GetSwapChainImages()->size()));
+	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets
+	(
+		MainRenderPassID,
+		*LogicalDevice,
+		DescriptorPoolCI,
+		PoolSizes,
+		GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSetLayouts()[0],
+		GetMemoryManager(),
+		uint32_t(GetSwapChainImages()->size())
+	);
 
 	// [Temp] There should be something like RecordingRenderPassFuncOneTime.
-	RenderPassData* const Data = GetRenderPassManager()->GetRenderPassData("main");
+	RenderPassData* const Data = GetRenderPassManager()->GetRenderPassData(MainRenderPassID);
 	for (int i = 0; i < GetSwapChainImages()->size(); i++)
 	{
 		Data->mRecordingRenderPassFunc.Invoke
@@ -330,9 +342,9 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 			Data->mFrameData[i],
 			(*GetMemoryManager()->GetVertexBufferData())[0].get(),
 			(*GetMemoryManager()->GetIndexBufferData())[0].get(),
-			GetRenderPassManager()->GetPipelineSystem()->GetPipelineHandle(),
-			GetRenderPassManager()->GetPipelineSystem()->GetPipelineLayout(),
-			&GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSets()[0],
+			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mPipelineHandle,
+			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mPipelineLayout,
+			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mDescriptorSets[0],
 			GetSwapChainExtent(),
 			{ 0.1f, 0.1f, 0.1f, 1.f }
 		);

@@ -67,7 +67,7 @@ public:
 	void CreateSwapChainImageView(const VkDevice& Device);
 
 	void CreateShaderSystem();
-	void CreateRenderPassManager();
+	void CreateRenderPassManager(const VkDevice* LogicalDevice);
 	void CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
 
 	void CreateSemaphores(const VkDevice* Device);
