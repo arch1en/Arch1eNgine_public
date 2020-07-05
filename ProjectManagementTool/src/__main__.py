@@ -4,6 +4,8 @@ import os
 import yaml
 import importlib
 
+from src import CommonFunctions
+
 from src.ProjectFilesBuilder import MSVSBuilder
 
 ProjectRootDir = Path().absolute().parent.parent
@@ -19,25 +21,29 @@ ApplicationProperties = yaml.safe_load(open(os.path.join(ProjectRootDir, "Applic
 RootProject = MSVSBuilder.MsvsRootProject()
 RootProject.DirectoryOverride = os.path.join(ProjectRootDir)
 RootProject.Properties = ApplicationProperties
-RootProject.Name = "Arch1eNgine"
+RootProject.Name = ApplicationProperties['Project']['Name']
 
-for Configuration in ApplicationProperties['Configurations']:
+Configurations = ApplicationProperties['Configurations']
+Platforms = []
+for Configuration in Configurations:
     RootProject.Configurations.append(Configuration['Name'])
+    for Platform in Configuration['Platforms']:
+        if Platform['Name'] not in Platforms:
+            Platforms.append(Platform['Name'])
+            RootProject.Platforms.append(Platform['Name'])
 
-for Platform in ApplicationProperties['Platforms']:
-    RootProject.Platforms.append(Platform['Name'])
-
-ApplicationsProjectFolder = MSVSBuilder.MsvsFolderProject()
-ApplicationsProjectFolder.Name = "Applications"
-RootProject.AddChildProject(ApplicationsProjectFolder)
+ApplicationProject = MSVSBuilder.MsvsSubProject()
+ApplicationProject.Name = "Application"
+ApplicationProject.DirectoryOverride = CommonFunctions.GetApplicationRootDir()
+RootProject.AddChildProject(ApplicationProject)
 
 ModulesProjectFolder = MSVSBuilder.MsvsFolderProject()
 ModulesProjectFolder.Name = "Modules"
-RootProject.AddChildProject(ModulesProjectFolder)
+ApplicationProject.AddChildProject(ModulesProjectFolder)
 
 ForeignsProjectFolder = MSVSBuilder.MsvsFolderProject()
 ForeignsProjectFolder.Name = "Foreigns"
-RootProject.AddChildProject(ForeignsProjectFolder)
+ApplicationProject.AddChildProject(ForeignsProjectFolder)
 
 for subdir, dir, files in os.walk(ProjectRootDir):
     for file in files:
@@ -47,19 +53,26 @@ for subdir, dir, files in os.walk(ProjectRootDir):
             f = open(filepath, "r")
             Properties = yaml.safe_load(f)
 
-            NewDependencyProject = MSVSBuilder.MsvsSubProject()
-            NewDependencyProject.Name = Properties['Name']
-            NewDependencyProject.DirectoryOverride = subdir + os.sep
+            DependencyType = CommonFunctions.GetDependencyTypeByPath(filepath)
 
-            try:
-                if Properties['DependencyType'] == "Module":
-                    ModulesProjectFolder.AddChildProject(NewDependencyProject)
-                elif Properties['DependencyType'] == "Foreign":
-                    ForeignsProjectFolder.AddChildProject(NewDependencyProject)
-                elif Properties['DependencyType'] == "Application":
-                    ApplicationsProjectFolder.AddChildProject(NewDependencyProject)
-            except:
-                raise Exception(f"{filepath} Configuration file is ill-formed.")
+            NewDependencyProject = None
+
+            if DependencyType != 'Application':
+                if Properties['LinkageType'].lower() == "include":
+                    NewDependencyProject = MSVSBuilder.MsvsFolderProject()
+                else:
+                    NewDependencyProject = MSVSBuilder.MsvsSubProject()
+
+                NewDependencyProject.Name = Properties['Name']
+                NewDependencyProject.DirectoryOverride = subdir + os.sep
+
+                try:
+                    if DependencyType == "Modules":
+                        ModulesProjectFolder.AddChildProject(NewDependencyProject)
+                    elif DependencyType == "Foreigns":
+                        ForeignsProjectFolder.AddChildProject(NewDependencyProject)
+                except:
+                    raise Exception(f"{filepath} Configuration file is ill-formed.")
 
 builder.SetRootProject(RootProject)
 builder.GenerateRequiredFiles()

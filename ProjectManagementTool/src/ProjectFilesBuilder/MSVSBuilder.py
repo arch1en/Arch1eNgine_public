@@ -6,7 +6,7 @@ from pathlib import Path
 from xml.dom import minidom
 
 from src.ProjectFilesBuilder import BaseBuilder
-
+from src import CommonFunctions
 
 class MsvsBuilder(BaseBuilder.BaseBuilder):
     def __init__(self):
@@ -40,7 +40,7 @@ class MsvsBuilder(BaseBuilder.BaseBuilder):
 Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = """ + str(self.RootProject.VisualStudioVersion) + """
 MinimumVisualStudioVersion = 10.0.40219.1
-        """
+"""
 
         self.SlnGlobalSectionSolutionConfigurationPlatforms = [
             "GlobalSection(SolutionConfigurationPlatforms) = preSolution\r"]
@@ -135,11 +135,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
                         ET.SubElement(VcxprojItemGroupCompiles, 'ClCompile', {'Include': os.path.join(path, file)})
 
             VcxprojPropertyGroupLabelGlobal = ET.SubElement(VcxprojProject, 'PropertyGroup', {'Label':'Globals'})
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'VCProjectVersion').text = str(self.RootProject.Properties['MSVS']['DefaultProjectVersion'])
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'VCProjectVersion').text = str(self.RootProject.Properties['ProjectBuilders'][CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')]['DefaultProjectVersion'])
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'ProjectGuid').text = '{'+Project.GUID+'}'
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'Keyword').text = 'Win32Proj'
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'RootNamespace').text = Project.Name
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'WindowsTargetPlatformVersion').text = str(self.RootProject.Properties['MSVS']['DefaultWindowsSdkVersion'])
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'WindowsTargetPlatformVersion').text = str(self.RootProject.Properties['ProjectBuilders'][CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')]['WindowsTargetPlatformVersion'])
 
             # Saving.
             VcxprojElementTree = ET.ElementTree(VcxprojProject)
