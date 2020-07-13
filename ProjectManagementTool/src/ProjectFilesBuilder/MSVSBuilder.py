@@ -8,6 +8,7 @@ from xml.dom import minidom
 from src.ProjectFilesBuilder import BaseBuilder
 from src import CommonFunctions
 
+
 class MsvsBuilder(BaseBuilder.BaseBuilder):
     def __init__(self):
         super(MsvsBuilder, self).__init__()
@@ -28,11 +29,12 @@ class MsvsBuilder(BaseBuilder.BaseBuilder):
         pass
 
     def GetSlnRelativeVcxprojPath(self, Project):
-        return (Project.GetProjectDir().replace(self.GetRootProject().GetRootDir() + os.sep, "")) + os.sep + Project.Name + ".vcxproj"
+        return (Project.GetProjectDir().replace(self.GetRootProject().GetRootDir() + os.sep,
+                                                "")) + os.sep + Project.Name + ".vcxproj"
 
     def GenerateRequiredFiles(self):
-        assert (self.RootProject.Name is not "")
-        assert (self.RootProject.GetRootDir() is not "")
+        assert (self.RootProject.Name != "")
+        assert (self.RootProject.GetRootDir() != "")
 
         # *.sln
 
@@ -76,21 +78,22 @@ MinimumVisualStudioVersion = 10.0.40219.1
         # ~*.sln
 
     def RecursiveProcessProjectChain(self, Project):
-        assert Project.Name is not ""
-        assert Project.GetRootDir() is not ""
+        assert Project.Name != ""
+        assert Project.GetRootDir() != ""
         assert Project.TypeGUID is not None
 
         if not isinstance(Project, MsvsRootProject):
             self.SlnBody += 'Project("{' + Project.TypeGUID + '}") = "' + Project.Name + '", "' + str(
-                Project.Name if isinstance(Project, MsvsFolderProject) else self.GetSlnRelativeVcxprojPath(Project)) + '", "{' + str(Project.GUID) + '}"\rEndProject\r'
+                Project.Name if isinstance(Project, MsvsFolderProject) else self.GetSlnRelativeVcxprojPath(
+                    Project)) + '", "{' + str(Project.GUID) + '}"\rEndProject\r'
 
             # NestedProjects
             for ChildProject in Project.ChildProjects:
                 self.SlnGlobalSectionNestedProjects.append(
                     '\t{' + str(ChildProject.GUID) + '} = {' + str(Project.GUID) + '}\r')
 
-        #if isinstance(Project, BaseBuilder.RootProject):
-            # ProjectConfigurationPlatforms
+        # if isinstance(Project, BaseBuilder.RootProject):
+        # ProjectConfigurationPlatforms
 
         # *.vcxproj
         if not isinstance(Project, MsvsFolderProject):
@@ -130,16 +133,117 @@ MinimumVisualStudioVersion = 10.0.40219.1
                     if file.endswith('h') or file.endswith('hpp'):
                         ET.SubElement(VcxprojItemGroupHeaders, 'ClInclude', {'Include': os.path.join(path, file)})
                     elif file.endswith('inl'):
-                        ET.SubElement(VcxprojItemGroupNones, 'None', {'Include':os.path.join(path, file)})
+                        ET.SubElement(VcxprojItemGroupNones, 'None', {'Include': os.path.join(path, file)})
                     elif file.endswith('cpp') or file.endswith('c'):
                         ET.SubElement(VcxprojItemGroupCompiles, 'ClCompile', {'Include': os.path.join(path, file)})
 
-            VcxprojPropertyGroupLabelGlobal = ET.SubElement(VcxprojProject, 'PropertyGroup', {'Label':'Globals'})
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'VCProjectVersion').text = str(self.RootProject.Properties['ProjectBuilders'][CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')]['DefaultProjectVersion'])
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'ProjectGuid').text = '{'+Project.GUID+'}'
+            # PropertyGroup Globals
+            VcxprojPropertyGroupLabelGlobal = ET.SubElement(VcxprojProject, 'PropertyGroup', {'Label': 'Globals'})
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'VCProjectVersion').text = str(
+                self.RootProject.Properties['ProjectBuilders'][
+                    CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')][
+                    'DefaultProjectVersion'])
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'ProjectGuid').text = '{' + Project.GUID + '}'
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'Keyword').text = 'Win32Proj'
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'RootNamespace').text = Project.Name
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'WindowsTargetPlatformVersion').text = str(self.RootProject.Properties['ProjectBuilders'][CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')]['WindowsTargetPlatformVersion'])
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'WindowsTargetPlatformVersion').text = str(
+                self.RootProject.Properties['ProjectBuilders'][
+                    CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')][
+                    'WindowsTargetPlatformVersion'])
+
+            ET.SubElement(VcxprojProject, 'Import',
+                                         {'Project': '$(VCTargetsPath)\Microsoft.Cpp.Default.props'})
+
+            # PropertyGroups Conditional
+
+            for Configuration in self.RootProject.Configurations:
+                for Platform in self.RootProject.Platforms:
+
+                    RootMsvsProjectBuilder = self.RootProject.Properties['ProjectBuilders'][
+                        CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, "MSVS")]
+
+                    PropertyGroup = ET.SubElement(VcxprojProject, 'PropertyGroup', {
+                        'Condition': f"\'$(Configuration)|$(Platform)\'==\'{Configuration}|{Platform}\'", 'Label': 'Configuration'})
+
+                    ConfigurationType = ET.SubElement(PropertyGroup, 'ConfigurationType')
+                    ConfigurationType.text = "Application"
+
+                    UseDebugLibraries = ET.SubElement(PropertyGroup, 'UseDebugLibraries')
+                    UseDebugLibraries.text = 'true' if self.RootProject.GetConfigurationPlatformProperties(Configuration, Platform)[1]["DebugLevel"] > 0 else 'false'
+
+                    PlatformToolset = ET.SubElement(PropertyGroup, 'PlatformToolset')
+                    PlatformToolset.text = RootMsvsProjectBuilder['PlatformToolset']
+
+                    WholeProgramOptimization = ET.SubElement(PropertyGroup, 'WholeProgramOptimization')
+                    WholeProgramOptimization.text = 'true' if self.RootProject.GetConfigurationPlatformProperties(Configuration, Platform)[1]["WholeProgramOptimization"] > 0 else 'false'
+
+                    CharacterSet = ET.SubElement(PropertyGroup, 'CharacterSet')
+                    CharacterSet.text = RootMsvsProjectBuilder['CharacterSet']
+
+            ET.SubElement(VcxprojProject, 'Import', {'Project' : '$(VCTargetsPath)\Microsoft.Cpp.props'})
+            ET.SubElement(VcxprojProject, 'ImportGroup', {'Label': 'ExtensionSettings'})
+            ET.SubElement(VcxprojProject, 'ImportGroup', {'Label': 'Shared'})
+
+            # ImportGroup Label Condition
+
+            for Configuration in self.RootProject.Configurations:
+                for Platform in self.RootProject.Platforms:
+                    ImportGroup = ET.SubElement(VcxprojProject, 'ImportGroup', {'Label': 'PropertySheets', 'Condition': f'\'$(Configuration)|$(Platform)\'==\'{Configuration}|{Platform}\''})
+                    ET.SubElement(ImportGroup, 'Import', {'Project': '$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props', 'Condition':'exists(\'$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props\')', 'Label': 'LocalAppDataPlatform'})
+
+            ET.SubElement(VcxprojProject, 'PropertyGroup', {'Label': 'UserMacros'})
+
+            for Configuration in self.RootProject.Configurations:
+                for Platform in self.RootProject.Platforms:
+                    PropertyGroup = ET.SubElement(VcxprojProject, 'PropertyGroup', {'Condition': f'\'$(Configuration)|$(Platform)\'==\'{Configuration}|{Platform}\''})
+                    LinkIncremental = ET.SubElement(PropertyGroup, 'LinkIncremental')
+                    LinkIncremental.text = str(self.RootProject.GetConfigurationPlatformProperties(Configuration, Platform)[1]['LinkIncremental'])
+
+            # Item Definition Groups
+
+            # Todo, check this for errors.
+            for Configuration in self.RootProject.Configurations:
+                for Platform in self.RootProject.Platforms:
+
+                    ConfigurationProperties, PlatformProperties = self.RootProject.GetConfigurationPlatformProperties(Configuration, Platform)
+
+                    ItemDefinitionGroup = ET.SubElement(VcxprojProject, 'ItemDefinitionGroup', {'Condition': f'\'$(Configuration)|$(Platform)\'==\'{Configuration}|{Platform}\''})
+                    ClCompile = ET.SubElement(ItemDefinitionGroup, 'ClCompile')
+
+                    WarningLevel = ET.SubElement(ClCompile, 'WarningLevel')
+                    WarningLevel.text = 'Level' + str(PlatformProperties['WarningLevel']).casefold()
+
+                    FunctionLevelLinking = ET.SubElement(ClCompile, 'FunctionLevelLinking')
+                    FunctionLevelLinking.text = 'true'
+
+                    IntrinsicFunctions = ET.SubElement(ClCompile, 'IntrinsicFunctions')
+                    IntrinsicFunctions.text = 'true'
+
+                    SDLCheck = ET.SubElement(ClCompile, 'WarningLevel')
+                    SDLCheck.text = str(PlatformProperties['SDLCheck']).casefold()
+
+                    PreprocessorDefinitions = ET.SubElement(ClCompile, 'PreprocessorDefinitions')
+                    PreprocessorDefinitions.text = ';'.join([x for x in PlatformProperties['PreprocessorDefinitions'] ]) + ';%(PreprocessorDefinitions)'
+
+                    ConformanceMode = ET.SubElement(ClCompile, 'ConformanceMode')
+                    ConformanceMode.text = str(PlatformProperties['ConformanceMode']).casefold()
+
+                    Link = ET.SubElement(ItemDefinitionGroup, 'Link')
+
+                    SubSystem = ET.SubElement(Link, 'SubSystem')
+                    SubSystem.text = "Console"
+
+                    EnableCOMDATFolding = ET.SubElement(Link, 'EnableCOMDATFolding')
+                    EnableCOMDATFolding.text = "true"
+
+                    OptimizeReferences = ET.SubElement(Link, 'OptimizeReferences')
+                    OptimizeReferences.text = "true"
+
+                    GenerateDebugInformation = ET.SubElement(Link, 'GenerateDebugInformation')
+                    GenerateDebugInformation.text = "true"
+
+            ET.SubElement(VcxprojProject, 'Import', {'Project': '$(VCTargetsPath)\Microsoft.Cpp.targets'})
+            ET.SubElement(VcxprojProject, 'ImportGroup', {'Label': 'ExtensionTargets'})
 
             # Saving.
             VcxprojElementTree = ET.ElementTree(VcxprojProject)
@@ -148,16 +252,17 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
             VcxprojPrettyXml = VcxprojElementTreeReparsed.toprettyxml(indent='\t')
             VcxprojFilePath = os.path.join(Project.GetProjectDir(), Project.Name) + ".vcxproj"
-            Path(Project.GetProjectDir()).mkdir(parents=True, exist_ok=True) # Make sure to create a directory tree for the files.
-            VcxprojFile = open(VcxprojFilePath, "w+")
-            VcxprojFile.write(VcxprojPrettyXml)
-            VcxprojFile.close()
+            Path(Project.GetProjectDir()).mkdir(parents=True,
+                                                exist_ok=True)  # Make sure to create a directory tree for the files.
+
+            with open(VcxprojFilePath, "w+") as f:
+                f.write(VcxprojPrettyXml)
         # ~*.vcxproj
 
         # *.vcxproj.filters
         if not isinstance(Project, MsvsFolderProject):
             VcxprojFilters = ET.Element('Project', {"ToolsVersion": "Current",
-                                         "xmlns": "http://schemas.microsoft.com/developer/msbuild/2003"})
+                                                    "xmlns": "http://schemas.microsoft.com/developer/msbuild/2003"})
 
             VcxprojFiltersClCompiles = ET.SubElement(VcxprojFilters, 'ItemGroup')
             VcxprojFiltersClIncludes = ET.SubElement(VcxprojFilters, 'ItemGroup')
@@ -165,7 +270,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
             for path, dirs, files in os.walk(Project.GetSourceDir()):
                 for file in files:
                     if file.endswith('h') or file.endswith('hpp'):
-                        VcxprojFiltersClInclude = ET.SubElement(VcxprojFiltersClIncludes, 'ClInclude', {'Include': os.path.join(path, file)})
+                        VcxprojFiltersClInclude = ET.SubElement(VcxprojFiltersClIncludes, 'ClInclude',
+                                                                {'Include': os.path.join(path, file)})
                         FilterPath = path
                         FilterPath = FilterPath.replace(Project.GetSourceDir(), '')
                         if len(FilterPath) > 0:
@@ -174,10 +280,16 @@ MinimumVisualStudioVersion = 10.0.40219.1
                     elif file.endswith('cpp') or file.endswith('c'):
                         ET.SubElement(VcxprojFiltersClCompiles, 'ClCompile', {'Include': os.path.join(path, file)})
 
+            # Saving
+            VcxprojFiltersElementTreeRawString = ET.tostring(VcxprojFilters, 'utf-8')
+            VcxprojFiltersElementTreeReparsed = minidom.parseString(VcxprojFiltersElementTreeRawString)
+            Path(Project.GetProjectDir()).mkdir(parents=True,
+                                                exist_ok=True)  # Make sure to create a directory tree for the files.
+            VcxprojFiltersPrettyXml = VcxprojFiltersElementTreeReparsed.toprettyxml(indent='\t')
+
             VcxprojFiltersFilePath = os.path.join(Project.GetProjectDir(), Project.Name) + ".vcxproj.filters"
-            with open(VcxprojFiltersFilePath,"wb") as f:
-                et = ET.ElementTree(VcxprojFilters)
-                et.write(f, encoding="utf-8", xml_declaration=True)
+            with open(VcxprojFiltersFilePath, "w+") as f:
+                f.write(VcxprojFiltersPrettyXml)
         # ~*.vcxproj.filters
 
         # *.vcxproj.user
@@ -199,7 +311,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
     def SetupSolutionGlobalSections(self):
         SectionsInOrder = [self.SlnGlobalSectionProjectConfigurationPlatforms,
-                           self.SlnGlobalSectionSolutionConfigurationPlatforms, self.SlnGlobalSectionSolutionProperties, self.SlnGlobalSectionNestedProjects,
+                           self.SlnGlobalSectionSolutionConfigurationPlatforms, self.SlnGlobalSectionSolutionProperties,
+                           self.SlnGlobalSectionNestedProjects,
                            self.SlnGlobalSectionExtensibilityGlobals]
         self.SlnBody += "Global"
         for SlnSection in SectionsInOrder:
@@ -215,6 +328,16 @@ class MsvsRootProject(BaseBuilder.RootProject):
         self.GUID = str(uuid.uuid4()).upper()
         self.TypeGUID = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
         self.VisualStudioVersion = 0
+
+    def GetConfigurationPlatformProperties(self, ConfigurationName, PlatformName):
+        for Configuration in self.Properties['Configurations']:
+            if Configuration["Name"] == ConfigurationName:
+                for Platform in Configuration["Platforms"]:
+                    if Platform["Name"] == PlatformName:
+                        return Configuration, Platform
+
+        return None, None
+
 
 
 # aka. Project
