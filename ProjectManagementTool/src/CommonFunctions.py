@@ -19,6 +19,8 @@ def GetDependencyTypeByPath(DependencyPropertyFilePath):
             raise RuntimeError("Could not retrieve dependency type by path.")
         return Type
 
+
 def GetApplicationRootDir():
     return Path(__file__).parent.parent.parent.absolute() / "Application"
+
 

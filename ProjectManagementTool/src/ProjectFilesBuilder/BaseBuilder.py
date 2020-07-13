@@ -42,6 +42,12 @@ class Project:
     def GetSourceDir(self):
         return os.path.join(self.GetRootDir(), "Source")
 
+    def GetBinariesDir(self):
+        return os.path.join(self.GetRootDir(), "Binaries")
+
+    def GetIntermediateDir(self):
+        return os.path.join(self.GetRootDir(), "Intermediate")
+
     def GetData(self):
         pass
 

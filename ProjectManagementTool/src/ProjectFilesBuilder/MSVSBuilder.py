@@ -154,7 +154,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
             ET.SubElement(VcxprojProject, 'Import',
                                          {'Project': '$(VCTargetsPath)\Microsoft.Cpp.Default.props'})
 
-            # PropertyGroups Conditional
+            # PropertyGroups Conditional Label
 
             for Configuration in self.RootProject.Configurations:
                 for Platform in self.RootProject.Platforms:
@@ -193,11 +193,17 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
             ET.SubElement(VcxprojProject, 'PropertyGroup', {'Label': 'UserMacros'})
 
+            # PropertyGroups Conditional
+
             for Configuration in self.RootProject.Configurations:
                 for Platform in self.RootProject.Platforms:
                     PropertyGroup = ET.SubElement(VcxprojProject, 'PropertyGroup', {'Condition': f'\'$(Configuration)|$(Platform)\'==\'{Configuration}|{Platform}\''})
                     LinkIncremental = ET.SubElement(PropertyGroup, 'LinkIncremental')
                     LinkIncremental.text = str(self.RootProject.GetConfigurationPlatformProperties(Configuration, Platform)[1]['LinkIncremental'])
+                    OutputDir = ET.SubElement(PropertyGroup, 'OutDir')
+                    OutputDir.text = str(Path(Project.GetBinariesDir()) / Configuration / Platform)
+                    IntermediateDir = ET.SubElement(PropertyGroup, 'IntDir')
+                    IntermediateDir.text = str(Path(Project.GetIntermediateDir()) / Configuration / Platform)
 
             # Item Definition Groups
 
@@ -227,6 +233,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
                     ConformanceMode = ET.SubElement(ClCompile, 'ConformanceMode')
                     ConformanceMode.text = str(PlatformProperties['ConformanceMode']).casefold()
+
+                    LanguageStandard = ET.SubElement(ClCompile, 'LanguageStandard')
+                    LanguageStandard.text = str(RootMsvsProjectBuilder['LanguageStandard']).casefold()
 
                     Link = ET.SubElement(ItemDefinitionGroup, 'Link')
 
