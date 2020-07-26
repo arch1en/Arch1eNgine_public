@@ -82,6 +82,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
         assert Project.GetRootDir() != ""
         assert Project.TypeGUID is not None
 
+        ProjectBuilderProperties = CommonFunctions.GetProjectBuilderPropertiesByName(self.RootProject.Properties, 'MSVS')
+
         if not isinstance(Project, MsvsRootProject):
             self.SlnBody += 'Project("{' + Project.TypeGUID + '}") = "' + Project.Name + '", "' + str(
                 Project.Name if isinstance(Project, MsvsFolderProject) else self.GetSlnRelativeVcxprojPath(
@@ -100,11 +102,16 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
             for Configuration in self.RootProject.Configurations:
                 for Platform in self.RootProject.Platforms:
+
+                    PlatformProperties = CommonFunctions.GetProjectBuilderPlatformPropertiesByName(ProjectBuilderProperties, Platform)
+
                     ConfigurationPlatformPair = f"{Configuration}|{Platform}"
+                    ConfigurationPlatformMappedPair = f'{Configuration}|{PlatformProperties["MappingName"]}'
+
                     self.SlnGlobalSectionProjectConfigurationPlatforms.append('\t{' + str(
-                        Project.GUID) + '}.' + ConfigurationPlatformPair + '.ActiveCfg = ' + ConfigurationPlatformPair + '\r')
+                        Project.GUID) + '}.' + ConfigurationPlatformPair + '.ActiveCfg = ' + ConfigurationPlatformMappedPair + '\r')
                     self.SlnGlobalSectionProjectConfigurationPlatforms.append('\t{' + str(
-                        Project.GUID) + '}.' + ConfigurationPlatformPair + '.Build.0 = ' + ConfigurationPlatformPair + '\r')
+                        Project.GUID) + '}.' + ConfigurationPlatformPair + '.Build.0 = ' + ConfigurationPlatformMappedPair + '\r')
 
             # Header
             VcxprojProject = ET.Element('Project', {'DefaultTargets': "Build",
@@ -115,12 +122,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
             for Configuration in self.RootProject.Configurations:
                 for Platform in self.RootProject.Platforms:
+                    PlatformProperties = CommonFunctions.GetProjectBuilderPlatformPropertiesByName(ProjectBuilderProperties, Platform)
+
                     ConfigurationPlatformPair = f"{Configuration}|{Platform}"
                     VcxprojProjectConfiguration = ET.SubElement(VcxprojItemGroupProjectConfigurations,
                                                                 'ProjectConfiguration',
                                                                 {'Include': ConfigurationPlatformPair})
                     ET.SubElement(VcxprojProjectConfiguration, 'Configuration').text = Configuration
-                    ET.SubElement(VcxprojProjectConfiguration, 'Platform').text = Platform
+                    ET.SubElement(VcxprojProjectConfiguration, 'Platform').text = PlatformProperties['MappingName']
 
             # Headers include.
 
@@ -139,17 +148,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
             # PropertyGroup Globals
             VcxprojPropertyGroupLabelGlobal = ET.SubElement(VcxprojProject, 'PropertyGroup', {'Label': 'Globals'})
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'VCProjectVersion').text = str(
-                self.RootProject.Properties['ProjectBuilders'][
-                    CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')][
-                    'DefaultProjectVersion'])
+
+            ProjectBuilderProperties = CommonFunctions.GetProjectBuilderPropertiesByName(self.RootProject.Properties, 'MSVS')
+
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'VCProjectVersion').text = str(ProjectBuilderProperties['DefaultProjectVersion'])
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'ProjectGuid').text = '{' + Project.GUID + '}'
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'Keyword').text = 'Win32Proj'
             ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'RootNamespace').text = Project.Name
-            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'WindowsTargetPlatformVersion').text = str(
-                self.RootProject.Properties['ProjectBuilders'][
-                    CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, 'MSVS')][
-                    'WindowsTargetPlatformVersion'])
+            ET.SubElement(VcxprojPropertyGroupLabelGlobal, 'WindowsTargetPlatformVersion').text = str(ProjectBuilderProperties['WindowsTargetPlatformVersion'])
 
             ET.SubElement(VcxprojProject, 'Import',
                                          {'Project': '$(VCTargetsPath)\Microsoft.Cpp.Default.props'})
@@ -159,11 +165,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
             for Configuration in self.RootProject.Configurations:
                 for Platform in self.RootProject.Platforms:
 
+                    PlatformProperties = CommonFunctions.GetProjectBuilderPlatformPropertiesByName(
+                        ProjectBuilderProperties, Platform)
+
                     RootMsvsProjectBuilder = self.RootProject.Properties['ProjectBuilders'][
                         CommonFunctions.GetProjectBuilderIndexByName(self.RootProject.Properties, "MSVS")]
 
                     PropertyGroup = ET.SubElement(VcxprojProject, 'PropertyGroup', {
-                        'Condition': f"\'$(Configuration)|$(Platform)\'==\'{Configuration}|{Platform}\'", 'Label': 'Configuration'})
+                        'Condition': f"\'$(Configuration)|$(Platform)\'==\'{Configuration}|{PlatformProperties['MappingName']}\'", 'Label': 'Configuration'})
 
                     ConfigurationType = ET.SubElement(PropertyGroup, 'ConfigurationType')
                     ConfigurationType.text = "Application"

@@ -8,6 +8,20 @@ def GetProjectBuilderIndexByName(Properties, Name):
             return Index
 
 
+def GetProjectBuilderPropertiesByName(ApplicationProperties, Name):
+    for BuilderProperties in ApplicationProperties['ProjectBuilders']:
+        if BuilderProperties['Name'] == Name:
+            return BuilderProperties
+
+    return None
+
+def GetProjectBuilderPlatformPropertiesByName(ProjectBuilderProperties, Name):
+    for PlatformProperties in ProjectBuilderProperties['Platforms']:
+        if PlatformProperties['Name'] == Name:
+            return PlatformProperties
+
+    return None
+
 def GetDependencyTypeByPath(DependencyPropertyFilePath):
     DependencyType = DependencyPropertyFilePath.split(os.sep)
     Type = DependencyType[-3]
