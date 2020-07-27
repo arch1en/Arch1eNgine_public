@@ -58,7 +58,7 @@ for subdir, dir, files in os.walk(ProjectRootDir):
             NewDependencyProject = None
 
             if DependencyType != 'Application':
-                if Properties['LinkageType'].lower() == "include":
+                if Properties['LinkageType'].casefold() == "include":
                     NewDependencyProject = MSVSBuilder.MsvsFolderProject()
                 else:
                     NewDependencyProject = MSVSBuilder.MsvsSubProject()
