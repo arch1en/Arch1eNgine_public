@@ -1,12 +1,13 @@
-from xml.etree import ElementTree as ET
 import os
 import uuid
+
 from pathlib import Path
 
 from xml.dom import minidom
+from xml.etree import ElementTree as ET
 
-from src.ProjectFilesBuilder import BaseBuilder
 from src import CommonFunctions
+from src.ProjectFilesBuilder import BaseBuilder
 
 
 class MsvsBuilder(BaseBuilder.BaseBuilder):
@@ -80,11 +81,12 @@ MinimumVisualStudioVersion = 10.0.40219.1
     def RecursiveProcessProjectChain(self, Project):
         assert Project.Name != ""
         assert Project.GetRootDir() != ""
-        assert Project.TypeGUID is not None
 
         ProjectBuilderProperties = CommonFunctions.GetProjectBuilderPropertiesByName(self.RootProject.Properties, 'MSVS')
 
-        if not isinstance(Project, MsvsRootProject):
+        if isinstance(Project, MsvsProject):
+            assert Project.TypeGUID is not None
+
             self.SlnBody += 'Project("{' + Project.TypeGUID + '}") = "' + Project.Name + '", "' + str(
                 Project.Name if isinstance(Project, MsvsFolderProject) else self.GetSlnRelativeVcxprojPath(
                     Project)) + '", "{' + str(Project.GUID) + '}"\rEndProject\r'
@@ -118,7 +120,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
     def CreateVcxprojFile(self, Project, ProjectBuilderProperties):
         # *.vcxproj
-        if not isinstance(Project, MsvsFolderProject):
+        if isinstance(Project, (MsvsRootProject, MsvsProject)):
+            assert Project.TypeGUID is not None
 
             for Configuration in self.RootProject.Configurations:
                 for Platform in self.RootProject.Platforms:
@@ -318,7 +321,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 
     @classmethod
     def CreateVcxprojFiltersFile(cls, Project):
-        if not isinstance(Project, MsvsFolderProject):
+        if isinstance(Project, (MsvsRootProject, MsvsProject)):
+            assert Project.TypeGUID is not None
+
             VcxprojFilters = ET.Element('Project', {"ToolsVersion": "Current",
                                                     "xmlns": "http://schemas.microsoft.com/developer/msbuild/2003"})
 
@@ -349,9 +354,18 @@ MinimumVisualStudioVersion = 10.0.40219.1
             with open(VcxprojFiltersFilePath, "w+") as f:
                 f.write(VcxprojFiltersPrettyXml)
 
+        if isinstance(Project, MsvsFilterProject):
+            ItemGroup = ET.Element('ItemGroup')
+            for i in Project.IteratorFilterIncludes():
+                Filter = ET.SubElement(ItemGroup, 'Filter', {"Include": f"{i}"})
+                UniqueIdentifier = ET.SubElement(Filter, "UniqueIdentifier")
+                UniqueIdentifier.text = str(uuid.uuid4()).upper()
+
     @classmethod
     def CreateVcxprojUserFile(cls, Project):
-        if not isinstance(Project, MsvsFolderProject):
+        if isinstance(Project, (MsvsRootProject, MsvsProject)):
+            assert Project.TypeGUID is not None
+
             doc = ET.Element('Project', {"ToolsVersion": "Current",
                                          "xmlns": "http://schemas.microsoft.com/developer/msbuild/2003"})
             node = ET.SubElement(doc, 'PropertyGroup')
@@ -368,9 +382,8 @@ MinimumVisualStudioVersion = 10.0.40219.1
 class MsvsRootProject(BaseBuilder.RootProject):
     def __init__(self):
         super(MsvsRootProject, self).__init__()
-        self.GUID = str(uuid.uuid4()).upper()
         self.TypeGUID = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-        self.VisualStudioVersion = 0
+        self.VisualStudioVersion = 16.0
 
     def GetConfigurationPlatformProperties(self, ConfigurationName, PlatformName):
         for Configuration in self.Properties['Configurations']:
@@ -383,25 +396,29 @@ class MsvsRootProject(BaseBuilder.RootProject):
 
 
 # aka. Project
-class MsvsSubProject(BaseBuilder.SubProject):
+class MsvsProject(BaseBuilder.Project):
     def __init__(self):
-        super(MsvsSubProject, self).__init__()
+        super(MsvsProject, self).__init__()
         self.TypeGUID = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-        self.GUID = str(uuid.uuid4()).upper()
 
 
-class MsvsFolderProject(BaseBuilder.Project):
+class MsvsFolderProject(BaseBuilder.BaseProject):
     def __init__(self):
         super(MsvsFolderProject, self).__init__()
-        self.GUID = str(uuid.uuid4()).upper()
         self.TypeGUID = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
 
     def GetData(self):
         return
 
-class MsvsFilterProject(BaseBuilder.Project):
+class MsvsFilterProject(BaseBuilder.BaseProject):
     def __init__(self):
-        super(MsvsSubProject, self).__init__()
-        self.GUID = str(uuid.uuid4()).upper()
+        super(MsvsFilterProject, self).__init__()
+
+    def IteratorFilterIncludes(self):
+        for root, dirs, files in os.walk(self.GetSourceDir(), topdown=False):
+            for dirname in dirs:
+
+                yield self.Name + os.path.join(root, dirname).replace(self.GetSourceDir(),'')
+
 
     def GetVcxprojFiltersData(self):

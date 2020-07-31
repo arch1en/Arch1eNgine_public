@@ -1,4 +1,5 @@
 import os
+import uuid
 
 
 class BaseBuilder:
@@ -12,13 +13,15 @@ class BaseBuilder:
     def GenerateRequiredFiles(self):
         pass
 
-class Project:
+
+class BaseProject:
     def __init__(self):
         self.Name = ""
         self.DirectoryOverride = ""
         self.ChildProjects = []
         self.ParentProject = None
         self.Properties = None
+        self.GUID = str(uuid.uuid4()).upper()
 
     def AddChildProject(self, ChildProject):
         assert(ChildProject.ParentProject is None)
@@ -51,15 +54,15 @@ class Project:
     def GetData(self):
         pass
 
-class RootProject(Project):
+class RootProject(BaseProject):
     def __init__(self):
         super(RootProject, self).__init__()
         self.Configurations = []
         self.Platforms = []
 
-class SubProject(Project):
+class Project(BaseProject):
     def __init__(self):
-        super(SubProject, self).__init__()
+        super(Project, self).__init__()
         self.IncludeFiles = []
         self.LibraryFiles = []
         self.LibraryDependencies = []

@@ -32,7 +32,7 @@ for Configuration in Configurations:
             Platforms.append(Platform['Name'])
             RootProject.Platforms.append(Platform['Name'])
 
-ApplicationProject = MSVSBuilder.MsvsSubProject()
+ApplicationProject = MSVSBuilder.MsvsProject()
 ApplicationProject.Name = "Application"
 ApplicationProject.DirectoryOverride = CommonFunctions.GetApplicationRootDir()
 RootProject.AddChildProject(ApplicationProject)
@@ -59,7 +59,7 @@ for subdir, dir, files in os.walk(ProjectRootDir):
 
             if DependencyType != 'Application':
                 if Properties['LinkageType'].casefold() == "include":
-                    NewDependencyProject = MSVSBuilder.MsvsFolderProject()
+                    NewDependencyProject = MSVSBuilder.MsvsFilterProject()
                 else:
                     NewDependencyProject = MSVSBuilder.MsvsSubProject()
 
