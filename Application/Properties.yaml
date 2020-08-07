@@ -1,0 +1,11 @@
+Name: Arch1eNgine
+LinkageType: Include
+ForeignDependencies:
+-   SDL2
+    GLAD
+    Vulkan
+    GLM
+ModuleDependencies:
+-   Core
+    Renderer
+    Math

@@ -99,6 +99,9 @@
     <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.cpp">
       <Filter>Dependencies\IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp">
+      <Filter>Modules\Renderer\GeometrySystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Application.h" />
@@ -236,6 +239,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.h">
       <Filter>Dependencies\IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.h">
+      <Filter>Modules\Renderer\GeometrySystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

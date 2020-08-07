@@ -139,7 +139,6 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	Mesh MeshData;
 
 	if (GeometrySystemUtilities::OpenMesh(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Meshes/suzanne.obj").c_str(), MeshData))
-	{
 		VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
 		// ~[Temp] Vertex Preparation.
 
@@ -149,9 +148,10 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 		IndexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
 		IndexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
+		VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
+
 		IndexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Indices[0]) * MeshData.Indices.size();
 
-		// ~[Temp] Index Preparation.
 
 		GetSwapChainHandler()->PrepareVertexMemory(VertexBufferCI, MeshData.Vertices);
 		GetSwapChainHandler()->PrepareIndexMemory(IndexBufferCI, MeshData.Indices);

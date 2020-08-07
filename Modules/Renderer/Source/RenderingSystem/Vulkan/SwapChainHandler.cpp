@@ -16,7 +16,7 @@
 void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& InitiationInfo)
 {
 	CreateShaderSystem();
-	CreateRenderPassManager();
+	CreateRenderPassManager(InitiationInfo.mLogicalDevice);
 	CreateMemoryManager(*InitiationInfo.mLogicalDevice, InitiationInfo.mQueueFamilyHandler);
 
 	CreateSemaphores(InitiationInfo.mLogicalDevice);
@@ -30,12 +30,12 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 
 }
 
-void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<Vertex> Vertices)
+void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, const std::vector<Vertex>& Vertices)
 {
 	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Vertices);
 }
 
-void SwapChainHandler::PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, std::vector<uint16_t> Indices)
+void SwapChainHandler::PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, const std::vector<uint16_t>& Indices)
 {
 	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Indices);
 }
@@ -45,9 +45,9 @@ void SwapChainHandler::CreateShaderSystem()
 	mShaderSystem = std::make_unique<ShaderSystem>();
 }
 
-void SwapChainHandler::CreateRenderPassManager()
+void SwapChainHandler::CreateRenderPassManager(const VkDevice* LogicalDevice)
 {
-	mRenderPassManager = std::make_unique<RenderPassManager>();
+	mRenderPassManager = std::make_unique<RenderPassManager>(LogicalDevice);
 }
 
 void SwapChainHandler::CreateMemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
@@ -75,7 +75,7 @@ void SwapChainHandler::CreateSemaphores(const VkDevice* Device)
 
 void SwapChainHandler::CreateFences(const VkDevice* Device)
 {
-	Assert(mInFlightFences.size() == 0, "Array must be empty at this point.");
+	Assert(mInFlightFences.empty(), "Array must be empty at this point.");
 
 	mInFlightFences.resize(MaxFramesInFlight);
 
@@ -207,7 +207,7 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 		uint32_t						SwapChainImageIndex,
 		//const VkCommandBuffer* const	CommandBufferHandle, // Should be allocated already.
 		const VkRenderPass* const		RenderPassHandle,
-		const FrameData& const			FrameData,
+		const FrameData&				FrameData,
 		const VertexBufferData* const	VertexBufferDataHandle,
 		const IndexBufferData* const	IndexBufferDataHandle,
 		const VkPipeline* const			PipelineHandle,
@@ -269,9 +269,11 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	RecordingRenderPassFuncDelegate.Bind<RecordingRenderPassFuncLambda>();
 
+	const std::string MainRenderPassID = "main";
+
 	GetRenderPassManager()->CreateRenderPass
 	(
-		"main", 
+		MainRenderPassID,
 		LogicalDevice,
 		1,
 		GetSwapChainImageViews(),
@@ -293,6 +295,7 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline
 	(
+		MainRenderPassID,
 		LogicalDevice,
 		GetSwapChainExtent(),
 		GetSwapChainImageFormat(),
@@ -303,24 +306,33 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 	);
 
 	// Descriptor Pool Creation and Descriptor Sets Update.
-	std::vector<VkDescriptorPoolSize> PoolSizes = 
+	std::vector<VkDescriptorPoolSize> PoolSizes =
 	{
 		{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
 		{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,  static_cast<uint32_t>(GetSwapChainImages()->size())},
 	};
 
 	VkDescriptorPoolCreateInfo DescriptorPoolCI = {};
-	
+
 	DescriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	DescriptorPoolCI.poolSizeCount = static_cast<uint32_t>(PoolSizes.size());
 	DescriptorPoolCI.pPoolSizes = PoolSizes.data();
 	DescriptorPoolCI.maxSets = static_cast<uint32_t>(GetSwapChainImages()->size());
 	DescriptorPoolCI.flags = 0;
 
-	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets("main", *LogicalDevice, DescriptorPoolCI, PoolSizes, GetMemoryManager(), uint32_t(GetSwapChainImages()->size()));
+	GetRenderPassManager()->GetPipelineSystem()->CreateDescriptorPoolAndUpdateDescriptorSets
+	(
+		MainRenderPassID,
+		*LogicalDevice,
+		DescriptorPoolCI,
+		PoolSizes,
+		GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSetLayouts()[0],
+		GetMemoryManager(),
+		uint32_t(GetSwapChainImages()->size())
+	);
 
 	// [Temp] There should be something like RecordingRenderPassFuncOneTime.
-	RenderPassData* const Data = GetRenderPassManager()->GetRenderPassData("main");
+	RenderPassData* const Data = GetRenderPassManager()->GetRenderPassData(MainRenderPassID);
 	for (int i = 0; i < GetSwapChainImages()->size(); i++)
 	{
 		Data->mRecordingRenderPassFunc.Invoke
@@ -330,9 +342,9 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 			Data->mFrameData[i],
 			(*GetMemoryManager()->GetVertexBufferData())[0].get(),
 			(*GetMemoryManager()->GetIndexBufferData())[0].get(),
-			GetRenderPassManager()->GetPipelineSystem()->GetPipelineHandle(),
-			GetRenderPassManager()->GetPipelineSystem()->GetPipelineLayout(),
-			&GetRenderPassManager()->GetPipelineSystem()->GetDescriptorSets()[0],
+			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mPipelineHandle,
+			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mPipelineLayout,
+			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mDescriptorSets[0],
 			GetSwapChainExtent(),
 			{ 0.1f, 0.1f, 0.1f, 1.f }
 		);

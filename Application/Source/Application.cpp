@@ -31,7 +31,7 @@ bool Application::Initiate()
 	//Temp
 	auto Rend = static_cast<RenderingInstance_SDL2_Vulkan*>(mRenderingSystem->GetRenderingInstance());
 	const ImageData* ImgData = Rend->GetSwapChainHandler()->GetMemoryManager()->GetImageDataByID("Main");
-	Rend->GetSwapChainHandler()->GetRenderPassManager()->GetPipelineSystem()->AssociateImage(ImgData);
+	Rend->GetSwapChainHandler()->GetRenderPassManager()->GetPipelineSystem()->AssociateImage("main", ImgData);
 	//~Temp
 
 	// EngineEditor

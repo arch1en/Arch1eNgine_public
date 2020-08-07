@@ -1,10 +1,18 @@
 #include "PipelineSystem.h"
 
+#include <memory>
+
 #include "Debug/LogSystem.h"
 #include "MemoryManager.h"
 
+PipelineSystem::PipelineSystem(const VkDevice* LogicalDevice)
+{
+	mDescriptorSetLayouts.push_back(CreateDescriptorSetLayout(*LogicalDevice));
+}
+
 void PipelineSystem::CreateGraphicsPipeline
 (
+	PipelineID ID,
 	const VkDevice* LogicalDevice,
 	VkExtent2D ViewportExtent,
 	VkFormat ImageFormat,
@@ -14,6 +22,8 @@ void PipelineSystem::CreateGraphicsPipeline
 	std::vector<char> ShaderCode_Fragment
 )
 {
+	PipelineData NewPipeline = {};
+
 	VkShaderModule ShaderModule_Vertex = mShaderSystem.CreateShaderModule(ShaderCode_Vertex, *LogicalDevice);
 	VkShaderModule ShaderModule_Fragment = mShaderSystem.CreateShaderModule(ShaderCode_Fragment, *LogicalDevice);
 
@@ -21,15 +31,15 @@ void PipelineSystem::CreateGraphicsPipeline
 	ShaderStageInfo_Vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	ShaderStageInfo_Vertex.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	ShaderStageInfo_Vertex.module = ShaderModule_Vertex;
-	ShaderStageInfo_Vertex.pName = "main";
+	ShaderStageInfo_Vertex.pName = ID.c_str();
 
 	VkPipelineShaderStageCreateInfo ShaderStageInfo_Fragment = {};
 	ShaderStageInfo_Fragment.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	ShaderStageInfo_Fragment.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	ShaderStageInfo_Fragment.module = ShaderModule_Fragment;
-	ShaderStageInfo_Fragment.pName = "main";
+	ShaderStageInfo_Fragment.pName = ID.c_str();
 
-	mShaderStages = { ShaderStageInfo_Vertex, ShaderStageInfo_Fragment };
+	const std::vector<VkPipelineShaderStageCreateInfo> ShaderStages = { ShaderStageInfo_Vertex, ShaderStageInfo_Fragment };
 
 	const VkVertexInputBindingDescription BindingDescription = MemoryManager->GetBindingDescription<Vertex>();
 	const std::vector<VkVertexInputAttributeDescription> AttributeDescriptions = MemoryManager->GetAttributeDescription<Vertex>();
@@ -108,35 +118,37 @@ void PipelineSystem::CreateGraphicsPipeline
 	ColorBlendState.blendConstants[2] = 0.f; // Optional
 	ColorBlendState.blendConstants[3] = 0.f; // Optional
 
+	NewPipeline.mPipelineLayout = CreatePipelineLayout(*LogicalDevice, &mDescriptorSetLayouts);
 	CreateDescriptorSetLayout(*LogicalDevice);
 	CreatePipelineLayout(*LogicalDevice, &mDescriptorSetLayouts);
 
 	VkGraphicsPipelineCreateInfo PipelineInfo = {};
 	PipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	PipelineInfo.stageCount = 2;
-	PipelineInfo.pStages = &mShaderStages[0]; // @todo : How to add more handles (if its possible).
+	PipelineInfo.stageCount = ShaderStages.size();
+	PipelineInfo.pStages = &ShaderStages[0]; // @todo : How to add more handles (if its possible).
 	PipelineInfo.pVertexInputState = &VertexInputInfo;
 	PipelineInfo.pInputAssemblyState = &InputAssembly;
 	PipelineInfo.pViewportState = &ViewportState;
 	PipelineInfo.pRasterizationState = &Rasterizer;
 	PipelineInfo.pMultisampleState = &Multisampling;
 	PipelineInfo.pColorBlendState = &ColorBlendState;
-	PipelineInfo.layout = mPipelineLayout;
+	PipelineInfo.layout = NewPipeline.mPipelineLayout;
 	PipelineInfo.renderPass = *RenderPassHandle;
 	PipelineInfo.subpass = 0;
 	PipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	PipelineInfo.basePipelineIndex = -1;
 
-	if (vkCreateGraphicsPipelines(*LogicalDevice, VK_NULL_HANDLE, 1, &PipelineInfo, nullptr, &mPipelineHandle) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(*LogicalDevice, VK_NULL_HANDLE, 1, &PipelineInfo, nullptr, &NewPipeline.mPipelineHandle) != VK_SUCCESS) {
 		LogVk(LogType::Error, 0, "Graphics pipeline creation failed !");
 	}
 
 	vkDestroyShaderModule(*LogicalDevice, ShaderModule_Vertex, nullptr);
 	vkDestroyShaderModule(*LogicalDevice, ShaderModule_Fragment, nullptr);
 
+	mPipelines.insert({ID, std::make_unique<PipelineData>(NewPipeline)});
 }
 
-void PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts)
+VkPipelineLayout PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vector<VkDescriptorSetLayout>* const DescriptorSetLayouts)
 {
 	VkPipelineLayoutCreateInfo PipelineLayoutInfo = {};
 	PipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -145,13 +157,17 @@ void PipelineSystem::CreatePipelineLayout(const VkDevice& Device, const std::vec
 	PipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	PipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-	if (vkCreatePipelineLayout(Device, &PipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
+	VkPipelineLayout NewPipelineLayout;
+
+	if (vkCreatePipelineLayout(Device, &PipelineLayoutInfo, nullptr, &NewPipelineLayout) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Pipeline layout creation failed !");
 	}
+	
+	return NewPipelineLayout;
 }
 
-void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
+VkDescriptorSetLayout PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 {
 	VkDescriptorSetLayoutBinding LayoutBindingUBO = {};
 	LayoutBindingUBO.binding = 0;
@@ -181,32 +197,33 @@ void PipelineSystem::CreateDescriptorSetLayout(const VkDevice& Device)
 		LogVk(LogType::Error, 0, "Descriptor set layout creation failed!");
 	}
 
-	mDescriptorSetLayouts.push_back(NewLayout);
+	return NewLayout;
 }
 
 
 void PipelineSystem::CreateDescriptorPoolAndUpdateDescriptorSets
 (
-	DescriptorPoolID DescPoolID,
+	PipelineID ID,
 	const VkDevice& LogicalDevice,
 	VkDescriptorPoolCreateInfo PoolCreateInfo,
 	std::vector<VkDescriptorPoolSize> PoolSizes,
+	VkDescriptorSetLayout LayoutToSet,
 	MemoryManager* MemoryManager, 
 	uint32_t NumSwapChainImages
 )
 {
-	CreateDescriptorPool(DescPoolID, LogicalDevice, PoolCreateInfo);
+	PipelineData* Data = GetPipelineData(ID);
 
-	std::vector<VkDescriptorSetLayout> LayoutsToSet(NumSwapChainImages, GetDescriptorSetLayouts()[0]);
+	Data->mDescriptorPool = CreateDescriptorPool(LogicalDevice, PoolCreateInfo);
 
-	AllocateDescriptorSets(DescPoolID, LogicalDevice, LayoutsToSet, NumSwapChainImages);
-	UpdateDescriptorSets(DescPoolID, LogicalDevice, MemoryManager, NumSwapChainImages);
+	std::vector<VkDescriptorSetLayout> LayoutsToSet(NumSwapChainImages, LayoutToSet);
+
+	AllocateDescriptorSets(ID, LogicalDevice, LayoutsToSet, NumSwapChainImages);
+	UpdateDescriptorSets(ID, LogicalDevice, MemoryManager, NumSwapChainImages);
 }
 
-void PipelineSystem::CreateDescriptorPool(const DescriptorPoolID& DescPoolID, const VkDevice& LogicalDevice, const VkDescriptorPoolCreateInfo& DescriptorPoolCI)
+VkDescriptorPool PipelineSystem::CreateDescriptorPool(const VkDevice& LogicalDevice, const VkDescriptorPoolCreateInfo& DescriptorPoolCI)
 {
-	Assert(DescPoolID.compare("") != 0, "Descriptor pool ID cannot be empty!");
-
 	VkDescriptorPool Pool;
 
 	if (vkCreateDescriptorPool(LogicalDevice, &DescriptorPoolCI, nullptr, &Pool) != VK_SUCCESS)
@@ -214,28 +231,32 @@ void PipelineSystem::CreateDescriptorPool(const DescriptorPoolID& DescPoolID, co
 		LogVk(LogType::Error, 0, "Descriptor pool creation failed!");
 	}
 
-	mDescriptorPools.insert({ DescPoolID, Pool });
+	return Pool;
 }
 
-void PipelineSystem::AllocateDescriptorSets(const DescriptorPoolID& DescPoolID, const VkDevice& LogicalDevice, const std::vector<VkDescriptorSetLayout>& LayoutsToSet, uint32_t NumSwapChainImages)
+void PipelineSystem::AllocateDescriptorSets(const PipelineID& ID, const VkDevice& LogicalDevice, const std::vector<VkDescriptorSetLayout>& LayoutsToSet, uint32_t NumSwapChainImages)
 {
+	PipelineData* Data = GetPipelineData(ID);
+
 	VkDescriptorSetAllocateInfo AllocInfo = {};
 
 	AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	AllocInfo.descriptorPool = *GetDescriptorPool(DescPoolID);
+	AllocInfo.descriptorPool = Data->mDescriptorPool;
 	AllocInfo.descriptorSetCount = NumSwapChainImages;
 	AllocInfo.pSetLayouts = LayoutsToSet.data();
 
-	mDescriptorSets.resize(NumSwapChainImages);
+	Data->mDescriptorSets.resize(NumSwapChainImages);
 
-	if (vkAllocateDescriptorSets(LogicalDevice, &AllocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+	if (vkAllocateDescriptorSets(LogicalDevice, &AllocInfo, Data->mDescriptorSets.data()) != VK_SUCCESS)
 	{
 		LogVk(LogType::Error, 0, "Descriptor sets allocation failed!");
 	}
 }
 
-void PipelineSystem::UpdateDescriptorSets(const DescriptorPoolID& DescPoolID, const VkDevice& LogicalDevice, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
+void PipelineSystem::UpdateDescriptorSets(const PipelineID& ID, const VkDevice& LogicalDevice, MemoryManager* MemoryManager, uint32_t NumSwapChainImages)
 {
+	PipelineData* Data = GetPipelineData(ID);
+
 	for (size_t i = 0; i < NumSwapChainImages; i++)
 	{
 		int Binding = 0;
@@ -250,7 +271,7 @@ void PipelineSystem::UpdateDescriptorSets(const DescriptorPoolID& DescPoolID, co
 		VkWriteDescriptorSet UboDescriptorWrite = {};
 
 		UboDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		UboDescriptorWrite.dstSet = mDescriptorSets[i];
+		UboDescriptorWrite.dstSet = Data->mDescriptorSets[i];
 		UboDescriptorWrite.dstBinding = Binding++;
 		UboDescriptorWrite.dstArrayElement = 0;
 		UboDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -261,9 +282,11 @@ void PipelineSystem::UpdateDescriptorSets(const DescriptorPoolID& DescPoolID, co
 
 		DescriptorWrites.push_back(UboDescriptorWrite);
 
-		if (mAssociatedImageData.size() > 0)
+		if (mAssociatedImageData.empty() == false)
 		{
-			for (const ImageData* ImageDataRef : mAssociatedImageData)
+			std::vector<const ImageData*>& AssociatedImageDataRef = mAssociatedImageData.at(ID);
+
+			for (const ImageData* ImageDataRef : AssociatedImageDataRef)
 			{
 				VkDescriptorImageInfo ImageInfo = {};
 				ImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -273,7 +296,7 @@ void PipelineSystem::UpdateDescriptorSets(const DescriptorPoolID& DescPoolID, co
 				VkWriteDescriptorSet ImageDescriptorWrite = {};
 
 				ImageDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				ImageDescriptorWrite.dstSet = mDescriptorSets[i];
+				ImageDescriptorWrite.dstSet = Data->mDescriptorSets[i];
 				ImageDescriptorWrite.dstBinding = Binding++;
 				ImageDescriptorWrite.dstArrayElement = 0;
 				ImageDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -291,23 +314,25 @@ void PipelineSystem::UpdateDescriptorSets(const DescriptorPoolID& DescPoolID, co
 
 void PipelineSystem::CleanUp(const VkDevice& Device)
 {
-	if (mPipelineHandle != VK_NULL_HANDLE)
+	for (auto& i : mPipelines)
 	{
-		vkDestroyPipeline(Device, mPipelineHandle, nullptr);
-		mPipelineHandle = VK_NULL_HANDLE;
+		if (i.second->mPipelineHandle != VK_NULL_HANDLE)
+		{
+			vkDestroyPipeline(Device, i.second->mPipelineHandle, nullptr);
+			i.second->mPipelineHandle = VK_NULL_HANDLE;
+		}
+
+		if (i.second->mPipelineLayout != VK_NULL_HANDLE)
+		{
+			vkDestroyPipelineLayout(Device, i.second->mPipelineLayout, nullptr);
+			i.second->mPipelineLayout = VK_NULL_HANDLE;
+		}
+
+		vkDestroyDescriptorPool(Device, i.second->mDescriptorPool, nullptr);
+		// Descriptor sets will be automatically freed when descriptor pool is destroyed.
 	}
 
-	if (mPipelineLayout != VK_NULL_HANDLE)
-	{
-		vkDestroyPipelineLayout(Device, mPipelineLayout, nullptr);
-		mPipelineLayout = VK_NULL_HANDLE;
-	}
-
-	for (auto iter = mDescriptorPools.rbegin(); iter != mDescriptorPools.rend(); ++iter)
-	{
-		vkDestroyDescriptorPool(Device, iter->second, nullptr);
-	}
-	mDescriptorPools.clear();
+	mPipelines.erase(mPipelines.begin(), mPipelines.end());
 }
 
 void PipelineSystem::Destroy(const VkDevice& Device)
@@ -322,14 +347,9 @@ void PipelineSystem::Destroy(const VkDevice& Device)
 	mDescriptorSetLayouts.erase(mDescriptorSetLayouts.begin(), mDescriptorSetLayouts.end());
 }
 
-const VkPipeline* PipelineSystem::GetPipelineHandle() const
+PipelineData* PipelineSystem::GetPipelineData(const PipelineID& ID) const
 {
-	return &mPipelineHandle;
-}
-
-const VkPipelineLayout* PipelineSystem::GetPipelineLayout() const
-{
-	return &mPipelineLayout;
+	return mPipelines.at(ID).get();
 }
 
 const std::vector<VkDescriptorSetLayout>& PipelineSystem::GetDescriptorSetLayouts() const
@@ -337,27 +357,22 @@ const std::vector<VkDescriptorSetLayout>& PipelineSystem::GetDescriptorSetLayout
 	return mDescriptorSetLayouts;
 }
 
-const VkDescriptorPool* const PipelineSystem::GetMainDescriptorPool()
+void PipelineSystem::AssociateImage(const PipelineID& ID, const ImageData* Data)
 {
-	return GetDescriptorPool("main");
-}
+	auto Found = mAssociatedImageData.find(ID);
 
-const VkDescriptorPool* const PipelineSystem::GetDescriptorPool(DescriptorPoolID ID) 
-{
-	return &mDescriptorPools[ID];
-}
 
-const std::vector<VkDescriptorSet> PipelineSystem::GetDescriptorSets()
-{
-	return mDescriptorSets;
-}
-
-void PipelineSystem::AssociateImage(const ImageData* Data)
-{
-	auto Iterator = std::find(mAssociatedImageData.begin(), mAssociatedImageData.end(), Data);
-	if (Iterator == mAssociatedImageData.end())
+	if (Found == mAssociatedImageData.end())
 	{
-		mAssociatedImageData.push_back(Data);
+		CreateImageAssociationCategory(ID);
+	}
+
+	auto& AssociatedImageDataRef = mAssociatedImageData.at(ID);
+
+	auto Iterator = std::find(AssociatedImageDataRef.begin(), AssociatedImageDataRef.end(), Data);
+	if (Iterator == AssociatedImageDataRef.end())
+	{
+		AssociatedImageDataRef.push_back(Data);
 	}
 	else
 	{
@@ -365,15 +380,37 @@ void PipelineSystem::AssociateImage(const ImageData* Data)
 	}
 }
 
-void PipelineSystem::DissociateImage(const ImageData* Data)
+void PipelineSystem::DissociateImage(const PipelineID& ID, const ImageData* Data)
 {
-	auto Iterator = std::find(mAssociatedImageData.begin(), mAssociatedImageData.end(), Data);
-	if (Iterator != mAssociatedImageData.end())
+	auto AssociatedImageDataRef = mAssociatedImageData.at(ID);
+
+	auto Iterator = std::find(AssociatedImageDataRef.begin(), AssociatedImageDataRef.end(), Data);
+	if (Iterator != AssociatedImageDataRef.end())
 	{
-		mAssociatedImageData.erase(Iterator);
+		AssociatedImageDataRef.erase(Iterator);
 	}
 	else
 	{
 		LogVk(LogType::Error, 0, "Image could not be dissociated, missing from the association array!");
 	}
+
+	if (AssociatedImageDataRef.empty())
+	{
+		DestroyImageAssociationCategory(ID);
+	}
+}
+
+void PipelineSystem::CreateImageAssociationCategory(const PipelineID ID)
+{
+	auto Found = mAssociatedImageData.find(ID);
+	if (Found == mAssociatedImageData.end())
+	{
+		mAssociatedImageData.insert({ID, std::vector<const ImageData*>()});
+	}
+}
+
+void PipelineSystem::DestroyImageAssociationCategory(const PipelineID ID)
+{
+	auto Found = mAssociatedImageData.find(ID);
+	mAssociatedImageData.erase(Found);
 }

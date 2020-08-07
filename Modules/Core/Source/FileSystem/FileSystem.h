@@ -36,8 +36,6 @@ class FileSystem
 {
 public:
 	
-
-
 	FileSystem();
 	FileSystem(const FileSystem&) = delete;
 	FileSystem(FileSystem&&) = delete;

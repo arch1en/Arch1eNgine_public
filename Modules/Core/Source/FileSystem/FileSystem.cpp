@@ -62,12 +62,13 @@ FileSystem::FileSystem()
 {
 	char* BasePath = SDL_GetBasePath();
 
-	std::string Path = BasePath;
-	const int Position = static_cast<int>(FindOccurenceFromString(Path.c_str(), GetPathSeparator(), 3, true));
-	
-	std::string NewDir = Path.substr(0, Position);
-
-	RootDir = NewDir;
+		
+	int Position = static_cast<int>(FindOccurenceFromString(BasePath, GetPathSeparator(), 3, true));
+	RootDir.resize(Position);
+	for (auto i = 0; i < Position; i++)
+	{
+		RootDir[i] = BasePath[i];
+	}
 
 	SDL_free(reinterpret_cast<void*>(const_cast<char*>(BasePath)));
 }

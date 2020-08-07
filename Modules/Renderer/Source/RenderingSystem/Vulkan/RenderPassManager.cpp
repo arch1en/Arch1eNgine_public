@@ -2,14 +2,14 @@
 #include "Debug/LogSystem.h"
 #include "VulkanUtilities.h"
 
-RenderPassManager::RenderPassManager()
+RenderPassManager::RenderPassManager(const VkDevice* LogicalDevice)
 {
-	CreatePipelineSystem();
+	CreatePipelineSystem(LogicalDevice);
 }
 
-void RenderPassManager::CreatePipelineSystem()
+void RenderPassManager::CreatePipelineSystem(const VkDevice* LogicalDevice)
 {
-	mPipelineSystem = std::make_unique<PipelineSystem>();
+	mPipelineSystem = std::make_unique<PipelineSystem>(LogicalDevice);
 }
 
 PipelineSystem* const RenderPassManager::GetPipelineSystem() const

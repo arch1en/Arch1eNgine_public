@@ -1,3 +1,11 @@
+// Order of binding : 
+// - Renderpass 
+// - Pipeline
+// - Descriptor sets
+// - Vertex buffers 
+// - Push constants
+// Former should be changed less frequently than the latter.
+
 #ifndef RENDERPASSMANAGER_H
 #define RENDERPASSMANAGER_H
 
@@ -20,7 +28,7 @@ using RecordingRenderPassDelegate = Delegate<void
 (
 	uint32_t						SwapChainImageIndex,
 	const VkRenderPass* const		RenderPassHandle,
-	const FrameData& const			FrameData,
+	const FrameData&				FrameData,
 	const VertexBufferData* const	VertexBufferDataHandle,
 	const IndexBufferData* const	IndexBufferDataHandle,
 	const VkPipeline* const			PipelineHandle,
@@ -62,7 +70,8 @@ class RenderPassManager
 {
 public:
 
-	RenderPassManager();
+	RenderPassManager() = delete;
+	explicit RenderPassManager(const VkDevice* LogicalDevice);
 	
 	void CreateRenderPass
 	(
@@ -90,7 +99,7 @@ public:
 	const VkRenderPass* const GetRenderPassHandle(const RenderPassID& ID);
 	
 	// Pipeline
-	void CreatePipelineSystem();
+	void CreatePipelineSystem(const VkDevice* LogicalDevice);
 	PipelineSystem* const	GetPipelineSystem() const;
 	// ~Pipeline
 

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp" />
     <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.c" />
     <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.cpp" />
@@ -56,6 +57,7 @@
     <ClCompile Include="..\..\Source\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.h" />
     <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.h" />
     <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.h" />
     <ClInclude Include="..\..\..\Dependencies\IMGUI\Source\imgui.h" />
@@ -164,15 +166,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

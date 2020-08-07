@@ -1,0 +1,35 @@
+Project:
+    Name: Arch1eNgine
+
+Configurations:
+    -   Name: Debug
+        Platforms:
+        -   Name: Win64
+            DebugLevel: 1
+            WarningLevel: 3
+            SDLCheck: true
+            LinkIncremental: true
+            ConformanceMode: true
+            WholeProgramOptimization: false
+            PreprocessorDefinitions :
+            -   BUILD_DEBUG
+                TRACEDESIGNTIME
+    -   Name: Release
+        Platforms:
+        -   Name: Win64
+            DebugLevel: 0
+            WarningLevel: 3
+            SDLCheck: true
+            LinkIncremental: false
+            ConformanceMode: true
+            WholeProgramOptimization: true
+            PreprocessorDefinitions :
+            -    BUILD_RELEASE
+ProjectBuilders:
+    -   Name: MSVS
+        DefaultProjectVersion: 16.0
+        DefaultWindowsSdkVersion: 
+        MinimumVisualStudioVersion: 16.0.29728.190
+        WindowsTargetPlatformVersion: 10.0
+        PlatformToolset: v142
+        CharacterSet: Unicode
