@@ -33,6 +33,7 @@
     <ClCompile Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.cpp" />
     <ClCompile Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.cpp" />
     <ClCompile Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.cpp" />
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp" />
     <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Mesh.cpp" />
     <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Vertex.cpp" />
     <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_OpenGL.cpp" />
@@ -75,6 +76,7 @@
     <ClInclude Include="..\..\..\Modules\Core\Source\Utilities.h" />
     <ClInclude Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.h" />
     <ClInclude Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.h" />
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.h" />
     <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Mesh.h" />
     <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\Vertex.h" />
     <ClInclude Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_Impl.h" />
@@ -181,13 +183,13 @@
       <PreprocessorDefinitions>PLATFORM_WIN32;ARCHITECTURE_X86;_CONSOLE;%(PreprocessorDefinitions);DEBUG;DEBUG;DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\VulkanSDK\1.1.97.0\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\_SDK\VulkanSDK\1.1.97.0\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;$(SolutionDir)Dependencies\ASSIMP\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -199,13 +201,13 @@
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions);DEBUG;PLATFORM_WIN64;ARCHITECTURE_X86_64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\VulkanSDK\1.1.97.0\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\_SDK\VulkanSDK\1.1.97.0\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;$(SolutionDir)Dependencies\ASSIMP\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -219,15 +221,15 @@
       <PreprocessorDefinitions>PLATFORM_WIN32;ARCHITECTURE_X86;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\VulkanSDK\1.1.97.0\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\_SDK\VulkanSDK\1.1.97.0\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;$(SolutionDir)Dependencies\ASSIMP\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -241,15 +243,15 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);PLATFORM_WIN64;ARCHITECTURE_X64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\VulkanSDK\1.1.97.0\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\_SDK\VulkanSDK\1.1.97.0\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\_SDK\Vulkan\1.2.131.1\Lib;$(SolutionDir)Dependencies\SDL2\Binaries;$(SolutionDir)Dependencies\ASSIMP\Libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2d.lib;vulkan-1.lib;OpenGL32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

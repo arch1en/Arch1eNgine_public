@@ -291,18 +291,16 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 	GetMemoryManager()->CreateUniformBuffers(UniformBufferCI, static_cast<uint8_t>(mSwapChainImages.size()));
 
-	PipelineSystemCreationInfo PipelineCreationInfo = {};
-
-	PipelineCreationInfo.mLogicalDevice = LogicalDevice;
-	PipelineCreationInfo.mImageFormat = GetSwapChainImageFormat();
-	PipelineCreationInfo.mViewportExtent = GetSwapChainExtent();
-	PipelineCreationInfo.mRenderPassHandle = GetRenderPassManager()->GetMainRenderPassHandle();
-	PipelineCreationInfo.mMemoryManager = GetMemoryManager();
-
-	PipelineCreationInfo.mShaderCode_Vertex = FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.vert.spv");
-	PipelineCreationInfo.mShaderCode_Fragment = FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.frag.spv");
-
-	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline(PipelineCreationInfo);
+	GetRenderPassManager()->GetPipelineSystem()->CreateGraphicsPipeline
+	(
+		LogicalDevice,
+		GetSwapChainExtent(),
+		GetSwapChainImageFormat(),
+		GetRenderPassManager()->GetMainRenderPassHandle(),
+		GetMemoryManager(),
+		FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.vert.spv"),
+		FileSystem::RetrieveBinaryDataFromFile("Renderer", "Shaders/Main.frag.spv")
+	);
 
 	// Descriptor Pool Creation and Descriptor Sets Update.
 	std::vector<VkDescriptorPoolSize> PoolSizes = 

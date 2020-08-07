@@ -1,7 +1,7 @@
 #include "MemoryManager.h"
 
 #include "DeviceHandler.h"
-
+#include <stdexcept>
 #include <glm/gtx/transform.hpp>
 
 #include "Debug/LogSystem.h"
@@ -71,6 +71,8 @@ void BufferFactory::Destroy(const VkDevice& LogicalDevice)
 
 std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
+	// Intermediate or temporary resource used to transfer data from an application (CPU) to a graphics card’s memory (GPU).
+	// Moving memory from staging buffer (GPU) to eg. vertex buffer (GPU) is more performant.
 	std::unique_ptr<BufferData> StagingBuffer = CreateBufferInternal
 	(
 		CreationInfo.mBufferCreationInfo.mLogicalDevice,
@@ -267,7 +269,7 @@ void MemoryManager::CreateUniformBuffers(const GeneralBufferCreationInfo& Creati
 void MemoryManager::UpdateUniformBuffer(const VkDevice* LogicalDevice, float DeltaTime, uint32_t ImageIndex, VkExtent2D ViewportExtent)
 {
 	// @temp
-	const float FOV = 45.f;
+	const float FOV = 90.f;
 
 	UniformBufferObject UBO = {};
 	UBO.Model = glm::rotate(glm::mat4(1.f), DeltaTime * glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));

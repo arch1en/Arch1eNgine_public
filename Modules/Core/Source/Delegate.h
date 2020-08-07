@@ -75,6 +75,7 @@ private:
 	bool IsBound;
 };
 
+// A type of delegate, that can contain multiple invocation methods.
 template<typename T>
 class MulticastDelegate;
 

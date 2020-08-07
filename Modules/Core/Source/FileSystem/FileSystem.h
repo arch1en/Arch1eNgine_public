@@ -62,7 +62,7 @@ public:
 
 private:
 
-	const char* RootDir = nullptr;
+	std::string RootDir;
 
 };
 
