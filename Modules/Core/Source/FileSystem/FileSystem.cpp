@@ -2,9 +2,11 @@
 
 #include <algorithm>
 #include <fstream>
+#include <filesystem>
+
 #include <SDL_filesystem.h>
 
-ErrorHandle FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)
+ auto FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)->ErrorHandle
 {
 	ErrorHandle Result;
 
@@ -44,7 +46,7 @@ ErrorHandle FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)
 }
 
 // [Todo] Adapt name to mention that we are extracting data from the assets dir folder or make this function load from absolute path.
-std::vector<char> FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const std::string& FileName)
+auto FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const std::string& FileName)->std::vector<char>
 {
 	FileData Data;
 	std::string AssetsDir = FileSystem::Get()->GetModuleAssetsDir(ModuleName);
@@ -56,6 +58,38 @@ std::vector<char> FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName,
 	}
 
 	return Data.Data;
+}
+
+auto FileSystem::GetAssetNameFromPath(const std::string ModuleName, const std::string ModuleRelativePath) ->const std::string
+{
+#if BUILD_CONFIGURATION >= BUILD_CONFIGURATION_DEBUG
+	const std::string AssetAbsolutePath{ GetAssetAbsolutePath(ModuleName, ModuleRelativePath) };
+	if (!VerifyFileExistence(AssetAbsolutePath))
+	{
+		Log(LogType::Warning, 0, "File non-existing : %s.", AssetAbsolutePath);
+	}
+#endif
+
+	auto Position = FileSystem::FindOccurenceFromString(Path(ModuleRelativePath).c_str(), GetPathSeparator(), 1, true);
+
+	std::string Result(ModuleRelativePath.begin() + Position+1, ModuleRelativePath.end());
+
+	return Result;
+}
+
+auto FileSystem::GetAssetAbsolutePath(const std::string ModuleName, const std::string ModuleRelativePath) -> const std::string
+{
+	return Path(FileSystem::Get()->GetModuleAssetsDir(ModuleName.c_str()) / ModuleRelativePath);
+}
+
+auto FileSystem::GetAssetShortPathFromPath(const std::string ModuleName, const std::string ModuleRelativePath) ->const std::string
+{
+	return Path(ModuleName / "Assets" / ModuleRelativePath);
+}
+
+auto FileSystem::VerifyFileExistence(const std::string AbsolutePath) ->bool
+{
+	return std::filesystem::exists(AbsolutePath);
 }
 
 FileSystem::FileSystem()
@@ -99,7 +133,8 @@ std::string FileSystem::GetModuleAssetsDir(const char* ModuleName)
 	return Result;
 }
 
-size_t FileSystem::FindOccurenceFromString(const char* String, const char* Token, int OccurenceNumber, bool Reversed)
+// [Todo] Add 1 to the result.
+auto FileSystem::FindOccurenceFromString(const char* String, const char* Token, int OccurenceNumber, bool Reversed)->const size_t
 {
 	std::string SString = String;
 	size_t Position;

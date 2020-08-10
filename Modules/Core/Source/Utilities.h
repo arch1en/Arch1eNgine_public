@@ -40,14 +40,14 @@ inline std::string operator/(const std::string& LHS, const std::string& RHS)
 	return LHS + "/" + RHS;
 }
 
-inline std::string operator/(std::string LHS, const std::string& RHS)
+inline std::string operator/(const std::string& LHS, const char* RHS)
 {
 	return LHS + "/" + RHS;
 }
 
-inline std::string operator/(const std::string& LHS, const char* RHS)
+inline std::string operator/(const char* LHS, const std::string RHS)
 {
-	return LHS + "/" + RHS;
+	return std::string(LHS) + "/" + RHS;
 }
 
 #endif
