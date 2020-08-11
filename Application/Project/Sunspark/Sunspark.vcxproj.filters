@@ -75,9 +75,6 @@
     <ClCompile Include="..\..\..\Modules\Renderer\Source\RenderingSystem\Instance\RenderingInstance_SDL2_OpenGL.cpp">
       <Filter>Modules\Renderer\RenderingSystem\Instance</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.c">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.cpp">
       <Filter>Modules\Core\FileSystem</Filter>
     </ClCompile>
@@ -102,6 +99,11 @@
     <ClCompile Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp">
       <Filter>Modules\Renderer\GeometrySystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\pch.cpp">
+      <Filter>Modules\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Application.h" />
@@ -242,6 +244,10 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.h">
       <Filter>Modules\Renderer\GeometrySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\pch.h">
+      <Filter>Modules\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

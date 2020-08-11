@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Arch1eNgine\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp" />
-    <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.c" />
+    <ClCompile Include="..\..\..\Dependencies\GLAD\Source\src\glad.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_sdl.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\examples\imgui_impl_vulkan.cpp" />
     <ClCompile Include="..\..\..\Dependencies\IMGUI\Source\imgui.cpp" />
@@ -32,6 +32,12 @@
     <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LoggerImpl\Logger_Vulkan.cpp" />
     <ClCompile Include="..\..\..\Modules\Core\Source\Debug\LogSystem.cpp" />
     <ClCompile Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.cpp" />
+    <ClCompile Include="..\..\..\Modules\Core\Source\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.cpp" />
     <ClCompile Include="..\..\..\Modules\Renderer\Source\Configurators\Window_RenderingInstance_Configurator.cpp" />
     <ClCompile Include="..\..\..\Modules\Renderer\Source\GeometrySystem\GeometrySystemUtilities.cpp" />
@@ -74,6 +80,7 @@
     <ClInclude Include="..\..\..\Modules\Core\Source\Debug\LogSystemUtilities.h" />
     <ClInclude Include="..\..\..\Modules\Core\Source\Delegate.h" />
     <ClInclude Include="..\..\..\Modules\Core\Source\FileSystem\FileSystem.h" />
+    <ClInclude Include="..\..\..\Modules\Core\Source\pch.h" />
     <ClInclude Include="..\..\..\Modules\Core\Source\UniquePtr.h" />
     <ClInclude Include="..\..\..\Modules\Core\Source\Utilities.h" />
     <ClInclude Include="..\..\..\Modules\EngineEditor\Source\EngineEditor.h" />
@@ -182,14 +189,15 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WIN32;ARCHITECTURE_X86;_CONSOLE;%(PreprocessorDefinitions);DEBUG;DEBUG;DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -200,14 +208,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions);DEBUG;PLATFORM_WIN64;ARCHITECTURE_X86_64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -218,8 +227,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -228,6 +236,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -240,8 +250,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -250,6 +259,8 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Modules\Core\Source;$(SolutionDir)Modules\Math\Source;$(SolutionDir)Modules\Renderer\Source;$(SolutionDir)Dependencies\SDL2\Source\include;$(SolutionDir)Dependencies\ASSIMP\Source\include;$(SolutionDir)Dependencies\GLAD\Source\include;$(SolutionDir)Dependencies\GLM\Source;$(SolutionDir)Dependencies\IMGUI\Source;$(SolutionDir)Dependencies\STB_Image\Source;D:\_SDK\Vulkan\1.2.131.1\Include;$(SolutionDir)Modules\EngineEditor\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
