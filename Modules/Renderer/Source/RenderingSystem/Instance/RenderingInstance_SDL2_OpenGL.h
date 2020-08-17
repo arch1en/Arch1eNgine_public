@@ -26,6 +26,7 @@ public:
 	void SetClearColor(Vector4<float> ClearColor) override;
 	void ResizeCanvas(int Width, int Height) override {}
 	void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override;
+	void LoadMesh(const string ModuleName, const string ModuleRelativePath) override {};
 	void LoadTextureImage(const char* Path, TextureImageFormat Format, const std::string& TextureID) override {}
 	void LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const std::string& TextureID) override {}
 	// End I::RenderingInstance_Impl Interface

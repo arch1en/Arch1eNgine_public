@@ -47,27 +47,27 @@ public:
 	static FileSystem* const Get();
 	
 	const char* GetRootDir();
-	std::string GetModuleAssetsDir(const char* ModuleName);
+	string GetModuleAssetsDir(const char* ModuleName);
 
 	// Convert path 
-	static std::string Path(const std::string& String);
+	static string Path(const string& String);
 
-	static std::string ReplaceStringOccurences(std::string Source, const char* ReplaceFrom, const char* ReplaceTo);
+	static string ReplaceStringOccurences(string Source, const char* ReplaceFrom, const char* ReplaceTo);
 
 	static auto FindOccurenceFromString(const char* String, const char* Token, int OccurenceNumber, bool Reversed = false)->const size_t;
 
 	static auto Open(const char* Path, FileData& Data, uint8_t Options)-> ErrorHandle;
-	static auto RetrieveBinaryDataFromFile(const char* ModuleName, const std::string& FileName)->std::vector<char>;
+	static auto RetrieveBinaryDataFromFile(const char* ModuleName, const string& FileName)->std::vector<char>;
 
-	static auto GetAssetNameFromPath(const std::string ModuleName, const std::string ModuleRelativePath)-> const std::string;
-	static auto GetAssetAbsolutePath(const std::string ModuleName, const std::string ModuleRelativePath)-> const std::string;
-	static auto GetAssetShortPathFromPath(const std::string ModuleName, const std::string ModuleRelativePath)->const std::string;
+	static auto GetAssetNameFromPath(const string ModuleName, const string ModuleRelativePath)-> const string;
+	static auto GetAssetAbsolutePath(const string ModuleName, const string ModuleRelativePath)-> const string;
+	static auto GetAssetShortPathFromPath(const string ModuleName, const string ModuleRelativePath)->const string;
 
-	static auto VerifyFileExistence(const std::string AbsolutePath)->bool;
+	static auto VerifyFileExistence(const string AbsolutePath)->bool;
 
 private:
 
-	std::string RootDir;
+	string RootDir;
 
 };
 

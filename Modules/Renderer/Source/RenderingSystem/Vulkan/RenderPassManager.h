@@ -20,6 +20,8 @@
 
 using RenderPassID = std::string;
 
+class MemoryManager;
+
 struct VertexBufferData;
 struct IndexBufferData;
 struct FrameData;
@@ -29,8 +31,7 @@ using RecordingRenderPassDelegate = Delegate<void
 	uint32_t						SwapChainImageIndex,
 	const VkRenderPass* const		RenderPassHandle,
 	const FrameData&				FrameData,
-	const VertexBufferData* const	VertexBufferDataHandle,
-	const IndexBufferData* const	IndexBufferDataHandle,
+	const MemoryManager* const		MemoryManagerHandle,
 	const VkPipeline* const			PipelineHandle,
 	const VkPipelineLayout* const	PipelineLayoutHandle,
 	const VkDescriptorSet* const	DescriptorSetHandle,

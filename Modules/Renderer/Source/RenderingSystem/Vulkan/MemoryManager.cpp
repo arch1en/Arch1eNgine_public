@@ -1,9 +1,10 @@
 #include "MemoryManager.h"
 
-#include "DeviceHandler.h"
 #include <stdexcept>
+
 #include <glm/gtx/transform.hpp>
 
+#include "DeviceHandler.h"
 #include "Debug/LogSystem.h"
 
 void BufferFactory::Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH)
@@ -15,7 +16,7 @@ void BufferFactory::Initiate(const VkDevice& LogicalDevice, const QueueFamilyHan
 	vkCreateCommandPool(LogicalDevice, &CommandPoolCI, nullptr, &mMemoryOperationsCommandPool);
 }
 
-std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
+uptr<BufferData>	BufferFactory::CreateBufferInternal
 (
 	const VkDevice* LogicalDevice,
 	const VkPhysicalDevice* PhysicalDevice,
@@ -61,7 +62,7 @@ std::unique_ptr<BufferData>	BufferFactory::CreateBufferInternal
 		LogVk(LogType::Error, 0, "Buffer memory allocation failed!");
 	}
 
-	return std::unique_ptr<BufferData>(NewBufferData);
+	return uptr<BufferData>(NewBufferData);
 }
 
 void BufferFactory::Destroy(const VkDevice& LogicalDevice)
@@ -69,11 +70,11 @@ void BufferFactory::Destroy(const VkDevice& LogicalDevice)
 	vkDestroyCommandPool(LogicalDevice, mMemoryOperationsCommandPool, nullptr);
 }
 
-std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+uptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
 	// Intermediate or temporary resource used to transfer data from an application (CPU) to a graphics card’s memory (GPU).
 	// Moving memory from staging buffer (GPU) to eg. vertex buffer (GPU) is more performant.
-	std::unique_ptr<BufferData> StagingBuffer = CreateBufferInternal
+	uptr<BufferData> StagingBuffer = CreateBufferInternal
 	(
 		CreationInfo.mBufferCreationInfo.mLogicalDevice,
 		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
@@ -84,7 +85,7 @@ std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const Genera
 
 	MemoryManagementMethods::MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, CreationInfo.mBufferCreationInfo.mDataSize, StagingBuffer->mBufferMemory);
 
-	std::unique_ptr<BufferData> VertexBuffer = CreateBufferInternal
+	uptr<BufferData> VertexBuffer = CreateBufferInternal
 	(
 		CreationInfo.mBufferCreationInfo.mLogicalDevice,
 		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
@@ -103,12 +104,12 @@ std::unique_ptr<VertexBufferData> BufferFactory::CreateVertexBuffer(const Genera
 	NewVertexBufferData->mBufferData = *VertexBuffer;
 	NewVertexBufferData->mVertices = Vertices;
 
-	return std::unique_ptr<VertexBufferData>(NewVertexBufferData);
+	return uptr<VertexBufferData>(NewVertexBufferData);
 }
 
-std::unique_ptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Vertices)
+uptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Vertices)
 {
-	std::unique_ptr<BufferData> StagingBuffer = CreateBufferInternal
+	uptr<BufferData> StagingBuffer = CreateBufferInternal
 	(
 		CreationInfo.mBufferCreationInfo.mLogicalDevice,
 		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
@@ -119,7 +120,7 @@ std::unique_ptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralB
 
 	MemoryManagementMethods::MapMemory(*CreationInfo.mBufferCreationInfo.mLogicalDevice, Vertices.data(), StagingBuffer->mBuffer, CreationInfo.mBufferCreationInfo.mDataSize, StagingBuffer->mBufferMemory);
 
-	std::unique_ptr<BufferData> IndexBuffer = CreateBufferInternal
+	uptr<BufferData> IndexBuffer = CreateBufferInternal
 	(
 		CreationInfo.mBufferCreationInfo.mLogicalDevice,
 		CreationInfo.mBufferCreationInfo.mPhysicalDevice,
@@ -138,10 +139,10 @@ std::unique_ptr<IndexBufferData> BufferFactory::CreateIndexBuffer(const GeneralB
 	NewIndexBufferData->mBufferData = *IndexBuffer;
 	NewIndexBufferData->mIndices = Vertices;
 
-	return std::unique_ptr<IndexBufferData>(NewIndexBufferData);
+	return uptr<IndexBufferData>(NewIndexBufferData);
 }
 
-std::unique_ptr<BufferData>	BufferFactory::CreateGeneralBuffer(const GeneralBufferCreationInfo& CreationInfo)
+uptr<BufferData>	BufferFactory::CreateGeneralBuffer(const GeneralBufferCreationInfo& CreationInfo)
 {
 	return CreateBufferInternal
 	(
@@ -155,7 +156,7 @@ std::unique_ptr<BufferData>	BufferFactory::CreateGeneralBuffer(const GeneralBuff
 
 }
 
-std::unique_ptr<BufferData>	BufferFactory::CreateUniformBuffer(const GeneralBufferCreationInfo& CreationInfo)
+uptr<BufferData>	BufferFactory::CreateUniformBuffer(const GeneralBufferCreationInfo& CreationInfo)
 {
 	return CreateBufferInternal
 	(
@@ -243,16 +244,25 @@ MemoryManager::MemoryManager(const VkDevice& LogicalDevice, const QueueFamilyHan
 	mBufferFactory->Initiate(LogicalDevice, QFH);
 }
 
-void MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
+void MemoryManager::PrepareMeshMemory(const string ID, const GeneralBufferCreationInfo& VertexBufferCreationInfo, const GeneralBufferCreationInfo& IndexBufferCreationInfo, const Mesh& MeshData)
 {
-	std::unique_ptr<VertexBufferData> Data = GetBufferFactory()->CreateVertexBuffer(CreationInfo, Vertices);
-	mVertexBufferData.push_back(std::move(Data));
+	// [todo] test if that function does not leave mem leaks.
+	MeshMemoryData* MemoryData = new MeshMemoryData;
+
+	MemoryData->VertexBuffer = CreateBuffer(VertexBufferCreationInfo, MeshData.Vertices);
+	MemoryData->IndexBuffer = CreateBuffer(IndexBufferCreationInfo, MeshData.Indices);
+
+	mMeshMemoryData.insert({ID, uptr<MeshMemoryData>(MemoryData)});
 }
 
-void MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices)
+uptr<VertexBufferData> MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices)
 {
-	std::unique_ptr<IndexBufferData> Data = GetBufferFactory()->CreateIndexBuffer(CreationInfo, Indices);
-	mIndexBufferData.push_back(std::move(Data));
+	return GetBufferFactory()->CreateVertexBuffer(CreationInfo, Vertices);
+}
+
+uptr<IndexBufferData> MemoryManager::CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices)
+{
+	return GetBufferFactory()->CreateIndexBuffer(CreationInfo, Indices);
 }
 
 void MemoryManager::CreateUniformBuffers(const GeneralBufferCreationInfo& CreationInfo, uint8_t SwapChainImagesNum)
@@ -261,7 +271,7 @@ void MemoryManager::CreateUniformBuffers(const GeneralBufferCreationInfo& Creati
 
 	for (int i = 0; i < SwapChainImagesNum; i++)
 	{
-		std::unique_ptr<BufferData> Data = GetBufferFactory()->CreateUniformBuffer(CreationInfo);
+		uptr<BufferData> Data = GetBufferFactory()->CreateUniformBuffer(CreationInfo);
 		mUniformBufferData[i] = std::move(Data);
 	}
 }
@@ -303,77 +313,40 @@ void MemoryManager::Destroy(const VkDevice& mLogicalDevice)
 
 	mImageDataArray.erase(mImageDataArray.begin(), mImageDataArray.end());
 
-	// [TODO] Merge above and below code.
-	for (int i = int(mVertexBufferData.size()) - 1; i >= 0; i--)
+	for (auto i = mMeshMemoryData.begin(); i != mMeshMemoryData.end(); i++)
 	{
-		vkDestroyBuffer(mLogicalDevice, mVertexBufferData[i]->mBufferData.mBuffer, nullptr);
-		vkFreeMemory(mLogicalDevice, mVertexBufferData[i]->mBufferData.mBufferMemory, nullptr);
+		vkDestroyBuffer(mLogicalDevice, i->second->VertexBuffer.get()->mBufferData.mBuffer, nullptr);
+		vkDestroyBuffer(mLogicalDevice, i->second->IndexBuffer.get()->mBufferData.mBuffer, nullptr);
+
+		vkFreeMemory(mLogicalDevice, i->second->VertexBuffer.get()->mBufferData.mBufferMemory, nullptr);
+		vkFreeMemory(mLogicalDevice, i->second->IndexBuffer.get()->mBufferData.mBufferMemory, nullptr);
 	}
 
-	mVertexBufferData.erase(mVertexBufferData.begin(), mVertexBufferData.end());
+	mMeshMemoryData.erase(mMeshMemoryData.begin(), mMeshMemoryData.end());
 
-	for (int i = int(mIndexBufferData.size()) - 1; i >= 0; i--)
-	{
-		vkDestroyBuffer(mLogicalDevice, mIndexBufferData[i]->mBufferData.mBuffer, nullptr);
-		vkFreeMemory(mLogicalDevice, mIndexBufferData[i]->mBufferData.mBufferMemory, nullptr);
-	}
-
-	mIndexBufferData.erase(mIndexBufferData.begin(), mIndexBufferData.end());
 
 	GetBufferFactory()->Destroy(mLogicalDevice);
 }
 
-const std::vector<std::unique_ptr<VertexBufferData>>* const MemoryManager::GetVertexBufferData() const
+auto MemoryManager::GetMeshMemoryData() const->const hashtable<string, uptr<MeshMemoryData>>* const
 {
-	return &mVertexBufferData;
+	return &mMeshMemoryData;
 }
 
-const std::vector<std::unique_ptr<IndexBufferData>>* const MemoryManager::GetIndexBufferData() const
-{
-	return &mIndexBufferData;
-}
-
-const std::vector<std::unique_ptr<BufferData>>* const MemoryManager::GetUniformBufferData() const
+auto MemoryManager::GetUniformBufferData() const->const vector<uptr<BufferData>>* const
 {
 	return &mUniformBufferData;
 }
 
-template<>
-const std::vector<VkVertexInputAttributeDescription> MemoryManager::GetAttributeDescription<Vertex>() const
+auto MemoryManager::GetMeshMemoryDataByID(string ID) const->const MeshMemoryData* const
 {
-	std::vector<VkVertexInputAttributeDescription> AttributeDescriptions = {};
+	auto Found = mMeshMemoryData.find(ID);
+	if (Found != mMeshMemoryData.end())
+	{
+		return Found->second.get();
+	}
 
-	// Position.
-	VkVertexInputAttributeDescription PositionAttributeDescription = {};
-
-	PositionAttributeDescription.binding = 0;
-	PositionAttributeDescription.location = 0;
-	PositionAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-	PositionAttributeDescription.offset = offsetof(Vertex, Position);
-
-	AttributeDescriptions.push_back(PositionAttributeDescription);
-
-	// Color.
-	VkVertexInputAttributeDescription ColorAttributeDescription = {};
-
-	ColorAttributeDescription.binding = 0;
-	ColorAttributeDescription.location = 1;
-	ColorAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-	ColorAttributeDescription.offset = offsetof(Vertex, Color);
-
-	AttributeDescriptions.push_back(ColorAttributeDescription);
-
-	// UV.
-	VkVertexInputAttributeDescription TextureCoordAttributeDescription = {};
-
-	TextureCoordAttributeDescription.binding = 0;
-	TextureCoordAttributeDescription.location = 2;
-	TextureCoordAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
-	TextureCoordAttributeDescription.offset = offsetof(Vertex, TexCoord);
-
-	AttributeDescriptions.push_back(TextureCoordAttributeDescription);
-
-	return AttributeDescriptions;
+	return nullptr;
 }
 
 BufferFactory* const MemoryManager::GetBufferFactory() const
@@ -428,7 +401,7 @@ void MemoryManager::CreateTextureImage(
 	BufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
 	BufferCI.mBufferCreationInfo.mDataSize = ImageSize;
 
-	std::unique_ptr<BufferData> Data = GetBufferFactory()->CreateGeneralBuffer(BufferCI);
+	uptr<BufferData> Data = GetBufferFactory()->CreateGeneralBuffer(BufferCI);
 
 	MemoryManagementMethods::MapMemory(*LogicalDevice, Pixels, Data->mBuffer, static_cast<size_t>(ImageSize), Data->mBufferMemory);
 

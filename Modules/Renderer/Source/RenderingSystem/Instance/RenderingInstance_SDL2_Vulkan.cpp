@@ -24,7 +24,6 @@ RenderingInstance_SDL2_Vulkan::RenderingInstance_SDL2_Vulkan()
 	{
 		LogV(LogType::Error, LOGDOMAIN_WINDOW_SDL2, 0, "SDL Initiation failed!");
 	}
-
 }
 
 RenderingInstance_SDL2_Vulkan::~RenderingInstance_SDL2_Vulkan()
@@ -128,35 +127,6 @@ void RenderingInstance_SDL2_Vulkan::CreateRequiredSubsystems()
 	SwapChainHandlerII.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
 
 	GetSwapChainHandler()->Initiate(SwapChainHandlerII);
-
-
-	// [Temp] Vertex Preparation.
-	GeneralBufferCreationInfo VertexBufferCI = {};
-	VertexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
-	VertexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
-	VertexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
-
-	Mesh MeshData;
-
-	if (GeometrySystemUtilities::OpenMesh(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Meshes/suzanne.obj").c_str(), MeshData))
-		VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
-		// ~[Temp] Vertex Preparation.
-
-		// [Temp] Index Preparation.
-		GeneralBufferCreationInfo IndexBufferCI = {};
-		IndexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
-		IndexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
-		IndexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
-
-		VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
-
-		IndexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Indices[0]) * MeshData.Indices.size();
-
-
-		GetSwapChainHandler()->PrepareVertexMemory(VertexBufferCI, MeshData.Vertices);
-		GetSwapChainHandler()->PrepareIndexMemory(IndexBufferCI, MeshData.Indices);
-	}
-
 	GetSwapChainHandler()->CreateSwapChain(SwapChainCI);
 
 	// [Temp] Temporary image creation
@@ -252,7 +222,7 @@ std::vector<VkLayerProperties> RenderingInstance_SDL2_Vulkan::CheckValidationLay
 	return AvailableDesiredLayers;
 }
 
-const std::string RenderingInstance_SDL2_Vulkan::GetImplementationType() const
+const string RenderingInstance_SDL2_Vulkan::GetImplementationType() const
 {
 	return "SDL2/Vulkan";
 }
@@ -291,7 +261,7 @@ void RenderingInstance_SDL2_Vulkan::ResizeCanvas(int Width, int Height)
 	Parent::ResizeCanvas(Width, Height);
 }
 
-void RenderingInstance_SDL2_Vulkan::LoadTextureImage(const char* Path, TextureImageFormat Format, const std::string& TextureID)
+void RenderingInstance_SDL2_Vulkan::LoadTextureImage(const char* Path, TextureImageFormat Format, const string& TextureID)
 {
 	int TexWidth, TexHeight, TexChannels;
 	stbi_uc* Pixels = static_cast<unsigned char*>(stbi_load(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Textures/texture2.jpg").c_str(), &TexWidth, &TexHeight, &TexChannels, STBI_rgb_alpha));
@@ -315,7 +285,7 @@ void RenderingInstance_SDL2_Vulkan::LoadTextureImage(const char* Path, TextureIm
 
 }
 
-void RenderingInstance_SDL2_Vulkan::LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const std::string& TextureID)
+void RenderingInstance_SDL2_Vulkan::LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const string& TextureID)
 {
 	GetSwapChainHandler()->GetMemoryManager()->CreateTextureImage(
 		GetDeviceHandler()->GetLogicalDeviceHandle(),
@@ -339,5 +309,38 @@ VkFormat RenderingInstance_SDL2_Vulkan::ParseTextureImageFormatToVkFormat(Textur
 	}
 
 	return VK_FORMAT_UNDEFINED;
+}
+
+void RenderingInstance_SDL2_Vulkan::LoadMesh(string ModuleName, string ModuleRelativePath)
+{
+	Mesh MeshData;
+
+	if (GeometrySystemUtilities::OpenMesh(FileSystem::GetAssetAbsolutePath(ModuleName, ModuleRelativePath).c_str(), MeshData))
+	{
+		auto LogicalDevice = GetDeviceHandler()->GetLogicalDeviceHandle();
+		auto PhysicalDevice = &GetDeviceHandler()->GetStrongestPhysicalDeviceProperties()->DeviceHandle;
+
+		GeneralBufferCreationInfo VertexBufferCI = {};
+		VertexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
+		VertexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
+		VertexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
+		VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
+
+		GeneralBufferCreationInfo IndexBufferCI = {};
+		IndexBufferCI.mBufferCreationInfo.mLogicalDevice = LogicalDevice;
+		IndexBufferCI.mBufferCreationInfo.mPhysicalDevice = PhysicalDevice;
+		IndexBufferCI.mQueueFamilyHandler = GetDeviceHandler()->GetQueueFamilyHandler();
+
+		VertexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Vertices[0]) * MeshData.Vertices.size();
+		IndexBufferCI.mBufferCreationInfo.mDataSize = sizeof(MeshData.Indices[0]) * MeshData.Indices.size();
+
+		const string AssetID = FileSystem::GetAssetShortPathFromPath(ModuleName, ModuleRelativePath);
+
+		GetSwapChainHandler()->GetMemoryManager()->PrepareMeshMemory(AssetID, VertexBufferCI, IndexBufferCI, MeshData);
+
+		// [todo][critical] We need to re-record command buffers, so that the loaded meshes will be picked up by the render pass.
+		// Following command recreates an entire swap chain, which is an overkill.
+		GetSwapChainHandler()->RequestFrameBufferResizing();
+	}
 }
 

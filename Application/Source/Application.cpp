@@ -26,6 +26,8 @@ bool Application::Initiate()
 	Configurator::Window_RenderingInstance WRIConfigurator(mWindowSystem->GetMainWindow(), mRenderingSystem->GetRenderingInstance());
 	WRIConfigurator.Configure();
 
+	mRenderingSystem->GetRenderingInstance()->LoadMesh("Renderer", "/Meshes/suzanne.obj");
+	mRenderingSystem->GetRenderingInstance()->LoadMesh("Renderer", "/Meshes/cube.obj");
 	mRenderingSystem->GetRenderingInstance()->LoadTextureImage(FileSystem::Path(FileSystem::Get()->GetModuleAssetsDir("Renderer") + "/Textures/texture2.jpg").c_str(), TextureImageFormat::R8G8B8A8_SRGB, "Main");
 
 	//Temp

@@ -5,6 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "GeometrySystem/Mesh.h"
 #include "GeometrySystem/Vertex.h"
 #include "VulkanUtilities.h"
 
@@ -29,10 +30,10 @@ public:
 
 	void Initiate(const VkDevice& LogicalDevice, const QueueFamilyHandler* QFH);
 
-	std::unique_ptr<BufferData>			CreateGeneralBuffer(const GeneralBufferCreationInfo& CreationInfo);
-	std::unique_ptr<VertexBufferData>	CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
-	std::unique_ptr<IndexBufferData>	CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
-	std::unique_ptr<BufferData>			CreateUniformBuffer(const GeneralBufferCreationInfo& CreationInfo);
+	uptr<BufferData>		CreateGeneralBuffer(const GeneralBufferCreationInfo& CreationInfo);
+	uptr<VertexBufferData>	CreateVertexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	uptr<IndexBufferData>	CreateIndexBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
+	uptr<BufferData>		CreateUniformBuffer(const GeneralBufferCreationInfo& CreationInfo);
 
 	void Destroy(const VkDevice& LogicalDevice);
 
@@ -44,7 +45,7 @@ private:
 	VkCommandPool mMemoryOperationsCommandPool;
 
 	
-	std::unique_ptr<BufferData>	 CreateBufferInternal
+	uptr<BufferData>	 CreateBufferInternal
 	(
 		const VkDevice* LogicalDevice,
 		const VkPhysicalDevice* PhysicalDevice,
@@ -103,6 +104,13 @@ struct CopyBufferToImageInfo
 };
 // ~Image Structs
 
+// Mesh Structs
+struct MeshMemoryData
+{
+	uptr<VertexBufferData> VertexBuffer;
+	uptr<IndexBufferData> IndexBuffer;
+};
+// ~Mesh Structs
 namespace MemoryManagementMethods
 {
 	void MapMemory(const VkDevice& LogicalDevice, const void* BufferData, const VkBuffer& Buffer, const VkDeviceSize& MemorySize, VkDeviceMemory& BufferMemory);
@@ -120,7 +128,7 @@ public:
 
 	// Describes at which rate to load data from memory throughout the vertices.
 	template <class T>
-	const VkVertexInputBindingDescription GetBindingDescription() const
+	static const VkVertexInputBindingDescription GetBindingDescription()
 	{
 		VkVertexInputBindingDescription BindingDescription = {};
 
@@ -133,19 +141,57 @@ public:
 
 	// Describes how to handle vertex input.
 	template <class T>
-	const std::vector<VkVertexInputAttributeDescription> GetAttributeDescription() const;
+	static const std::vector<VkVertexInputAttributeDescription> GetAttributeDescription()
+	{
+		std::vector<VkVertexInputAttributeDescription> AttributeDescriptions = {};
+
+		// Position.
+		VkVertexInputAttributeDescription PositionAttributeDescription = {};
+
+		PositionAttributeDescription.binding = 0;
+		PositionAttributeDescription.location = 0;
+		PositionAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+		PositionAttributeDescription.offset = offsetof(Vertex, Position);
+
+		AttributeDescriptions.push_back(PositionAttributeDescription);
+
+		// Color.
+		VkVertexInputAttributeDescription ColorAttributeDescription = {};
+
+		ColorAttributeDescription.binding = 0;
+		ColorAttributeDescription.location = 1;
+		ColorAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+		ColorAttributeDescription.offset = offsetof(Vertex, Color);
+
+		AttributeDescriptions.push_back(ColorAttributeDescription);
+
+		// UV.
+		VkVertexInputAttributeDescription TextureCoordAttributeDescription = {};
+
+		TextureCoordAttributeDescription.binding = 0;
+		TextureCoordAttributeDescription.location = 2;
+		TextureCoordAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+		TextureCoordAttributeDescription.offset = offsetof(Vertex, TexCoord);
+
+		AttributeDescriptions.push_back(TextureCoordAttributeDescription);
+
+		return AttributeDescriptions;
+	}
+
+	void PrepareMeshMemory(const string ID, const GeneralBufferCreationInfo& VertexBufferCreationInfo, const GeneralBufferCreationInfo& IndexBufferCreationInfo, const Mesh& MeshData);
 
 	// @todo Names must be matched with actual buffers, they are now ambiguous.
-	void CreateBuffer(const BufferCreationInfo& CreationInfo) {}
-	void CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
-	void CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
+	void CreateBuffer(const string BufferID, const BufferCreationInfo& CreationInfo) {}
+	uptr<VertexBufferData> CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<Vertex>& Vertices);
+	uptr<IndexBufferData> CreateBuffer(const GeneralBufferCreationInfo& CreationInfo, const std::vector<uint16_t>& Indices);
 	void CreateUniformBuffers(const GeneralBufferCreationInfo& CreationInfo, uint8_t SwapChainImagesNum);
 
 	void UpdateUniformBuffer(const VkDevice* LogicalDevice, float DeltaTime, uint32_t ImageIndex, VkExtent2D ViewportExtent);
 
-	const std::vector<std::unique_ptr<VertexBufferData>>* const GetVertexBufferData() const;
-	const std::vector<std::unique_ptr<IndexBufferData>>* const GetIndexBufferData() const;
-	const std::vector<std::unique_ptr<BufferData>>* const GetUniformBufferData() const;
+	auto GetMeshMemoryData() const->const hashtable<string, uptr<MeshMemoryData>>* const;
+	auto GetUniformBufferData() const->const vector<uptr<BufferData>>* const;
+
+	auto GetMeshMemoryDataByID(string ID) const->const MeshMemoryData* const;
 
 	void CleanUp(const VkDevice& mLogicalDevice);
 	void Destroy(const VkDevice& mLogicalDevice);
@@ -166,15 +212,15 @@ private:
 private:
 
 	BufferFactory* const GetBufferFactory() const;
-	std::unique_ptr<BufferFactory> mBufferFactory;
+	uptr<BufferFactory> mBufferFactory;
 
 	std::vector<VkVertexInputBindingDescription> mBindingDescriptions;
-	std::vector< VkVertexInputAttributeDescription> mAttributeDescriptions;
+	std::vector<VkVertexInputAttributeDescription> mAttributeDescriptions;
 
 	// Specialized Buffers.
-	std::vector<std::unique_ptr<VertexBufferData>> mVertexBufferData;
-	std::vector<std::unique_ptr<IndexBufferData>> mIndexBufferData;
-	std::vector<std::unique_ptr<BufferData>> mUniformBufferData;
+	hashtable<string, uptr<MeshMemoryData>> mMeshMemoryData;
+
+	vector<uptr<BufferData>> mUniformBufferData;
 
 	std::list<ImageData> mImageDataArray;
 };

@@ -35,7 +35,7 @@ public:
 
 	// Begin I::RenderingInstance_Impl Interface
 	void Initialize() override {}
-	const std::string GetImplementationType() const override;
+	const string GetImplementationType() const override;
 	void* GetRenderingInstanceHandle() override;
 	void SetRenderingInstanceHandle(void* Handle) override {}
 	void SetSwapInterval(int Interval) override {}
@@ -43,8 +43,9 @@ public:
 	void RenderLoop() override;
 	void ResizeCanvas(int Width, int Height) override;
 	void ClearInstance(I::RenderingInstanceProperties_ClearColor_Impl Properties) override {}
-	void LoadTextureImage(const char* Path, TextureImageFormat Format, const std::string& TextureID) override;
-	void LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const std::string& TextureID) override;
+	void LoadMesh(string ModuleName, string ModuleRelativePath) override;
+	void LoadTextureImage(const char* Path, TextureImageFormat Format, const string& TextureID) override;
+	void LoadTextureImage(unsigned char* Pixels, int TexWidth, int TexHeight, TextureImageFormat Format, const string& TextureID) override;
 	// End I::RenderingInstance_Impl Interface
 
 private:

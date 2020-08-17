@@ -46,10 +46,10 @@
 }
 
 // [Todo] Adapt name to mention that we are extracting data from the assets dir folder or make this function load from absolute path.
-auto FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const std::string& FileName)->std::vector<char>
+auto FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const string& FileName)->std::vector<char>
 {
 	FileData Data;
-	std::string AssetsDir = FileSystem::Get()->GetModuleAssetsDir(ModuleName);
+	string AssetsDir = FileSystem::Get()->GetModuleAssetsDir(ModuleName);
 	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::OpenAndReadFromEnd | FileOpeningOptions::BinaryFormat);
 
 	if (Result.Code != 0)
@@ -60,10 +60,10 @@ auto FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const std::s
 	return Data.Data;
 }
 
-auto FileSystem::GetAssetNameFromPath(const std::string ModuleName, const std::string ModuleRelativePath) ->const std::string
+auto FileSystem::GetAssetNameFromPath(const string ModuleName, const string ModuleRelativePath) ->const string
 {
 #if BUILD_CONFIGURATION >= BUILD_CONFIGURATION_DEBUG
-	const std::string AssetAbsolutePath{ GetAssetAbsolutePath(ModuleName, ModuleRelativePath) };
+	const string AssetAbsolutePath{ GetAssetAbsolutePath(ModuleName, ModuleRelativePath) };
 	if (!VerifyFileExistence(AssetAbsolutePath))
 	{
 		Log(LogType::Warning, 0, "File non-existing : %s.", AssetAbsolutePath);
@@ -72,22 +72,22 @@ auto FileSystem::GetAssetNameFromPath(const std::string ModuleName, const std::s
 
 	auto Position = FileSystem::FindOccurenceFromString(Path(ModuleRelativePath).c_str(), GetPathSeparator(), 1, true);
 
-	std::string Result(ModuleRelativePath.begin() + Position+1, ModuleRelativePath.end());
+	string Result(ModuleRelativePath.begin() + Position+1, ModuleRelativePath.end());
 
 	return Result;
 }
 
-auto FileSystem::GetAssetAbsolutePath(const std::string ModuleName, const std::string ModuleRelativePath) -> const std::string
+auto FileSystem::GetAssetAbsolutePath(const string ModuleName, const string ModuleRelativePath) -> const string
 {
 	return Path(FileSystem::Get()->GetModuleAssetsDir(ModuleName.c_str()) / ModuleRelativePath);
 }
 
-auto FileSystem::GetAssetShortPathFromPath(const std::string ModuleName, const std::string ModuleRelativePath) ->const std::string
+auto FileSystem::GetAssetShortPathFromPath(const string ModuleName, const string ModuleRelativePath) ->const string
 {
 	return Path(ModuleName / "Assets" / ModuleRelativePath);
 }
 
-auto FileSystem::VerifyFileExistence(const std::string AbsolutePath) ->bool
+auto FileSystem::VerifyFileExistence(const string AbsolutePath) ->bool
 {
 	return std::filesystem::exists(AbsolutePath);
 }
@@ -123,11 +123,11 @@ const char* FileSystem::GetRootDir()
 	return RootDir.c_str();
 }
 
-std::string FileSystem::GetModuleAssetsDir(const char* ModuleName)
+string FileSystem::GetModuleAssetsDir(const char* ModuleName)
 {
 	// @todo : Improve the algorithm.
 
-	std::string Result = GetRootDir();
+	string Result = GetRootDir();
 	Result =  Path(Result / "Modules" / ModuleName / "Assets");
 
 	return Result;
@@ -136,7 +136,7 @@ std::string FileSystem::GetModuleAssetsDir(const char* ModuleName)
 // [Todo] Add 1 to the result.
 auto FileSystem::FindOccurenceFromString(const char* String, const char* Token, int OccurenceNumber, bool Reversed)->const size_t
 {
-	std::string SString = String;
+	string SString = String;
 	size_t Position;
 	if (Reversed)
 	{
@@ -158,11 +158,11 @@ auto FileSystem::FindOccurenceFromString(const char* String, const char* Token, 
 	return Position;
 }
 
-std::string FileSystem::ReplaceStringOccurences(std::string Source, const char* ReplaceFrom, const char* ReplaceTo)
+string FileSystem::ReplaceStringOccurences(string Source, const char* ReplaceFrom, const char* ReplaceTo)
 {
 	size_t ReplaceFromStartPosition = Source.find(ReplaceFrom);
 
-	while (ReplaceFromStartPosition != std::string::npos)
+	while (ReplaceFromStartPosition != string::npos)
 	{
 		Source = Source.erase(ReplaceFromStartPosition, strlen(ReplaceFrom));
 		Source.insert(ReplaceFromStartPosition, ReplaceTo);
@@ -172,7 +172,7 @@ std::string FileSystem::ReplaceStringOccurences(std::string Source, const char* 
 	return Source;
 }
 
-std::string FileSystem::Path(const std::string& String)
+string FileSystem::Path(const string& String)
 {
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
 	return ReplaceStringOccurences(String, "/", "\\");
@@ -180,5 +180,5 @@ std::string FileSystem::Path(const std::string& String)
 	return ReplaceStringOccurences("\\", "/");
 #endif
 
-	return std::string();
+	return string();
 }

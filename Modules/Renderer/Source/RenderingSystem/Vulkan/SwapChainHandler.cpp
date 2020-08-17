@@ -30,16 +30,6 @@ void SwapChainHandler::Initiate(const SwapChainHandlerInitiationInfo& Initiation
 
 }
 
-void SwapChainHandler::PrepareVertexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, const std::vector<Vertex>& Vertices)
-{
-	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Vertices);
-}
-
-void SwapChainHandler::PrepareIndexMemory(const GeneralBufferCreationInfo& BufferCreationInfo, const std::vector<uint16_t>& Indices)
-{
-	GetMemoryManager()->CreateBuffer(BufferCreationInfo, Indices);
-}
-
 void SwapChainHandler::CreateShaderSystem()
 {
 	mShaderSystem = std::make_unique<ShaderSystem>();
@@ -208,8 +198,7 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 		//const VkCommandBuffer* const	CommandBufferHandle, // Should be allocated already.
 		const VkRenderPass* const		RenderPassHandle,
 		const FrameData&				FrameData,
-		const VertexBufferData* const	VertexBufferDataHandle,
-		const IndexBufferData* const	IndexBufferDataHandle,
+		const MemoryManager* const		MemoryManagerHandle,
 		const VkPipeline* const			PipelineHandle,
 		const VkPipelineLayout* const	PipelineLayoutHandle,
 		const VkDescriptorSet* const	DescriptorSetHandle,
@@ -245,17 +234,23 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 
 			vkCmdBindPipeline(CommandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineHandle);
 
-			VkBuffer VertexBuffers[] = { VertexBufferDataHandle->mBufferData.mBuffer };
-			VkDeviceSize Offsets[] = { 0 };
-			vkCmdBindVertexBuffers(CommandBufferHandle, 0, 1, VertexBuffers, Offsets);
+			for (auto Mesh = MemoryManagerHandle->GetMeshMemoryData()->begin(); Mesh != MemoryManagerHandle->GetMeshMemoryData()->end(); Mesh++)
+			{
+				const auto VertexBuffer = *Mesh->second->VertexBuffer;
+				const auto IndexBuffer = *Mesh->second->IndexBuffer;
 
-			// [TODO] Needs change to distinct UINT16 and UINT32 index buffer type.
-			VkBuffer IndexBuffers[] = { IndexBufferDataHandle->mBufferData.mBuffer };
-			vkCmdBindIndexBuffer(CommandBufferHandle, *IndexBuffers, 0, VK_INDEX_TYPE_UINT16);
+				VkBuffer VertexBuffers[] = { VertexBuffer.mBufferData.mBuffer };
+				VkDeviceSize Offsets[] = { 0 };
+				vkCmdBindVertexBuffers(CommandBufferHandle, 0, 1, VertexBuffers, Offsets);
 
-			vkCmdBindDescriptorSets(CommandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayoutHandle, 0, 1, DescriptorSetHandle, 0, nullptr);
+				// [TODO] Needs change to distinct UINT16 and UINT32 index buffer type.
+				VkBuffer IndexBuffers[] = { IndexBuffer.mBufferData.mBuffer };
+				vkCmdBindIndexBuffer(CommandBufferHandle, *IndexBuffers, 0, VK_INDEX_TYPE_UINT16);
 
-			vkCmdDrawIndexed(CommandBufferHandle, static_cast<uint32_t>(IndexBufferDataHandle->mIndices.size()), 1, 0, 0, 0);
+				vkCmdBindDescriptorSets(CommandBufferHandle, VK_PIPELINE_BIND_POINT_GRAPHICS, *PipelineLayoutHandle, 0, 1, DescriptorSetHandle, 0, nullptr);
+
+				vkCmdDrawIndexed(CommandBufferHandle, static_cast<uint32_t>(IndexBuffer.mIndices.size()), 1, 0, 0, 0);
+			}
 
 		vkCmdEndRenderPass(CommandBufferHandle);
 
@@ -340,8 +335,7 @@ void SwapChainHandler::CreateMainRenderPass(const VkDevice* LogicalDevice, const
 			i,
 			&Data->mRenderPassHandle,
 			Data->mFrameData[i],
-			(*GetMemoryManager()->GetVertexBufferData())[0].get(),
-			(*GetMemoryManager()->GetIndexBufferData())[0].get(),
+			GetMemoryManager(),
 			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mPipelineHandle,
 			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mPipelineLayout,
 			&GetRenderPassManager()->GetPipelineSystem()->GetPipelineData(MainRenderPassID)->mDescriptorSets[0],
