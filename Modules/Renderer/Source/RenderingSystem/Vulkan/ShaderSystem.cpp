@@ -8,7 +8,7 @@ std::vector<char> ShaderSystem::LoadShaderFromFile(const std::string& FileName)
 {
 	FileData Data;
 	std::string AssetsDir =	FileSystem::Get()->GetModuleAssetsDir("Renderer");
-	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::OpenAndReadFromEnd | FileOpeningOptions::BinaryFormat);
+	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::ReadPermission | FileOpeningOptions::BinaryFormat);
 
 	if (Result.Code != 0)
 	{
