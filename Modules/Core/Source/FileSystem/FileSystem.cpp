@@ -4,6 +4,10 @@
 #include <fstream>
 #include <filesystem>
 
+//temp
+#include <ryml.hpp>
+//~temp
+
 #include <SDL_filesystem.h>
 
  auto FileSystem::Open(const char* Path, FileData& Data, uint8_t Options)->ErrorHandle
@@ -11,10 +15,10 @@
 	ErrorHandle Result;
 
 	std::ios_base::openmode OpenMode = 0;
-
-	if (Options & FileOpeningOptions::OpenAndReadFromEnd)
+	
+	if(Options & FileOpeningOptions::ReadPermission)
 	{
-		OpenMode |= std::ios::ate;
+		OpenMode |= std::ifstream::in;
 	}
 
 	if (Options & FileOpeningOptions::BinaryFormat)
@@ -22,12 +26,21 @@
 		OpenMode |= std::ios::binary;
 	}
 
+	OpenMode |= std::ios::ate; // Start from end, so we can use tellg(); to read the file size.
+
 	std::ifstream File(Path, OpenMode);
 
 	if (!File.is_open())
 	{
 		Result.Msg = "File opening failed";
 		Result.Code = 1;
+		return Result;
+	}
+
+	if(File.fail())
+	{
+		Result.Msg = "File corrupted";
+		Result.Code = 2;
 		return Result;
 	}
 
@@ -50,7 +63,7 @@ auto FileSystem::RetrieveBinaryDataFromFile(const char* ModuleName, const string
 {
 	FileData Data;
 	string AssetsDir = FileSystem::Get()->GetModuleAssetsDir(ModuleName);
-	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::OpenAndReadFromEnd | FileOpeningOptions::BinaryFormat);
+	ErrorHandle Result = FileSystem::Open(FileSystem::Path(AssetsDir + "/" + FileName).c_str(), Data, FileOpeningOptions::ReadPermission | FileOpeningOptions::BinaryFormat);
 
 	if (Result.Code != 0)
 	{
@@ -87,9 +100,42 @@ auto FileSystem::GetAssetShortPathFromPath(const string ModuleName, const string
 	return Path(ModuleName / "Assets" / ModuleRelativePath);
 }
 
-auto FileSystem::VerifyFileExistence(const string AbsolutePath) ->bool
+auto FileSystem::VerifyFileExistence(const string& AbsolutePath) ->const bool
 {
 	return std::filesystem::exists(AbsolutePath);
+}
+
+auto FileSystem::VerifyFileExtension(const vector<string> Extensions, const string Path) ->const bool
+{
+	string ReversedExtension{""};
+
+	for(auto iter = Path.rbegin(); iter != Path.rend(); iter++)
+	{
+		if(*iter == '.')
+		{
+			break;
+		}
+
+		ReversedExtension += *iter;
+	}
+
+	string Extension{""};
+
+	for(auto iter = ReversedExtension.rbegin(); iter != ReversedExtension.rend(); iter++)
+	{
+		Extension += *iter;
+	}
+
+
+	for (auto iter = Extensions.begin(); iter != Extensions.end(); iter++)
+	{
+		if (iter->compare(Extension) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 FileSystem::FileSystem()

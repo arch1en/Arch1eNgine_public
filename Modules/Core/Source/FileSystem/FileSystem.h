@@ -25,7 +25,6 @@ enum class FileOpeningOptions : uint8_t
 	// Permissions
 	ReadPermission = 1 << 0,
 	WritePermission = 1 << 1,
-	OpenAndReadFromEnd = 1 << 2,
 	// Formats
 	BinaryFormat = 1 << 3
 };
@@ -63,7 +62,8 @@ public:
 	static auto GetAssetAbsolutePath(const string ModuleName, const string ModuleRelativePath)-> const string;
 	static auto GetAssetShortPathFromPath(const string ModuleName, const string ModuleRelativePath)->const string;
 
-	static auto VerifyFileExistence(const string AbsolutePath)->bool;
+	static auto VerifyFileExistence(const string& AbsolutePath)->const bool;
+	static auto VerifyFileExtension(const vector<string> Extensions, const string Path)->const bool;
 
 private:
 
